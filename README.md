@@ -1,64 +1,85 @@
-# Wallpaper Providers
+# Mopivo
 
-A standalone GTK4 + libadwaita app to browse and set desktop wallpapers from
-multiple image sources and to play local, streamed or webpage video wallpapers.
+> Seu GNOME vivo em 30 segundos — wallpapers de 8 fontes + vídeo-wallpapers.
+
+🌐 **Site:** https://zonaro.github.io/mopivo/ · 💻 **Repo:** https://github.com/zonaro/mopivo · 📜 GPL-3.0-or-later
+
+Mopivo (antes *Wallpaper Providers*) é um app standalone GTK4 + libadwaita para
+navegar e aplicar wallpapers de múltiplas fontes — e para tocar vídeo-wallpapers
+locais, via streaming ou páginas web.
 
 - Application id / GSettings schema id: `br.com.redclaw.WallpaperProviders`
 - Settings schema path: `/br/com/redclaw/WallpaperProviders/`
 - Gettext domain: `wallpaper-providers-gnome`
 - Renderer D-Bus name: `org.redclaw.WallpaperProvidersRenderer`
 
-It is built with GJS (ESM) and does not run inside the GNOME Shell. Video
-playback happens in a separate renderer subprocess, so a GStreamer crash never
-takes down the Shell.
+> **Nota sobre o nome:** o projeto e o repositório agora se chamam **Mopivo**.
+> Os IDs técnicos (App ID, schema, domínios, pastas em `~/.local`) foram mantidos
+> de propósito para não quebrar quem já tinha o app instalado — basta reinstalar.
 
-## Requirements
+Feito com GJS (ESM). Não roda dentro do GNOME Shell: o vídeo toca num subprocesso
+renderer separado, então um crash do GStreamer nunca derruba o Shell.
 
-- GNOME 45–50 (Wayland or X11)
-- `gjs` (ESM support)
-- GTK 4 and libadwaita 1.x
-- GStreamer with `gtk4paintablesink` (video wallpaper playback)
-- `xprop` (places renderer windows on the X11/XWayland desktop layer)
-- `glib-compile-schemas` and `msgfmt` (install only)
-- Optional: [yt-dlp](https://github.com/yt-dlp/yt-dlp) (streaming URL sources)
-- Optional: WebKitGTK 6.0 (webpage video source)
+## Instalação em 1 comando
 
-The install script uses `rsync` when available and falls back to `cp` otherwise.
+```bash
+curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash
+```
 
-## Install
+Alternativa com `wget`:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash
+```
+
+O `install.sh` da raiz:
+
+- usa o checkout local quando você já clonou (`./install.sh`), delegando para
+  `scripts/install.sh` / `scripts/uninstall.sh`;
+- quando rodado via `curl | bash` (sem checkout), faz `git clone --depth 1`
+  ou baixa o tarball do `master` para um diretório temporário e instala de lá;
+- checa dependências (`gjs`, `glib-compile-schemas`, `msgfmt`) com dicas por
+  distro, e aceita `--ref <branch|tag>`, `--yes` e `--uninstall`.
+
+Opções:
+
+```bash
+./install.sh --help
+curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash -s -- --uninstall
+```
+
+## Instalação manual
 
 ```bash
 ./scripts/install.sh
-# or
+# ou
 make install
 ```
 
-The install script:
+O install script:
 
-1. Disables and uninstalls the old GNOME Shell extension
-   (`wallpaper-providers-gnome@redclaw.com.br`) if present, and removes its
-   directory under `~/.local/share/gnome-shell/extensions/`.
-2. Copies the runtime tree (`main.js`, `app/`, `ui/`, `lib/`, `renderer/`,
-   `schemas/`, `locale/`) into `~/.local/share/wallpaper-providers/` (APP_DIR),
-   deleting stale files there.
-3. Compiles the schema in place at `APP_DIR/schemas/` (the renderer loads it
-   from there) and installs it globally to
-   `~/.local/share/glib-2.0/schemas/`, then recompiles that directory.
-4. Compiles translations to
+1. Desabilita e desinstala a antiga extensão GNOME Shell
+   (`wallpaper-providers-gnome@redclaw.com.br`) se presente, e remove seu
+   diretório em `~/.local/share/gnome-shell/extensions/`.
+2. Copia a árvore de runtime (`main.js`, `app/`, `ui/`, `lib/`, `renderer/`,
+   `schemas/`, `locale/`) para `~/.local/share/wallpaper-providers/` (APP_DIR),
+   removendo arquivos obsoletos.
+3. Compila o schema em `APP_DIR/schemas/` (o renderer carrega de lá) e instala
+   globalmente em `~/.local/share/glib-2.0/schemas/`, recompilando o diretório.
+4. Compila as traduções para
    `~/.local/share/locale/<lang>/LC_MESSAGES/wallpaper-providers-gnome.mo`.
-5. Installs the desktop entry to
-   `~/.local/share/applications/br.com.redclaw.WallpaperProviders.desktop` and
-   the icon to
+5. Instala o .desktop em
+   `~/.local/share/applications/br.com.redclaw.WallpaperProviders.desktop` e o
+   ícone em
    `~/.local/share/icons/hicolor/scalable/apps/br.com.redclaw.WallpaperProviders.svg`.
 
-After install, launch **Wallpaper Providers** from the app grid, or run it
-directly:
+Depois, abra **Mopivo** na grade de apps, ou rode direto:
 
 ```bash
 gjs -m ~/.local/share/wallpaper-providers/main.js
 ```
 
-Command-line flags:
+Flags:
 
 ```
 (no options)   open the main window
@@ -68,34 +89,58 @@ Command-line flags:
 --help         show help and exit
 ```
 
-For a source-checkout run at the repository root, use
-`gjs -m main.js`, or `make smoke` for the headless smoke test.
+Para rodar do checkout: `gjs -m main.js`, ou `make smoke` para o smoke test.
 
-## Uninstall
+## Requisitos
+
+- GNOME 45–50 (Wayland ou X11)
+- `gjs` (suporte a ESM)
+- GTK 4 e libadwaita 1.x
+- GStreamer com `gtk4paintablesink` (vídeo-wallpaper)
+- `xprop` (camada desktop X11/XWayland)
+- `glib-compile-schemas` e `msgfmt` (só no install)
+- Opcional: [yt-dlp](https://github.com/yt-dlp/yt-dlp) (streaming)
+- Opcional: WebKitGTK 6.0 (fonte webpage)
+
+Exemplos por distro:
+
+```bash
+# Fedora
+sudo dnf install gjs gtk4 libadwaita gstreamer1-plugin-gtk4 glib2-devel gettext xprop
+# Ubuntu 24.04+
+sudo apt install gjs gir1.2-gtk-4.0 gir1.2-adw-1 libglib2.0-bin gettext x11-utils
+# Arch
+sudo pacman -S gjs gtk4 libadwaita gst-plugin-gtk4 glib2 gettext xorg-xprop
+```
+
+O install usa `rsync` quando disponível, com fallback para `cp`.
+
+## Desinstalar
 
 ```bash
 ./scripts/uninstall.sh
-# or
+# ou
 make uninstall
+# ou via oneliner
+curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash -s -- --uninstall
 ```
 
-The uninstall script stops any running renderer (`pkill -f renderer/renderer.js`)
-and removes the APP_DIR, the desktop entry, the icon, the global schema XML
-(followed by a schema recompile) and the compiled translation catalogs. Your
-GNOME wallpaper settings (`org.gnome.desktop.background`) are left untouched.
+Para o renderer (`pkill -f renderer/renderer.js`) e remove APP_DIR, .desktop,
+ícone, schema global (recompilando) e catálogos `.mo`. Seu papel de parede atual
+(`org.gnome.desktop.background`) é preservado.
 
-## Configuration
+## Configuração
 
-All settings live in the `br.com.redclaw.WallpaperProviders` schema and are
-edited in the Preferences window (five pages: Providers, Filters, Downloads,
-Help Center, Video) or with `gsettings`:
+Tudo vive no schema `br.com.redclaw.WallpaperProviders`, editável na janela de
+Preferências (5 páginas: Providers, Filters, Downloads, Help Center, Video) ou
+via `gsettings`:
 
 ```bash
 gsettings list-keys br.com.redclaw.WallpaperProviders
 gsettings set br.com.redclaw.WallpaperProviders video-mode true
 ```
 
-Key groups:
+Grupos principais:
 
 - **Providers** — `active-provider`, `language`, `api-key`,
   `pexels-api-key`, `unsplash-api-key`, `pixabay-api-key`, `local-folders`,
@@ -115,125 +160,85 @@ Key groups:
   `change-wallpaper-interval`, `change-wallpaper-mode`.
 - **Static wallpaper** — `static-wallpaper-from-video`,
   `static-wallpaper-blur-enabled`, `static-wallpaper-blur-radius`.
-- **Advanced** — `show-on-lock-screen`, and the six renderer keys
+- **Advanced** — `show-on-lock-screen`, mais as seis chaves do renderer
   `startup-delay`, `show-panel-menu`, `enable-va`, `enable-nvsl`,
   `prefer-clappersink`, `force-mediafile`.
 
-The schema exposes 57 keys in total.
+57 chaves no total.
 
-## Image mode
+## Modo imagem
 
-The main window shows a search entry, a provider drop-down and a thumbnail
-gallery with pagination. Clicking a thumbnail downloads the full-resolution
-image, caches it under `~/.cache/wallpaper-providers-gnome/<provider>/` and, when
-`set-background` is enabled, applies it as the desktop wallpaper. A filter
-popover exposes the Wallhaven filters (categories, purity, sorting, order, top
-range, minimum resolution, resolutions, aspect ratios, colors and the AI-art
-filter).
+Janela principal com busca, dropdown de provedor e galeria com paginação. Clicar
+numa miniatura baixa a imagem em resolução máxima, cacheia em
+`~/.cache/wallpaper-providers-gnome/<provider>/` e — com `set-background`
+ligado — aplica como papel de parede. Popover de filtros Wallhaven (categorias,
+pureza, ordenação, top range, resolução mínima, resoluções, proporções, cores e
+filtro AI-art).
 
-Providers (selectable at runtime):
-
-| Provider | API key | Notes |
+| Provider | API key | Notas |
 |---|---|---|
-| Wallhaven | Optional (required for NSFW) | Full filter set: categories, purity, sorting, top range, resolution, ratios, colors, AI-art filter |
-| Pexels | Required — [pexels.com/api](https://www.pexels.com/api/) | Curated endpoint used for empty queries |
-| Unsplash | Required — [unsplash.com/developers](https://unsplash.com/developers) | Access Key used as `Client-ID`; photo feed used for empty queries |
-| Safebooru | None | SFW anime board; tags use underscores (`blue_hair`) |
-| Pixabay | Required — [pixabay.com/api/docs](https://pixabay.com/api/docs/) | `safesearch` always on |
-| Waifu.im | None | Curated anime archive, SFW only; tags use hyphens; up to 30 fresh results per search (no pagination) |
-| Local Files | None | Your `~/Pictures` folder plus extra folders from settings; filename search, newest first |
-| Wallrus | None | Browses wallpapers generated by the Wallrus app (`~/Pictures/Wallrus` plus extra folders) |
+| Wallhaven | Opcional (NSFW exige) | Filtros completos |
+| Pexels | Obrigatória — [pexels.com/api](https://www.pexels.com/api/) | Curadoria usada em buscas vazias |
+| Unsplash | Obrigatória — [unsplash.com/developers](https://unsplash.com/developers) | `Client-ID`; feed usado em buscas vazias |
+| Safebooru | Nenhuma | Board anime SFW; tags com underscore (`blue_hair`) |
+| Pixabay | Obrigatória — [pixabay.com/api/docs](https://pixabay.com/api/docs/) | `safesearch` sempre on |
+| Waifu.im | Nenhuma | Arquivo anime curado, SFW; tags com hífen; até 30 resultados frescos |
+| Local Files | Nenhuma | Sua `~/Pictures` + pastas extras; busca por nome, newest first |
+| Wallrus | Nenhuma | Wallpapers gerados pelo app Wallrus (`~/Pictures/Wallrus` + extras) |
 
-Providers that need an API key stay unusable until the key is configured; the
-Providers page shows which provider is missing one. Each provider has a
-step-by-step setup guide in Preferences → Help Center.
+Provedores com chave ficam inutilizáveis até configurá-la; a página Providers
+mostra qual está faltando. Cada provedor tem guia passo a passo em
+Preferências → Help Center.
 
-## Video mode
+## Modo vídeo
 
-Toggle the video-mode switch in the header bar (or set `video-mode`) to swap the
-image gallery for the video controls pane. Video playback is delegated to the
-renderer subprocess launched by `lib/video/launcher.js`.
+Ligue o switch video-mode no header (ou `video-mode`) para trocar a galeria pelo
+painel de vídeo. Playback delegado ao renderer via `lib/video/launcher.js`.
 
-### Sources
-
-Set the source with `video-mode-type`:
-
-| Source | Value | Settings |
+| Fonte | Valor | Settings |
 |---|---|---|
-| Local files | `local` | `video-path` (single file) or `video-folder` (scanned for next/lucky) |
-| Streaming URL | `streaming` | `video-streaming-url`, resolved with yt-dlp |
-| Webpage | `webpage` | `video-webpage-url` or `video-webpage-local-html` (WebKitGTK) |
+| Arquivos locais | `local` | `video-path` (único) ou `video-folder` (next/lucky) |
+| Streaming URL | `streaming` | `video-streaming-url`, resolvido com yt-dlp |
+| Webpage | `webpage` | `video-webpage-url` ou `video-webpage-local-html` (WebKitGTK) |
 
-When no `video-folder` is set, `~/Videos/Hidamari` is used.
+Sem `video-folder`, usa `~/Videos/Hidamari`.
 
-### Controls
+Painel (`ui/videoControls.js`): fonte (Local/Streaming/Webpage), Video Path com
+**Browse…**, URL de streaming, Play/Pause, **Next** e **Lucky**, mute + volume,
+Fit Mode (Fill/Contain/Cover/Scale down). Estado sincronizado via D-Bus.
 
-The video pane (`ui/videoControls.js`) provides:
+No X11 e no Wayland via XWayland, o launcher roda o renderer com
+`GDK_BACKEND=x11` (`-P <APP_DIR>`, `-F <file>`), marcando as janelas como
+`_NET_WM_WINDOW_TYPE_DESKTOP` via `xprop` no tamanho do monitor. Sem camada
+desktop X11, cai para `fullscreen_on_monitor`.
 
-- Source drop-down: Local Files / Streaming URL / Webpage.
-- Video Path with a **Browse…** button (GTK file dialog).
-- Streaming URL entry.
-- Play/Pause toggle, **Next** (cycles the folder) and **Lucky** (random video).
-- Mute toggle and a volume slider.
-- Fit Mode: Fill / Contain / Cover / Scale down.
-
-Playback state is synced from the renderer over D-Bus.
-
-### Desktop-layer mechanism
-
-On X11 and under Wayland via XWayland, the launcher spawns the renderer with
-`GDK_BACKEND=x11` and passes `-P <APP_DIR>` (plus `-F <file>` for a chosen
-file). After each window is mapped, the renderer resolves its X11 window id and
-runs `xprop -id <xid> -f _NET_WM_WINDOW_TYPE 32a -set _NET_WM_WINDOW_TYPE
-_NET_WM_WINDOW_TYPE_DESKTOP`, sizing the window to the monitor geometry instead
-of going fullscreen. When the X11 desktop layer is unavailable, the renderer
-falls back to `fullscreen_on_monitor`.
-
-### Known limit: auto-pause on Wayland
-
-The auto-pause options (`pause-on-maximize-or-fullscreen`, `pause-on-focus`,
-`pause-on-battery`, `pause-on-mpris-playing`) require GNOME Shell integration
-that a standalone app cannot access on GNOME Wayland; they are not applied
-there. The Video preferences page shows this as a note. Auto-change
-(`change-wallpaper`) and the static-wallpaper options are handled by the
-renderer and are independent of auto-pause.
+**Limite conhecido:** auto-pause no Wayland exige integração com o Shell que um
+app standalone não tem — não é aplicado lá (avisado na página Video). Auto-change
+e static-wallpaper são do renderer e independem do auto-pause.
 
 ## Troubleshooting
 
-Watch the app and renderer logs:
-
 ```bash
 journalctl -f -o cat /usr/bin/gjs
-```
-
-Inspect the schema and its current values:
-
-```bash
 gsettings list-keys br.com.redclaw.WallpaperProviders
 gsettings get br.com.redclaw.WallpaperProviders video-mode
-```
-
-Inspect the renderer D-Bus interface while it is running:
-
-```bash
 gdbus introspect --session \
   --dest org.redclaw.WallpaperProvidersRenderer \
   --object-path /org/redclaw/WallpaperProvidersRenderer
 ```
 
-Common checks:
+- Renderer não inicia: confira `gtk4paintablesink` + `xprop` e fonte de vídeo.
+- Streaming falha: confira `yt-dlp` no `PATH`.
+- Webpage em branco: confira WebKitGTK 6.0.
+- Schema sumiu no checkout: `make compile` ou reinstale.
 
-- Renderer does not start: confirm `gtk4paintablesink` and `xprop` are
-  installed, and that a video source is configured.
-- Streaming fails: confirm `yt-dlp` is on `PATH`.
-- Webpage source is blank: confirm WebKitGTK 6.0 is installed.
-- Schema missing after a source run: run `make compile` or reinstall.
-
-## Project structure
+## Estrutura
 
 ```
 main.js               Entry point (Adw.Application, flags, smoke test)
 prefs.js              Preferences window (Providers/Filters/Downloads/Help Center/Video)
+install.sh            One-liner installer (raiz — bootstrap remoto + delega a scripts/)
+docs/                 Landing page (GitHub Pages, source: /docs)
 app/
   window.js           Main window: image + video stacks, provider switching
   videoController.js  Renderer lifecycle, D-Bus channel, next/lucky/streaming
@@ -259,22 +264,21 @@ data/                 Desktop entry template + app icon
 scripts/              install.sh, uninstall.sh
 ```
 
-To add a new provider, follow the checklist in
+Novo provider? Checklist em
 [lib/providers/README.md](lib/providers/README.md#adding-a-new-provider).
 
-## Development
+## Desenvolvimento
 
-English by default, with translations for Brazilian Portuguese (`pt_BR`) and
-Spanish (`es`). UI strings go through `lib/i18n.js` (`_(str)`).
+Inglês por padrão, traduções pt_BR e es via `lib/i18n.js` (`_(str)`).
 
 ```bash
-make check    # node --check on all JS, headless unit tests, strict schema compile
-make smoke    # headless app smoke test (main.js --smoke-test)
-make i18n     # compile in-tree .mo files
-make compile  # compile the schema
-make clean    # remove compiled schema and in-tree .mo files
+make check    # node --check em todo JS + testes headless + schema strict
+make smoke    # smoke test headless (main.js --smoke-test)
+make i18n     # compila .mo in-tree
+make compile  # compila o schema
+make clean    # limpa schema compilado e .mo in-tree
 ```
 
-## License
+## Licença
 
-GPL-3.0-or-later. See source headers.
+GPL-3.0-or-later. Veja os headers dos fontes.

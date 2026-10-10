@@ -1,11 +1,11 @@
-// prefs.js — Wallpaper Providers GNOME Shell Extension Preferences
+// SPDX-License-Identifier: GPL-3.0-or-later
+// prefs.js — Wallpaper Providers standalone preferences window (GTK4/libadwaita)
 // 5 pages: Providers, Filters, Downloads, Help Center, Video
 // English default; all user strings wrapped in _() for i18n.
 
-import Adw from 'gi://Adw';
+import Adw from 'gi://Adw?version=1';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk?version=4.0';
-import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import {getDefaultPicturesDir} from './lib/providers/local.js';
 
 import {_} from './lib/i18n.js';
@@ -39,29 +39,32 @@ const PROVIDER_KEY_MAP = {
     wallrus: null,
 };
 
-export default class WallhavenPreferences extends ExtensionPreferences {
-    fillPreferencesWindow(window) {
-        const settings = this.getSettings();
+export function buildPreferencesWindow(settings) {
+    const window = new Adw.PreferencesWindow({
+        title: _('Wallpaper Providers'),
+    });
 
-        // ── Page 1: Providers ──────────────────────────────────────────
-        this._buildProvidersPage(window, settings);
+    // ── Page 1: Providers ──────────────────────────────────────────
+    buildProvidersPage(window, settings);
 
-        // ── Page 2: Filters ────────────────────────────────────────────
-        this._buildFiltersPage(window, settings);
+    // ── Page 2: Filters ────────────────────────────────────────────
+    buildFiltersPage(window, settings);
 
-        // ── Page 3: Downloads ──────────────────────────────────────────
-        this._buildDownloadsPage(window, settings);
+    // ── Page 3: Downloads ──────────────────────────────────────────
+    buildDownloadsPage(window, settings);
 
-        // ── Page 4: Help Center ────────────────────────────────────────
-        this._buildHelpCenterPage(window, settings);
+    // ── Page 4: Help Center ────────────────────────────────────────
+    buildHelpCenterPage(window);
 
-        // ── Page 5: Video ─────────────────────────────────────────────
-        this._buildVideoPage(window, settings);
-    }
+    // ── Page 5: Video ─────────────────────────────────────────────
+    buildVideoPage(window, settings);
 
-    // ── Page 1: Providers ────────────────────────────────────────────────
+    return window;
+}
 
-    _buildProvidersPage(window, settings) {
+// ── Page 1: Providers ────────────────────────────────────────────────
+
+function buildProvidersPage(window, settings) {
         const page = new Adw.PreferencesPage({
             title: _('Providers'),
             iconName: 'network-transmit-receive-symbolic',
@@ -157,7 +160,7 @@ export default class WallhavenPreferences extends ExtensionPreferences {
             showApplyButton: true,
         });
         extraFoldersRow.set_text(settings.get_strv('local-folders').join(':'));
-        extraFoldersRow.set_placeholder_text(_('/home/user/Wallpapers:/mnt/photos'));
+        extraFoldersRow.set_placeholder_text?.(_('/home/user/Wallpapers:/mnt/photos'));
         extraFoldersRow.connect('apply', () => {
             const folders = extraFoldersRow.get_text().split(':')
                 .map(s => s.trim()).filter(Boolean);
@@ -198,7 +201,7 @@ export default class WallhavenPreferences extends ExtensionPreferences {
             showApplyButton: true,
         });
         extraWallrusFoldersRow.set_text(settings.get_strv('wallrus-folders').join(':'));
-        extraWallrusFoldersRow.set_placeholder_text(_('/home/user/Downloads/Wallrus:/home/user/Pictures/Wallrus'));
+        extraWallrusFoldersRow.set_placeholder_text?.(_('/home/user/Downloads/Wallrus:/home/user/Pictures/Wallrus'));
         extraWallrusFoldersRow.connect('apply', () => {
             const folders = extraWallrusFoldersRow.get_text().split(':')
                 .map(s => s.trim()).filter(Boolean);
@@ -225,64 +228,62 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         });
         page.add(statusGroup);
 
-        this._providerStatusRow = new Adw.ActionRow({
-            title: '',
-        });
-        this._providerStatusRow.add_css_class('dim-label');
-        statusGroup.add(this._providerStatusRow);
+    const statusRow = new Adw.ActionRow({
+        title: '',
+    });
+    statusRow.add_css_class('dim-label');
+    statusGroup.add(statusRow);
 
-        this._refreshProviderStatus(settings);
+    refreshProviderStatus(statusRow, settings);
 
-        settings.connect('changed::active-provider', () => {
-            this._refreshProviderStatus(settings);
-        });
-        settings.connect('changed::api-key', () => {
-            this._refreshProviderStatus(settings);
-        });
-        settings.connect('changed::pexels-api-key', () => {
-            this._refreshProviderStatus(settings);
-        });
-        settings.connect('changed::unsplash-api-key', () => {
-            this._refreshProviderStatus(settings);
-        });
-        settings.connect('changed::pixabay-api-key', () => {
-            this._refreshProviderStatus(settings);
-        });
+    settings.connect('changed::active-provider', () => {
+        refreshProviderStatus(statusRow, settings);
+    });
+    settings.connect('changed::api-key', () => {
+        refreshProviderStatus(statusRow, settings);
+    });
+    settings.connect('changed::pexels-api-key', () => {
+        refreshProviderStatus(statusRow, settings);
+    });
+    settings.connect('changed::unsplash-api-key', () => {
+        refreshProviderStatus(statusRow, settings);
+    });
+    settings.connect('changed::pixabay-api-key', () => {
+        refreshProviderStatus(statusRow, settings);
+    });
+}
+
+function refreshProviderStatus(statusRow, settings) {
+    const provider = settings.get_string('active-provider');
+    const keyName = PROVIDER_KEY_MAP[provider];
+
+    if (!keyName) {
+        // No API key needed
+        statusRow.set_title(
+            _('Active provider: ') + PROVIDER_LABELS[provider] + ' — ' + _('Ready')
+        );
+        statusRow.remove_css_class('warning');
+        statusRow.add_css_class('dim-label');
+        return;
     }
 
-    _refreshProviderStatus(settings) {
-        const provider = settings.get_string('active-provider');
-        const keyName = PROVIDER_KEY_MAP[provider];
-
-        if (!keyName) {
-            // Safebooru — no key needed
-            this._providerStatusRow.set_title(
-                _('Active provider: ') + PROVIDER_LABELS[provider] + ' — ' + _('Ready')
-            );
-            this._providerStatusRow.remove_css_class('warning');
-            this._providerStatusRow.add_css_class('dim-label');
-            return;
-        }
-
-        const key = settings.get_string(keyName);
-        if (key && key.length > 0) {
-            this._providerStatusRow.set_title(
-                _('Active provider: ') + PROVIDER_LABELS[provider] + ' — ' + _('Ready')
-            );
-            this._providerStatusRow.remove_css_class('warning');
-            this._providerStatusRow.add_css_class('dim-label');
-        } else {
-            this._providerStatusRow.set_title(
-                _('Active provider: ') + PROVIDER_LABELS[provider] + ' — ' + _('API key required')
-            );
-            this._providerStatusRow.remove_css_class('dim-label');
-            this._providerStatusRow.add_css_class('warning');
-        }
+    const key = settings.get_string(keyName);
+    if (key && key.length > 0) {
+        statusRow.set_title(
+            _('Active provider: ') + PROVIDER_LABELS[provider] + ' — ' + _('Ready')
+        );
+        statusRow.remove_css_class('warning');
+        statusRow.add_css_class('dim-label');
+    } else {
+        statusRow.set_title(
+            _('Active provider: ') + PROVIDER_LABELS[provider] + ' — ' + _('API key required')
+        );
+        statusRow.remove_css_class('dim-label');
+        statusRow.add_css_class('warning');
     }
+}
 
-    // ── Page 2: Filters ───────────────────────────────────────────────────
-
-    _buildFiltersPage(window, settings) {
+function buildFiltersPage(window, settings) {
         const page = new Adw.PreferencesPage({
             title: _('Filters'),
             iconName: 'system-search-symbolic',
@@ -298,7 +299,7 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         const searchQueryRow = new Adw.EntryRow({
             title: _('Search Query'),
         });
-        searchQueryRow.set_placeholder_text(_('Leave empty for recent wallpapers'));
+        searchQueryRow.set_placeholder_text?.(_('Leave empty for recent wallpapers'));
         settings.bind('search-query', searchQueryRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         searchGroup.add(searchQueryRow);
 
@@ -311,14 +312,14 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         const categoriesRow = new Adw.EntryRow({
             title: _('Categories'),
         });
-        categoriesRow.set_placeholder_text(_('111 (general, anime, people)'));
+        categoriesRow.set_placeholder_text?.(_('111 (general, anime, people)'));
         settings.bind('categories', categoriesRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         filterGroup.add(categoriesRow);
 
         const purityRow = new Adw.EntryRow({
             title: _('Purity'),
         });
-        purityRow.set_placeholder_text(_('100 (sfw, sketchy, nsfw)'));
+        purityRow.set_placeholder_text?.(_('100 (sfw, sketchy, nsfw)'));
         settings.bind('purity', purityRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         filterGroup.add(purityRow);
 
@@ -356,28 +357,28 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         const atleastRow = new Adw.EntryRow({
             title: _('At Least (minimum resolution)'),
         });
-        atleastRow.set_placeholder_text('1920x1080');
+        atleastRow.set_placeholder_text?.('1920x1080');
         settings.bind('atleast', atleastRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         filterGroup.add(atleastRow);
 
         const resolutionsRow = new Adw.EntryRow({
             title: _('Resolutions'),
         });
-        resolutionsRow.set_placeholder_text('1920x1080,2560x1440');
+        resolutionsRow.set_placeholder_text?.('1920x1080,2560x1440');
         settings.bind('resolutions', resolutionsRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         filterGroup.add(resolutionsRow);
 
         const ratiosRow = new Adw.EntryRow({
             title: _('Aspect Ratios'),
         });
-        ratiosRow.set_placeholder_text('16x9,16x10,21x9');
+        ratiosRow.set_placeholder_text?.('16x9,16x10,21x9');
         settings.bind('ratios', ratiosRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         filterGroup.add(ratiosRow);
 
         const colorsRow = new Adw.EntryRow({
             title: _('Colors'),
         });
-        colorsRow.set_placeholder_text('660000');
+        colorsRow.set_placeholder_text?.('660000');
         settings.bind('colors', colorsRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         filterGroup.add(colorsRow);
 
@@ -392,7 +393,7 @@ export default class WallhavenPreferences extends ExtensionPreferences {
 
     // ── Page 3: Downloads ─────────────────────────────────────────────────
 
-    _buildDownloadsPage(window, settings) {
+function buildDownloadsPage(window, settings) {
         const page = new Adw.PreferencesPage({
             title: _('Downloads'),
             iconName: 'folder-download-symbolic',
@@ -407,7 +408,7 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         const downloadFolderRow = new Adw.EntryRow({
             title: _('Download Folder'),
         });
-        downloadFolderRow.set_placeholder_text('~/Pictures/Wallpapers');
+        downloadFolderRow.set_placeholder_text?.('~/Pictures/Wallpapers');
         settings.bind('download-folder', downloadFolderRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         downloadGroup.add(downloadFolderRow);
 
@@ -436,15 +437,9 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         downloadGroup.add(pageSizeRow);
     }
 
-    // ── Page 4: Help Center ───────────────────────────────────────────────
-
-    _buildHelpCenterPage(window, _settings) {
-        buildHelpCenterPage(window);
-    }
-
     // ── Page 5: Video ─────────────────────────────────────────────────────
 
-    _buildVideoPage(window, settings) {
+function buildVideoPage(window, settings) {
         const page = new Adw.PreferencesPage({
             title: _('Video'),
             iconName: 'video-x-generic-symbolic',
@@ -477,35 +472,35 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         const videoFolderRow = new Adw.EntryRow({
             title: _('Video Folder'),
         });
-        videoFolderRow.set_placeholder_text('/home/user/Videos');
+        videoFolderRow.set_placeholder_text?.('/home/user/Videos');
         settings.bind('video-folder', videoFolderRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         sourceGroup.add(videoFolderRow);
 
         const videoPathRow = new Adw.EntryRow({
             title: _('Video Path'),
         });
-        videoPathRow.set_placeholder_text('/home/user/Videos/wallpaper.mp4');
+        videoPathRow.set_placeholder_text?.('/home/user/Videos/wallpaper.mp4');
         settings.bind('video-path', videoPathRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         sourceGroup.add(videoPathRow);
 
         const streamingUrlRow = new Adw.EntryRow({
             title: _('Streaming URL'),
         });
-        streamingUrlRow.set_placeholder_text('https://www.youtube.com/watch?v=...');
+        streamingUrlRow.set_placeholder_text?.('https://www.youtube.com/watch?v=...');
         settings.bind('video-streaming-url', streamingUrlRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         sourceGroup.add(streamingUrlRow);
 
         const webpageUrlRow = new Adw.EntryRow({
             title: _('Webpage URL'),
         });
-        webpageUrlRow.set_placeholder_text('https://example.com');
+        webpageUrlRow.set_placeholder_text?.('https://example.com');
         settings.bind('video-webpage-url', webpageUrlRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         sourceGroup.add(webpageUrlRow);
 
         const localHtmlRow = new Adw.EntryRow({
             title: _('Local HTML File'),
         });
-        localHtmlRow.set_placeholder_text('/home/user/page.html');
+        localHtmlRow.set_placeholder_text?.('/home/user/page.html');
         settings.bind('video-webpage-local-html', localHtmlRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         sourceGroup.add(localHtmlRow);
 
@@ -581,7 +576,7 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         const monitorPathsRow = new Adw.EntryRow({
             title: _('Per-Monitor Video Paths'),
         });
-        monitorPathsRow.set_placeholder_text('HDMI-1=/path/a.mp4:eDP-1=/path/b.mp4');
+        monitorPathsRow.set_placeholder_text?.('HDMI-1=/path/a.mp4:eDP-1=/path/b.mp4');
         const monitorPaths = settings.get_strv('video-monitor-paths');
         monitorPathsRow.set_text(monitorPaths.join(':'));
         monitorPathsRow.connect('apply', () => {
@@ -658,6 +653,12 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         settings.bind('pause-on-mpris-playing', pauseMprisRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         autoPauseGroup.add(pauseMprisRow);
 
+        const waylandPauseNote = new Adw.ActionRow({
+            title: _('Auto-pause is unavailable on GNOME Wayland'),
+        });
+        waylandPauseNote.add_css_class('dim-label');
+        autoPauseGroup.add(waylandPauseNote);
+
         // ── Auto-Change ─────────────────────────────────────────────
         const autoChangeGroup = new Adw.PreferencesGroup({
             title: _('Auto-Change'),
@@ -675,7 +676,7 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         const changeDirRow = new Adw.EntryRow({
             title: _('Auto-Change Directory'),
         });
-        changeDirRow.set_placeholder_text('/home/user/Videos/Wallpapers');
+        changeDirRow.set_placeholder_text?.('/home/user/Videos/Wallpapers');
         settings.bind('change-wallpaper-directory-path', changeDirRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         autoChangeGroup.add(changeDirRow);
 
@@ -811,4 +812,3 @@ export default class WallhavenPreferences extends ExtensionPreferences {
         settings.bind('force-mediafile', forceMediafileRow, 'active', Gio.SettingsBindFlags.DEFAULT);
         advancedGroup.add(forceMediafileRow);
     }
-}

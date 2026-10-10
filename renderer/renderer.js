@@ -1,16 +1,20 @@
 #!/usr/bin/env gjs
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Video wallpaper renderer — standalone GJS+GTK4 subprocess.
-// Displays video/webpage wallpapers in fullscreen windows (one per monitor).
-// A GStreamer crash in this process never takes down the GNOME Shell.
+// Video wallpaper renderer — standalone GJS + GTK3 subprocess, one window per
+// monitor. A GStreamer crash in this process never takes down GNOME Shell.
+//
+// Window mechanism mirrors Hidamari: every monitor gets a Gtk.ApplicationWindow
+// moved/sized to its GdkMonitor geometry and marked as a desktop-layer window
+// through the toolkit before it is shown; no external window-type utility.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GI version requirements
 // ═══════════════════════════════════════════════════════════════════════════
-imports.gi.versions.Gtk = '4.0';
-imports.gi.versions.Gdk = '4.0';
+imports.gi.versions.Gtk = '3.0';
+imports.gi.versions.Gdk = '3.0';
+imports.gi.versions.GdkX11 = '3.0';
 
-const {GObject, Gtk, Gio, GLib, Gdk, Gst} = imports.gi;
+const {GObject, Gtk, Gio, GLib, Gdk, Gst, GdkX11} = imports.gi;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Constants — mirrored from lib/video/constants.js
@@ -19,56 +23,11 @@ const APPLICATION_ID = 'org.redclaw.WallpaperProvidersRenderer';
 const RENDERER_OBJECT_PATH = '/org/redclaw/WallpaperProvidersRenderer';
 const EXT_SCHEMA_ID = 'br.com.redclaw.WallpaperProviders';
 const LOG_PREFIX = '[wp-video]';
-const TITLE_ANCHOR = `@${APPLICATION_ID}!`;
+const IMPL_NAME = 'playbin + xvimagesink';
 
 const VIDEO_EXTENSIONS = [
     '.mp4', '.webm', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.m4v', '.ogv',
 ];
-
-// ═══════════════════════════════════════════════════════════════════════════
-// Feature detection
-// ═══════════════════════════════════════════════════════════════════════════
-const gstVersion = Gst.version();
-const gtkVersion = [
-    Gtk.get_major_version(),
-    Gtk.get_minor_version(),
-    Gtk.get_micro_version(),
-];
-
-const isGstVersionAtLeast = (major, minor) =>
-    gstVersion[0] > major ||
-    (gstVersion[0] === major && gstVersion[1] >= minor);
-
-const isGtkVersionAtLeast = (major, minor) =>
-    gtkVersion[0] > major ||
-    (gtkVersion[0] === major && gtkVersion[1] >= minor);
-
-let GstPlay = null;
-try {
-    GstPlay = imports.gi.GstPlay;
-} catch (e) {
-    console.warn(`${LOG_PREFIX} GstPlay typelib not found — will fallback to GtkMediaFile`);
-}
-const haveGstPlay = GstPlay !== null;
-
-let GstAudio = null;
-try {
-    GstAudio = imports.gi.GstAudio;
-} catch (e) {
-    console.warn(`${LOG_PREFIX} GstAudio typelib not found — cubic→linear fallback active`);
-}
-const haveGstAudio = GstAudio !== null;
-
-let WebKit = null;
-try {
-    WebKit = imports.gi.WebKit6;
-} catch (e) {
-    console.warn(`${LOG_PREFIX} WebKit6 typelib not found — webpage mode unavailable`);
-}
-const haveWebKit = WebKit !== null;
-
-const haveContentFit = isGtkVersionAtLeast(4, 8);
-const useGstGL = isGstVersionAtLeast(1, 24);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Module-level state (populated after arg parsing + settings load)
@@ -121,24 +80,11 @@ function toUri(path) {
 }
 
 /**
- * Map a video-fit-mode string to a Gtk.ContentFit enum value.
- * Returns 0 (CONTAIN) when ContentFit is unavailable (GTK < 4.8).
+ * Resolve a GdkWindow to its X11 window id. GTK3 only exposes the XID through
+ * the X11 backend (GDK_BACKEND=x11), which the launcher guarantees.
  */
-function mapContentFit(mode) {
-    if (!haveContentFit)
-        return 0;
-    switch (mode) {
-    case 'fill':
-        return Gtk.ContentFit.FILL;
-    case 'contain':
-        return Gtk.ContentFit.CONTAIN;
-    case 'cover':
-        return Gtk.ContentFit.COVER;
-    case 'scale-down':
-        return Gtk.ContentFit.SCALE_DOWN;
-    default:
-        return Gtk.ContentFit.CONTAIN;
-    }
+function getXid(gdkWindow) {
+    return GdkX11.X11Window.prototype.get_xid.call(gdkWindow);
 }
 
 /**
@@ -196,9 +142,195 @@ function scanVideoDir(dirPath) {
     return paths.sort();
 }
 
-// Do NOT set _NET_WM_WINDOW_TYPE_DESKTOP on these windows: fullscreen +
-// DESKTOP type on XWayland crashes Mutter with SIGFPE. Plain fullscreen
-// matches the original extension behavior and is crash-free.
+// ═══════════════════════════════════════════════════════════════════════════
+// RendererWindow — one GStreamer pipeline per monitor, embedded by XID
+// ═══════════════════════════════════════════════════════════════════════════
+const RendererWindow = GObject.registerClass(
+    {
+        GTypeName: 'WpRendererWindow',
+    },
+    class RendererWindow extends Gtk.ApplicationWindow {
+        constructor(app, gdkMonitor, index, isPrimary, path) {
+            super({application: app});
+
+            this._app = app;
+            this._index = index;
+            this._isPrimary = isPrimary;
+            this._path = path;
+            this._uri = '';
+            this._playbin = null;
+            this._sink = null;
+            this._randomStartPending = false;
+
+            const geometry = gdkMonitor.get_geometry();
+
+            this._area = new Gtk.DrawingArea();
+            this._area.set_hexpand(true);
+            this._area.set_vexpand(true);
+            this.add(this._area);
+            this._area.show();
+
+            this.set_title(`Wallpaper ${index}`);
+
+            if (nohide) {
+                this.set_decorated(true);
+                this.set_skip_taskbar_hint(false);
+                this.set_default_size(geometry.width, geometry.height);
+            } else {
+                // DESKTOP must be set before the window is shown.
+                this.set_type_hint(Gdk.WindowTypeHint.DESKTOP);
+                this.set_decorated(false);
+                this.set_skip_taskbar_hint(true);
+                this.set_skip_pager_hint(true);
+                this.set_keep_below(true);
+                this.stick();
+                this.set_size_request(geometry.width, geometry.height);
+                this.move(geometry.x, geometry.y);
+            }
+
+            this._buildPipeline();
+        }
+
+        _buildPipeline() {
+            const sink = Gst.ElementFactory.make(
+                'xvimagesink', `wp-xv-${this._index}`
+            );
+            if (!sink)
+                throw new Error('xvimagesink plugin missing');
+
+            // "contain" only: xvimagesink has no cover/fill modes, so
+            // video-fit-mode values other than contain are not honored.
+            sink.set_property('force-aspect-ratio', true);
+            sink.set_property('handle-events', false);
+
+            const playbin = Gst.ElementFactory.make(
+                'playbin', `wp-playbin-${this._index}`
+            );
+            if (!playbin)
+                throw new Error('playbin element missing');
+            playbin.set_property('video-sink', sink);
+
+            this._sink = sink;
+            this._playbin = playbin;
+
+            // Audio only on the primary monitor.
+            playbin.set_property('mute', !this._isPrimary);
+            playbin.set_property(
+                'volume', this._isPrimary ? this._volumeLinear() : 0
+            );
+
+            this._area.connect('realize', () => this._embedSink());
+
+            const bus = playbin.get_bus();
+            bus.add_signal_watch();
+
+            // xvimagesink requests a window handle before the first frame;
+            // embed the DrawingArea XID here (runs on the streaming thread).
+            bus.connect('sync-message::element', (_bus, msg) => {
+                const structure = msg.get_structure();
+                if (structure && structure.get_name() === 'prepare-window-handle') {
+                    this._embedSink();
+                    return true;
+                }
+                return false;
+            });
+
+            bus.connect('message::error', (_bus, msg) => {
+                const [err] = msg.parse_error();
+                console.error(
+                    `${LOG_PREFIX} playback error [monitor ${this._index}]: ${err.message}`
+                );
+            });
+            bus.connect('message::warning', (_bus, msg) => {
+                const [err] = msg.parse_warning();
+                console.warn(
+                    `${LOG_PREFIX} playback warning [monitor ${this._index}]: ${err.message}`
+                );
+            });
+            bus.connect('message::state-changed', (_bus, msg) => {
+                const [_old, current] = msg.parse_state_changed();
+                if (current >= Gst.State.PAUSED)
+                    this._maybeRandomStart();
+                if (this._isPrimary)
+                    this._app._onPrimaryStateChanged(current);
+            });
+
+            // Loop the media by re-setting the URI when it is about to finish.
+            playbin.connect('about-to-finish', () => {
+                if (this._uri)
+                    playbin.set_property('uri', this._uri);
+            });
+            bus.connect('message::eos', () => {
+                playbin.seek_simple(Gst.Format.TIME, Gst.SeekFlags.FLUSH, 0);
+            });
+        }
+
+        _embedSink() {
+            if (!this._sink)
+                return;
+            const gdkWindow = this._area.get_window();
+            if (!gdkWindow)
+                return;
+            try {
+                this._sink.set_window_handle(getXid(gdkWindow));
+            } catch (e) {
+                console.warn(
+                    `${LOG_PREFIX} XID embed failed [monitor ${this._index}]: ${e.message}`
+                );
+            }
+        }
+
+        _volumeLinear() {
+            const v = videoMute ? 0 : videoVolume / 100;
+            return Math.max(0, Math.min(1, v));
+        }
+
+        _maybeRandomStart() {
+            if (!videoRandomStart || !this._randomStartPending)
+                return;
+            const [ok, duration] = this._playbin.query_duration(Gst.Format.TIME);
+            if (!ok || duration <= 0)
+                return;
+            const second = Gst.SECOND || 1000000000;
+            const maxPos = Math.max(duration - second, 0);
+            const position = Math.floor(Math.random() * (maxPos + 1));
+            this._playbin.seek_simple(
+                Gst.Format.TIME, Gst.SeekFlags.FLUSH, position
+            );
+            this._randomStartPending = false;
+        }
+
+        start() {
+            this.setUri(this._path);
+            this._playbin.set_state(Gst.State.PLAYING);
+        }
+
+        setUri(path) {
+            const uri = toUri(path);
+            if (!uri || uri === this._uri)
+                return;
+            this._uri = uri;
+            this._playbin.set_property('uri', uri);
+            this._randomStartPending = true;
+        }
+
+        play() {
+            this._playbin.set_state(Gst.State.PLAYING);
+        }
+
+        pause() {
+            this._playbin.set_state(Gst.State.PAUSED);
+        }
+
+        setVolume(linear) {
+            this._playbin.set_property('volume', linear);
+        }
+
+        getVolume() {
+            return this._playbin.get_property('volume');
+        }
+    }
+);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Renderer — Gtk.Application subclass
@@ -215,44 +347,46 @@ const Renderer = GObject.registerClass(
                     Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
             });
 
-            // Window / widget bookkeeping
             this._windows = [];
-            this._pictures = [];
-            this._webViews = [];
-            this._sharedPaintable = null;
-            this._gstImplName = '';
-
-            // Playback state
-            this._play = null;    // GstPlay.Play instance
-            this._media = null;   // Gtk.MediaFile instance
-            this._isPlaying = false;
-            this._randomStartPending = false;
-
-            // D-Bus exported object
+            this._monitors = [];
             this._dbus = null;
+            this._isPlaying = false;
 
-            // ── Application signals ──────────────────────────────────
-            this.connect('activate', app => {
-                if (app.activeWindow)
+            this.connect('activate', () => {
+                if (this._windows.length > 0)
                     return;
 
-                this._display = Gdk.Display.get_default();
-                this._monitors = this._display
-                    ? [...this._display.get_monitors()]
-                    : [];
+                const display = Gdk.Display.get_default();
+                if (!display) {
+                    console.error(`${LOG_PREFIX} No display available`);
+                    return;
+                }
+
+                const count = display.get_n_monitors();
+                for (let i = 0; i < count; i++)
+                    this._monitors.push(display.get_monitor(i));
+                if (this._monitors.length === 0) {
+                    const primary = display.get_primary_monitor();
+                    if (primary)
+                        this._monitors.push(primary);
+                }
 
                 this._buildUI();
-                this._windows.forEach(w => w.present());
+                this._windows.forEach(w => {
+                    w.show_all();
+                    w.present();
+                });
+                this._windows.forEach(w => w.start());
             });
 
             this.connect('command-line', (app, commandLine) => {
                 const argv = commandLine.get_arguments().slice(1);
                 if (this._parseAndInit(argv)) {
                     this.activate();
-                    commandLine.set_exit_status(0);
-                } else {
-                    commandLine.set_exit_status(2);
+                    return 0;
                 }
+                commandLine.set_exit_status(2);
+                return 2;
             });
         }
 
@@ -270,7 +404,6 @@ const Renderer = GObject.registerClass(
         }
 
         _parseAndInit(argv) {
-            // ── Parse arguments ──
             let lastArg = null;
             for (const arg of argv) {
                 if (lastArg === '-P') {
@@ -299,20 +432,12 @@ const Renderer = GObject.registerClass(
                 return false;
             }
 
-            // ── Load GSettings schema from extension path ──
             if (!this._loadSettings())
                 return false;
 
-            // ── Read initial values from settings ──
             this._readSettings();
-
-            // ── Export D-Bus interface ──
             this._exportDbus();
-
-            // ── Connect settings change handlers ──
             this._connectSettings();
-
-            // ── Setup auto-change wallpaper timer ──
             this._setupAutoWallpaper();
 
             return true;
@@ -355,8 +480,11 @@ const Renderer = GObject.registerClass(
             if (!extSettings)
                 return;
 
+            // CLI -F wins; fall back to the settings key.
+            if (!videoPath || videoPath.length === 0)
+                videoPath = extSettings.get_string('video-path');
+
             videoModeType = extSettings.get_string('video-mode-type');
-            videoPath = extSettings.get_string('video-path');
             videoFolder = extSettings.get_string('video-folder');
             videoWebpageUrl = extSettings.get_string('video-webpage-url');
             videoWebpageLocalHtml = extSettings.get_string('video-webpage-local-html');
@@ -374,10 +502,6 @@ const Renderer = GObject.registerClass(
             changeWallpaperDir = extSettings.get_string('change-wallpaper-directory-path');
             changeWallpaperInterval = extSettings.get_int('change-wallpaper-interval');
             changeWallpaperMode = extSettings.get_int('change-wallpaper-mode');
-
-            // If no file given on CLI, use the setting
-            if (!videoPath || videoPath.length === 0)
-                videoPath = extSettings.get_string('video-path');
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -407,7 +531,11 @@ const Renderer = GObject.registerClass(
 
                 case 'video-fit-mode':
                     videoFitMode = settings.get_string(key);
-                    this._updateContentFit();
+                    if (videoFitMode !== 'contain') {
+                        console.warn(
+                            `${LOG_PREFIX} fit-mode "${videoFitMode}" unsupported by xvimagesink; using contain`
+                        );
+                    }
                     break;
 
                 case 'video-random-start':
@@ -420,14 +548,16 @@ const Renderer = GObject.registerClass(
 
                 case 'video-webpage-url':
                     videoWebpageUrl = settings.get_string(key);
-                    if (videoModeType === 'webpage')
-                        this._reloadWebViews();
+                    console.warn(
+                        `${LOG_PREFIX} Webpage output is not supported by this renderer`
+                    );
                     break;
 
                 case 'video-webpage-local-html':
                     videoWebpageLocalHtml = settings.get_string(key);
-                    if (videoModeType === 'webpage')
-                        this._reloadWebViews();
+                    console.warn(
+                        `${LOG_PREFIX} Webpage output is not supported by this renderer`
+                    );
                     break;
 
                 case 'video-mode-type':
@@ -558,63 +688,41 @@ const Renderer = GObject.registerClass(
         // ─────────────────────────────────────────────────────────────
 
         _buildUI() {
-            // Setup GStreamer HW decode ranks
             this._setupGst();
-
-            // Load CSS
             this._loadCss();
 
-            // Resolve per-monitor path assignments.
-            // Since we use a single shared pipeline, if paths differ
-            // we warn and play the FIRST entry for all monitors.
-            let effectiveVideoPath = videoPath;
-            if (videoMonitorPaths.length > 0) {
-                const monitorPathMap = parseMonitorPaths(videoMonitorPaths);
-                const paths = Object.values(monitorPathMap);
-                const unique = [...new Set(paths)];
-
-                if (unique.length > 1) {
-                    console.warn(
-                        `${LOG_PREFIX} Per-monitor paths differ; using first entry for all monitors`
-                    );
-                    effectiveVideoPath = unique[0];
-                } else if (unique.length === 1) {
-                    effectiveVideoPath = unique[0];
-                }
+            if (videoModeType === 'webpage') {
+                console.warn(
+                    `${LOG_PREFIX} Webpage output is not supported by this renderer; showing blank wallpaper`
+                );
             }
 
-            this._monitors.forEach((gdkMonitor, index) => {
-                let widget = null;
+            const monitorMap = parseMonitorPaths(videoMonitorPaths);
+            let primaryIndex = this._monitors.findIndex(m => m.is_primary());
+            if (primaryIndex < 0)
+                primaryIndex = 0;
 
-                if (videoModeType === 'webpage') {
-                    widget = this._createWebpageWidget();
-                } else {
-                    widget = this._createVideoWidget(
-                        effectiveVideoPath, index === 0
+            this._monitors.forEach((gdkMonitor, index) => {
+                const path = this._resolveMonitorPath(gdkMonitor, monitorMap);
+                try {
+                    this._windows.push(new RendererWindow(
+                        this, gdkMonitor, index, index === primaryIndex, path
+                    ));
+                } catch (e) {
+                    console.error(
+                        `${LOG_PREFIX} Window setup failed [monitor ${index}]: ${e.message}`
                     );
                 }
-
-                if (!widget)
-                    widget = this._createBlackWidget();
-
-                const geometry = gdkMonitor.get_geometry();
-                const state = {
-                    position: [geometry.x, geometry.y],
-                    keepAtBottom: true,
-                    keepMinimized: true,
-                    keepPosition: true,
-                };
-                const title = nohide
-                    ? `WP Renderer #${index} (using ${this._gstImplName})`
-                    : `${TITLE_ANCHOR}${JSON.stringify(state)}|${index}`;
-
-                const window = new RendererWindow(
-                    this, title, widget, gdkMonitor
-                );
-                this._windows.push(window);
             });
 
-            console.log(`${LOG_PREFIX} Using ${this._gstImplName} for video output`);
+            console.log(`${LOG_PREFIX} Using ${IMPL_NAME} for video output`);
+        }
+
+        _resolveMonitorPath(gdkMonitor, monitorMap) {
+            const model = gdkMonitor.get_model ? gdkMonitor.get_model() : '';
+            if (model && monitorMap[model])
+                return monitorMap[model];
+            return videoPath;
         }
 
         _loadCss() {
@@ -635,464 +743,62 @@ const Renderer = GObject.registerClass(
         }
 
         // ─────────────────────────────────────────────────────────────
-        // Video widget creation (GstPlay or MediaFile fallback)
-        // ─────────────────────────────────────────────────────────────
-
-        _createVideoWidget(filePath, isPrimary) {
-            if (!filePath || filePath.length === 0) {
-                console.warn(`${LOG_PREFIX} No video path — showing black`);
-                return this._createBlackWidget();
-            }
-
-            // Force MediaFile backend?
-            if (forceMediaFile) {
-                return this._setupMediaFile(filePath);
-            }
-
-            // Try GstPlay path
-            if (haveGstPlay) {
-                try {
-                    return this._setupGstPlay(filePath, isPrimary);
-                } catch (e) {
-                    console.warn(
-                        `${LOG_PREFIX} GstPlay setup failed: ${e.message} — falling back`
-                    );
-                }
-            }
-
-            // Fallback: Gtk.MediaFile
-            try {
-                return this._setupMediaFile(filePath);
-            } catch (e) {
-                console.error(
-                    `${LOG_PREFIX} MediaFile setup failed: ${e.message}`
-                );
-                return this._createBlackWidget();
-            }
-        }
-
-        /**
-         * Setup a GstPlay pipeline with the best available sink.
-         * Returns a GTK widget for embedding in the window.
-         */
-        _setupGstPlay(filePath, isPrimary) {
-            // Sink selection
-            let sink = null;
-
-            if (preferClappersink) {
-                try {
-                    sink = Gst.ElementFactory.make('clappersink', 'clappersink');
-                } catch (e) {
-                    console.warn(`${LOG_PREFIX} clappersink not available`);
-                }
-            }
-
-            if (!sink) {
-                try {
-                    sink = Gst.ElementFactory.make(
-                        'gtk4paintablesink', 'gtk4paintablesink'
-                    );
-                } catch (e) {
-                    console.warn(`${LOG_PREFIX} gtk4paintablesink not available`);
-                }
-            }
-
-            if (!sink)
-                throw new Error('No GStreamer sink available');
-
-            this._gstImplName = sink.name;
-
-            // Wrap in glsinkbin for GPU-accelerated rendering (Gst >= 1.24)
-            if (useGstGL) {
-                try {
-                    const glsink = Gst.ElementFactory.make('glsinkbin', 'glsinkbin');
-                    if (glsink) {
-                        this._gstImplName = `glsinkbin + ${this._gstImplName}`;
-                        glsink.set_property('sink', sink);
-                        sink = glsink;
-                    }
-                } catch (e) {
-                    console.warn(`${LOG_PREFIX} glsinkbin not available`);
-                }
-            }
-
-            // Create GstPlay instance
-            this._play = GstPlay.Play.new(
-                GstPlay.PlayVideoOverlayVideoRenderer.new_with_sink(null, sink)
-            );
-            this._adapter = GstPlay.PlaySignalAdapter.new(this._play);
-
-            // Loop: seek to start on end-of-stream
-            this._adapter.connect('end-of-stream', adapter =>
-                adapter.play.seek(0)
-            );
-
-            // Error handling
-            this._adapter.connect('warning', (_adapter, err) =>
-                console.warn(`${LOG_PREFIX} GstPlay warning: ${err.message}`)
-            );
-            this._adapter.connect('error', (_adapter, err) =>
-                console.error(`${LOG_PREFIX} GstPlay error: ${err.message}`)
-            );
-
-            // Apply volume/mute after reaching PAUSED or later
-            let volumeApplied = false;
-            this._adapter.connect('state-changed', (_adapter, state) => {
-                if (!volumeApplied && state >= GstPlay.PlayState.PAUSED) {
-                    this._applyVolume(
-                        videoMute ? 0 : videoVolume / 100.0
-                    );
-                    volumeApplied = true;
-                }
-            });
-
-            // Monitor playing state for D-Bus property + auto-change
-            this._adapter.connect('state-changed', (_adapter, state) => {
-                const playing = state === GstPlay.PlayState.PLAYING;
-                if (playing !== this._isPlaying) {
-                    this._isPlaying = playing;
-                    this._emitIsPlayingChanged();
-                }
-            });
-
-            // Random start after first PAUSED
-            this._adapter.connect('state-changed', (_adapter, state) => {
-                if (state >= GstPlay.PlayState.PAUSED)
-                    this._maybeSeekRandomGst();
-            });
-
-            // Wire shared paintable from the sink
-            let widget = this._getWidgetFromSink(sink);
-
-            // Set URI and start
-            this._play.set_uri(toUri(filePath));
-            this._markRandomStartPending();
-            this.setPlay();
-            this._setupAutoWallpaper();
-
-            return widget;
-        }
-
-        /**
-         * Fallback: use Gtk.MediaFile for video playback.
-         */
-        _setupMediaFile(filePath) {
-            this._gstImplName = 'GtkMediaFile';
-
-            // Gtk.MediaFile.new_for_filename / new_for_uri
-            if (filePath.includes('://'))
-                this._media = Gtk.MediaFile.new_for_uri(filePath);
-            else
-                this._media = Gtk.MediaFile.new_for_filename(filePath);
-
-            this._media.set({loop: true});
-
-            // Apply volume/mute after prepared
-            this._media.connect('notify::prepared', () => {
-                this._applyVolume(videoMute ? 0 : videoVolume / 100.0);
-                this._maybeSeekRandomMedia();
-            });
-
-            // Monitor playing state
-            this._media.connect('notify::playing', media => {
-                const playing = media.get_playing();
-                if (playing !== this._isPlaying) {
-                    this._isPlaying = playing;
-                    this._emitIsPlayingChanged();
-                }
-            });
-
-            this._sharedPaintable = this._media;
-            const widget = this._getWidgetFromSharedPaintable();
-
-            this._markRandomStartPending();
-            this.setPlay();
-            this._setupAutoWallpaper();
-
-            return widget;
-        }
-
-        /**
-         * Build a GTK widget from a GStreamer sink's paintable.
-         */
-        _getWidgetFromSink(sink) {
-            let widget = null;
-
-            if (sink.widget) {
-                if (sink.widget instanceof Gtk.Picture) {
-                    // Workaround for clappersink: use a Box to host the
-                    // sink's internal Gtk.Picture alongside our own.
-                    this._sharedPaintable = sink.widget.paintable;
-                    const box = new Gtk.Box();
-                    box.append(sink.widget);
-                    box.append(this._getWidgetFromSharedPaintable());
-                    sink.widget.hide();
-                    widget = box;
-                } else {
-                    widget = sink.widget;
-                }
-            } else if (sink.paintable) {
-                this._sharedPaintable = sink.paintable;
-                widget = this._getWidgetFromSharedPaintable();
-            }
-
-            return widget;
-        }
-
-        /**
-         * Create a Gtk.Picture from the shared paintable.
-         */
-        _getWidgetFromSharedPaintable() {
-            if (!this._sharedPaintable)
-                return null;
-
-            const picture = new Gtk.Picture({
-                paintable: this._sharedPaintable,
-                hexpand: true,
-                vexpand: true,
-            });
-
-            if (haveContentFit)
-                picture.set_content_fit(mapContentFit(videoFitMode));
-
-            this._pictures.push(picture);
-            return picture;
-        }
-
-        // ─────────────────────────────────────────────────────────────
-        // Webpage widget (WebKit6)
-        // ─────────────────────────────────────────────────────────────
-
-        _createWebpageWidget() {
-            if (!haveWebKit) {
-                console.error(
-                    `${LOG_PREFIX} WebKit6 not available — rendering black`
-                );
-                return this._createBlackWidget();
-            }
-
-            const url = this._getWebpageUrl();
-            if (!url) {
-                return this._createNoWebpageLabel();
-            }
-
-            try {
-                const webView = new WebKit.WebView();
-                webView.set_background_color(
-                    new Gdk.RGBA({red: 0, green: 0, blue: 0, alpha: 1})
-                );
-                webView.load_uri(url);
-
-                // Auto-reload on crash
-                webView.connect('web-process-terminated', () => {
-                    console.warn(
-                        `${LOG_PREFIX} Web process terminated — reloading in 1s`
-                    );
-                    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-                        webView.load_uri(this._getWebpageUrl() || '');
-                        return GLib.SOURCE_REMOVE;
-                    });
-                });
-
-                this._webViews.push(webView);
-                return webView;
-            } catch (e) {
-                console.error(
-                    `${LOG_PREFIX} WebView creation failed: ${e.message}`
-                );
-                return this._createBlackWidget();
-            }
-        }
-
-        _getWebpageUrl() {
-            if (videoWebpageUrl && videoWebpageUrl.length > 0)
-                return videoWebpageUrl;
-            if (videoWebpageLocalHtml && videoWebpageLocalHtml.length > 0) {
-                if (videoWebpageLocalHtml.includes('://'))
-                    return videoWebpageLocalHtml;
-                return `file://${videoWebpageLocalHtml}`;
-            }
-            return '';
-        }
-
-        _createNoWebpageLabel() {
-            const label = new Gtk.Label({
-                label:
-                    '<span foreground="white">No webpage configured</span>',
-                use_markup: true,
-                hexpand: true,
-                vexpand: true,
-            });
-            return label;
-        }
-
-        _reloadWebViews() {
-            const url = this._getWebpageUrl();
-            for (const webView of this._webViews) {
-                try {
-                    if (url)
-                        webView.load_uri(url);
-                    else
-                        webView.load_html(
-                            '<html><body style="background:black;' +
-                            'color:white;display:flex;align-items:center;' +
-                            'justify-content:center;height:100vh;margin:0">' +
-                            '<h2>No webpage configured</h2></body></html>',
-                            ''
-                        );
-                } catch (e) {
-                    console.warn(
-                        `${LOG_PREFIX} WebView reload failed: ${e.message}`
-                    );
-                }
-            }
-        }
-
-        // ─────────────────────────────────────────────────────────────
-        // Black fallback widget
-        // ─────────────────────────────────────────────────────────────
-
-        _createBlackWidget() {
-            // A simple Gtk.DrawingArea that paints black
-            const area = new Gtk.DrawingArea({
-                hexpand: true,
-                vexpand: true,
-            });
-            area.set_draw_func((_cr, width, height) => {
-                // The window CSS already makes the background black,
-                // so a no-op draw is sufficient.
-            });
-            return area;
-        }
-
-        // ─────────────────────────────────────────────────────────────
-        // Content fit
-        // ─────────────────────────────────────────────────────────────
-
-        _updateContentFit() {
-            if (!haveContentFit)
-                return;
-            const fit = mapContentFit(videoFitMode);
-            for (const picture of this._pictures)
-                picture.set_content_fit(fit);
-        }
-
-        // ─────────────────────────────────────────────────────────────
         // Playback control
         // ─────────────────────────────────────────────────────────────
 
+        _primaryWindow() {
+            return this._windows.find(w => w._isPrimary) ||
+                this._windows[0] || null;
+        }
+
+        _onPrimaryStateChanged(state) {
+            const playing = state === Gst.State.PLAYING;
+            if (playing !== this._isPlaying) {
+                this._isPlaying = playing;
+                this._emitIsPlayingChanged();
+            }
+        }
+
         setPlay() {
-            if (this._play)
-                this._play.play();
-            else if (this._media)
-                this._media.play();
+            this._windows.forEach(w => w.play());
         }
 
         setPause() {
-            if (this._play)
-                this._play.pause();
-            else if (this._media)
-                this._media.pause();
+            this._windows.forEach(w => w.pause());
         }
 
         setFilePath(path) {
-            if (this._play) {
-                this._play.set_uri(toUri(path));
-            } else if (this._media) {
-                this._media.stream_unprepared();
-                if (path.includes('://'))
-                    this._media.file = Gio.File.new_for_uri(path);
-                else
-                    this._media.file = Gio.File.new_for_path(path);
-            }
-            this._markRandomStartPending();
-            this.setPlay();
+            this._windows.forEach(w => w.setUri(path));
+            this._windows.forEach(w => w.play());
         }
 
         // ─────────────────────────────────────────────────────────────
         // Volume / mute with fade
         // ─────────────────────────────────────────────────────────────
 
-        /**
-         * Apply volume immediately to the active player backend.
-         */
         _applyVolume(linearVolume) {
-            const player = this._play || this._media;
-            if (!player)
-                return;
-
-            if (this._play) {
-                // GstPlay uses linear volume — convert from perceptual (cubic)
-                let v = linearVolume;
-                if (haveGstAudio) {
-                    v = GstAudio.StreamVolume.convert_volume(
-                        GstAudio.StreamVolumeFormat.CUBIC,
-                        GstAudio.StreamVolumeFormat.LINEAR,
-                        v
-                    );
-                } else {
-                    v = Math.pow(v, 3);
-                }
-                // Force change by resetting to null first
-                if (player.volume === v)
-                    player.volume = null;
-                player.volume = v;
-            } else if (this._media) {
-                // GtkMediaFile uses linear volume directly
-                if (player.volume === linearVolume)
-                    player.volume = null;
-                player.volume = linearVolume;
-            }
+            const win = this._primaryWindow();
+            if (win)
+                win.setVolume(Math.max(0, Math.min(1, linearVolume)));
         }
 
-        /**
-         * Apply mute state to the active player backend.
-         */
-        _applyMute(muted) {
-            if (this._play) {
-                if (this._play.mute === muted)
-                    this._play.mute = !muted;
-                this._play.mute = muted;
-            } else if (this._media) {
-                if (this._media.muted === muted)
-                    this._media.muted = !muted;
-                this._media.muted = muted;
-            }
-        }
-
-        /**
-         * Get current linear volume from the active player.
-         */
         _getCurrentVolume() {
-            if (this._play) {
-                if (haveGstAudio) {
-                    return GstAudio.StreamVolume.convert_volume(
-                        GstAudio.StreamVolumeFormat.LINEAR,
-                        GstAudio.StreamVolumeFormat.CUBIC,
-                        this._play.volume
-                    );
-                }
-                return Math.pow(this._play.volume, 1 / 3);
-            }
-            if (this._media)
-                return this._media.volume;
-            return 0;
+            const win = this._primaryWindow();
+            return win ? win.getVolume() : 0;
         }
 
         /**
-         * Ramp volume linearly from current to target over
-         * video-fade-duration-sec seconds.
+         * Ramp the primary monitor volume from its current value to the
+         * target over video-fade-duration-sec seconds.
          */
         _setVolumeWithFade(targetVolume) {
-            // Cancel any running fade
             if (fadeTimerId) {
                 GLib.source_remove(fadeTimerId);
                 fadeTimerId = null;
             }
 
             const duration = videoFadeDurationSec;
-            if (duration <= 0 || !this._play) {
-                // No fade or GstPlay not active — apply immediately
+            if (duration <= 0) {
                 this._applyVolume(targetVolume);
                 return;
             }
@@ -1117,52 +823,10 @@ const Renderer = GObject.registerClass(
         }
 
         // ─────────────────────────────────────────────────────────────
-        // Random start
-        // ─────────────────────────────────────────────────────────────
-
-        _markRandomStartPending() {
-            this._randomStartPending = true;
-        }
-
-        _maybeSeekRandomGst() {
-            if (!this._play || !videoRandomStart || !this._randomStartPending)
-                return;
-
-            const duration = this._play.get_duration();
-            if (!duration || duration <= 0) {
-                this._randomStartPending = false;
-                return;
-            }
-
-            const second = Gst.SECOND || 1000000000;
-            const maxPos = Math.max(duration - second, 0);
-            const position = Math.floor(Math.random() * (maxPos + 1));
-            this._play.seek(position);
-            this._randomStartPending = false;
-        }
-
-        _maybeSeekRandomMedia() {
-            if (!this._media || !videoRandomStart || !this._randomStartPending)
-                return;
-
-            const duration = this._media.get_duration();
-            if (!duration || duration <= 0) {
-                this._randomStartPending = false;
-                return;
-            }
-
-            const maxPos = Math.max(duration - GLib.USEC_PER_SEC, 0);
-            const position = Math.floor(Math.random() * (maxPos + 1));
-            this._media.seek(position);
-            this._randomStartPending = false;
-        }
-
-        // ─────────────────────────────────────────────────────────────
         // Auto-change wallpaper
         // ─────────────────────────────────────────────────────────────
 
         _setupAutoWallpaper() {
-            // Remove existing timer
             if (changeWallpaperTimerId) {
                 GLib.source_remove(changeWallpaperTimerId);
                 changeWallpaperTimerId = null;
@@ -1171,7 +835,6 @@ const Renderer = GObject.registerClass(
             if (!changeWallpaper)
                 return;
 
-            // Resolve directory: configured → video-folder → ~/Videos/Hidamari
             const dir = changeWallpaperDir || videoFolder ||
                 GLib.build_filenamev([
                     GLib.get_home_dir(), 'Videos', 'Hidamari',
@@ -1198,7 +861,6 @@ const Renderer = GObject.registerClass(
             );
 
             const change = () => {
-                // Only change if playing to avoid unexpected resume
                 if (!this._isPlaying)
                     return GLib.SOURCE_CONTINUE;
 
@@ -1234,7 +896,6 @@ const Renderer = GObject.registerClass(
                 return GLib.SOURCE_CONTINUE;
             };
 
-            // Apply first wallpaper immediately
             change();
 
             changeWallpaperTimerId = GLib.timeout_add_seconds(
@@ -1264,29 +925,6 @@ const Renderer = GObject.registerClass(
 );
 
 // ═══════════════════════════════════════════════════════════════════════════
-// RendererWindow — one per monitor, fullscreen
-// ═══════════════════════════════════════════════════════════════════════════
-const RendererWindow = GObject.registerClass(
-    {
-        GTypeName: 'WpRendererWindow',
-    },
-    class RendererWindow extends Gtk.ApplicationWindow {
-        constructor(application, title, widget, gdkMonitor) {
-            super({
-                application,
-                decorated: !!nohide,
-                title,
-            });
-
-            this.set_child(widget);
-
-            this.fullscreen_on_monitor(gdkMonitor);
-            this.set_resizable(false);
-        }
-    }
-);
-
-// ═══════════════════════════════════════════════════════════════════════════
 // Main
 // ═══════════════════════════════════════════════════════════════════════════
 Gst.init(null);
@@ -1294,9 +932,9 @@ Gst.init(null);
 const app = new Renderer();
 
 // Clean exit on SIGTERM (signal 15)
-GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, 15, () => {
+imports.gi.GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, 15, () => {
     app.quit();
     return GLib.SOURCE_REMOVE;
 });
 
-app.run([GLib.get_prgname() || 'renderer.js', ...ARGV]);
+imports.system.exit(app.run([GLib.get_prgname() || 'renderer.js', ...ARGV]));

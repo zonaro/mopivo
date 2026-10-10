@@ -36,7 +36,10 @@ check:
 	    node --check "$$f" || { echo "Syntax error in $$f"; exit 1; }; \
 	done
 	@echo "== headless unit tests =="
-	GDK_BACKEND=headless gjs -m tests/run.js
+	@for t in tests/run.js tests/gallery.js tests/filters.js tests/videoController.js; do \
+	    echo "-- $$t --"; \
+	    GSETTINGS_SCHEMA_DIR=$(CURDIR)/schemas GDK_BACKEND=headless gjs -m "$$t" || exit 1; \
+	done
 	@echo "== strict schema compile =="
 	$(MAKE) compile
 

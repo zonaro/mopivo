@@ -1297,12 +1297,16 @@ const RendererWindow = GObject.registerClass(
 
             this.set_child(widget);
 
+            // Per-monitor geometry via fullscreen (GTK4 removed
+            // Gtk.Window.move() and GdkX11 offers no surface move, so explicit
+            // positioning is impossible — fullscreen_on_monitor is the only
+            // reliable way to cover exactly one monitor, including ones with
+            // negative geometry origins).
+            this.fullscreen_on_monitor(gdkMonitor);
             if (isX11DesktopMode()) {
-                // Desktop-layer windows cover the monitor geometry instead
-                // of going fullscreen (EWMH has no fullscreen + desktop).
-                const geometry = gdkMonitor.get_geometry();
-                this.set_default_size(geometry.width, geometry.height);
-                this.move(geometry.x, geometry.y);
+                // Drop to the desktop layer behind normal windows (xprop after
+                // map, when the XID is valid). Layering comes from the DESKTOP
+                // window type; geometry comes from fullscreen above.
                 this.set_resizable(false);
                 this.connect('map', () => {
                     if (this._desktopLayerMapped)
@@ -1314,8 +1318,6 @@ const RendererWindow = GObject.registerClass(
                         return GLib.SOURCE_REMOVE;
                     });
                 });
-            } else {
-                this.fullscreen_on_monitor(gdkMonitor);
             }
         }
 

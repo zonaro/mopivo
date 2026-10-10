@@ -30,6 +30,7 @@ import {GalleryManager} from '../ui/gallery.js';
 import {FilterBar} from '../ui/filters.js';
 import {VideoControls} from '../ui/videoControls.js';
 import {VideoController} from './videoController.js';
+import {GeneratorPage} from './generatorPage.js';
 import {PROVIDER_IDS, PROVIDER_META, getProvider} from '../lib/providers/registry.js';
 
 /**
@@ -123,6 +124,14 @@ const WallpaperWindow = GObject.registerClass({
         videoBox.append(this._videoSwitch);
         header.pack_end(videoBox);
 
+        // Generator toggle: swaps the image/video stack for the generator page.
+        this._generatorToggle = new Gtk.ToggleButton({
+            icon_name: 'applications-graphics-symbolic',
+            tooltip_text: _('Generator'),
+            valign: Gtk.Align.CENTER,
+        });
+        header.pack_end(this._generatorToggle);
+
         this._stack = new Gtk.Stack({
             transition_type: Gtk.StackTransitionType.CROSSFADE,
             hexpand: true,
@@ -130,6 +139,7 @@ const WallpaperWindow = GObject.registerClass({
         });
         this._stack.add_named(this._buildImagePage(), 'images');
         this._stack.add_named(this._buildVideoPage(), 'video');
+        this._stack.add_named(this._buildGeneratorPage(), 'generator');
 
         const toolbar = new Adw.ToolbarView();
         toolbar.add_top_bar(header);
@@ -186,6 +196,11 @@ const WallpaperWindow = GObject.registerClass({
         return this._videoControls.widget;
     }
 
+    _buildGeneratorPage() {
+        this._generatorPage = new GeneratorPage({settings: this._settings});
+        return this._generatorPage.widget;
+    }
+
     // ── Signal wiring ───────────────────────────────────────────────────
 
     _wireSignals() {
@@ -217,6 +232,17 @@ const WallpaperWindow = GObject.registerClass({
             this._settings.set_boolean('video-mode', on);
             this._applyVideoMode(on);
         });
+        this._generatorToggle.connect('toggled', () => {
+            const on = this._generatorToggle.get_active();
+            this._videoSwitch.set_sensitive(!on);
+            if (on) {
+                this._stack.set_visible_child_name('generator');
+                this._manager.setVisible(false);
+                try { this._controller.stop(); } catch (_e) { /* not started */ }
+            } else {
+                this._applyVideoMode(this._settings.get_boolean('video-mode'));
+            }
+        });
         this._settingsVideoModeId = this._settings.connect('changed::video-mode', () => {
             const on = this._settings.get_boolean('video-mode');
             if (this._videoSwitch.get_active() === on)
@@ -240,6 +266,7 @@ const WallpaperWindow = GObject.registerClass({
             try { this._controller.stop(); } catch (_e) { /* not started */ }
             try { this._session.abort(); } catch (_e) { /* already aborted */ }
             this._videoControls.destroy?.();
+            this._generatorPage.destroy?.();
             return false;
         });
     }
@@ -319,6 +346,11 @@ const WallpaperWindow = GObject.registerClass({
     // ── Video mode ──────────────────────────────────────────────────────
 
     _applyVideoMode(on) {
+        if (this._generatorToggle?.get_active()) {
+            this._stack.set_visible_child_name('generator');
+            this._manager.setVisible(false);
+            return;
+        }
         this._stack.set_visible_child_name(on ? 'video' : 'images');
         this._manager.setVisible(!on);
         if (on)

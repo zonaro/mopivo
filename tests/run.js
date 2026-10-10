@@ -160,6 +160,15 @@ const NEW_KEYS = [
     'force-mediafile',
 ];
 
+// The 5 keys added for the wallpaper Generator page.
+const GENERATOR_KEYS = [
+    'generator-preset',
+    'generator-palette',
+    'generator-resolution',
+    'generator-format',
+    'generator-export-folder',
+];
+
 function testSchema() {
     const g = new Group('schema');
 
@@ -185,8 +194,8 @@ function testSchema() {
     const foundKeys = [...xml.matchAll(/<key\s+name="([^"]+)"/g)]
         .map((m) => m[1]);
 
-    const expectedKeys = [...EXISTING_KEYS, ...NEW_KEYS];
-    g.eq(foundKeys.length, expectedKeys.length, 'schema key count is 57');
+    const expectedKeys = [...EXISTING_KEYS, ...NEW_KEYS, ...GENERATOR_KEYS];
+    g.eq(foundKeys.length, expectedKeys.length, 'schema key count is 62');
 
     for (const key of expectedKeys) {
         g.ok(foundKeys.includes(key), `schema key present: ${key}`);

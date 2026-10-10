@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mopivo 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"POT-Creation-Date: 2026-10-10 20:15-0300\n"
 "PO-Revision-Date: 2024-01-01 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: Brazilian Portuguese\n"
@@ -16,607 +16,1113 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: prefs.js
-msgid "Providers"
-msgstr "Provedores"
+#: app/generatorPage.js:138 app/window.js:130
+msgid "Generator"
+msgstr "Gerador"
 
-msgid "Active Provider"
-msgstr "Provedor Ativo"
+#: app/generatorPage.js:198
+msgid "Preset"
+msgstr "Predefinição"
 
-msgid "Choose which wallpaper provider to use."
-msgstr "Escolha qual provedor de wallpapers usar."
+#: app/generatorPage.js:206
+msgid "Loading…"
+msgstr "Carregando…"
 
-msgid "Provider"
-msgstr "Provedor"
+#: app/generatorPage.js:213
+msgid "Palette Category"
+msgstr "Categoria da paleta"
 
-msgid "Select the active wallpaper provider"
-msgstr "Selecione o provedor de wallpapers ativo"
-
-msgid "API Keys"
-msgstr "Chaves de API"
-
-msgid "Configure API keys for each provider. Keys are required to enable the corresponding provider."
-msgstr "Configure as chaves de API para cada provedor. As chaves são necessárias para ativar o provedor correspondente."
-
-msgid "Wallhaven API Key"
-msgstr "Chave de API do Wallhaven"
-
-msgid "Pexels API Key"
-msgstr "Chave de API do Pexels"
-
-msgid "Unsplash API Key"
-msgstr "Chave de API do Unsplash"
-
-msgid "Pixabay API Key"
-msgstr "Chave de API do Pixabay"
-
-msgid "Safebooru"
-msgstr "Safebooru"
-
-msgid "No API key required"
-msgstr "Nenhuma chave de API necessária"
-
-msgid "Provider Status"
-msgstr "Status do Provedor"
-
-msgid "Ready"
-msgstr "Pronto"
-
-msgid "API key required"
-msgstr "Chave de API necessária"
-
-msgid "Active provider: "
-msgstr "Provedor ativo: "
-
-#: ui/prefs_helpers.js
-msgid " is configured."
-msgstr " está configurada."
-
-msgid "API key required to enable "
-msgstr "Chave de API necessária para ativar "
-
-msgid "Description"
-msgstr "Descrição"
-
-msgid "Step"
-msgstr "Passo"
-
-msgid "Rate Limit"
-msgstr "Limite de Taxa"
-
-msgid "Get API Key"
-msgstr "Obter Chave de API"
-
-#: prefs.js (Filters page)
-msgid "Filters"
-msgstr "Filtros"
-
-msgid "Search"
-msgstr "Busca"
-
-msgid "Search Query"
-msgstr "Consulta de Busca"
-
-msgid "Leave empty for recent wallpapers"
-msgstr "Deixe vazio para wallpapers recentes"
-
-msgid "Categories"
-msgstr "Categorias"
-
-msgid "111 (general, anime, people)"
-msgstr "111 (geral, anime, pessoas)"
-
-msgid "Purity"
-msgstr "Pureza"
-
-msgid "100 (sfw, sketchy, nsfw)"
-msgstr "100 (sfw, sketchy, nsfw)"
-
-msgid "Sorting"
-msgstr "Ordenação"
-
-msgid "Sort method for results"
-msgstr "Método de ordenação dos resultados"
-
-msgid "Order"
-msgstr "Ordem"
-
-msgid "Sort direction"
-msgstr "Direção da ordenação"
-
-msgid "Top Range"
-msgstr "Período Top"
-
-msgid "Time range for toplist sorting"
-msgstr "Período para ordenação da toplist"
-
-msgid "At Least (minimum resolution)"
-msgstr "No Mínimo (resolução mínima)"
-
-msgid "Resolutions"
-msgstr "Resoluções"
-
-msgid "Aspect Ratios"
-msgstr "Proporções de Aspecto"
-
+#: app/generatorPage.js:251 prefs.js:379
 msgid "Colors"
 msgstr "Cores"
 
-msgid "AI Art Filter"
-msgstr "Filtro de Arte IA"
+#: app/generatorPage.js:263 app/generatorPage.js:391 app/generatorPage.js:445
+msgid "Angle"
+msgstr "Ângulo"
 
-msgid "Filter out AI-generated content"
-msgstr "Filtrar conteúdo gerado por IA"
+#: app/generatorPage.js:268
+msgid "Scale"
+msgstr "Escala"
 
-#: prefs.js (Downloads page)
-msgid "Downloads"
-msgstr "Downloads"
+#: app/generatorPage.js:278
+msgid "Center"
+msgstr "Centro"
 
-msgid "Download Settings"
-msgstr "Configurações de Download"
+#: app/generatorPage.js:283
+msgid "Variation"
+msgstr "Variação"
 
-msgid "Download Folder"
-msgstr "Pasta de Download"
+#: app/generatorPage.js:287
+msgid "Blend"
+msgstr "Mistura"
 
+#: app/generatorPage.js:298 app/generatorPage.js:302
+msgid "Distortion"
+msgstr "Distorção"
+
+#: app/generatorPage.js:306 app/generatorPage.js:362 app/generatorPage.js:387
+#: app/generatorPage.js:441
+msgid "Strength"
+msgstr "Intensidade"
+
+#: app/generatorPage.js:311
+msgid "Grain & Texture"
+msgstr "Granulado e textura"
+
+#: app/generatorPage.js:315
+msgid "Effect"
+msgstr "Efeito"
+
+#: app/generatorPage.js:319
+msgid "Noise"
+msgstr "Ruído"
+
+#: app/generatorPage.js:323
+msgid "Dither Strength"
+msgstr "Intensidade do dithering"
+
+#: app/generatorPage.js:327
+msgid "Dither Levels"
+msgstr "Níveis de dithering"
+
+#: app/generatorPage.js:331
+msgid "Grain Intensity"
+msgstr "Intensidade do granulado"
+
+#: app/generatorPage.js:340
+msgid "Lighting"
+msgstr "Iluminação"
+
+#: app/generatorPage.js:353
+msgid "Enable Lighting"
+msgstr "Ativar iluminação"
+
+#: app/generatorPage.js:358
+msgid "Type"
+msgstr "Tipo"
+
+#: app/generatorPage.js:366
+msgid "Bevel Width"
+msgstr "Largura do chanfro"
+
+#: app/generatorPage.js:370
+msgid "Light Angle"
+msgstr "Ângulo da luz"
+
+#: app/generatorPage.js:379 app/generatorPage.js:383
+msgid "Blur"
+msgstr "Desfoque"
+
+#: app/generatorPage.js:398
+msgid "Bloom"
+msgstr "Brilho difuso"
+
+#: app/generatorPage.js:410
+msgid "Enable Bloom"
+msgstr "Ativar brilho difuso"
+
+#: app/generatorPage.js:414
+msgid "Threshold"
+msgstr "Limiar"
+
+#: app/generatorPage.js:418
+msgid "Intensity"
+msgstr "Intensidade"
+
+#: app/generatorPage.js:425
+msgid "Chromatic Aberration"
+msgstr "Aberração cromática"
+
+#: app/generatorPage.js:437
+msgid "Enable Chromatic"
+msgstr "Ativar aberração cromática"
+
+#: app/generatorPage.js:465
+msgid "Export Resolution"
+msgstr "Resolução de exportação"
+
+#: app/generatorPage.js:476
+msgid "Format"
+msgstr "Formato"
+
+#: app/generatorPage.js:487
+msgid "Randomize"
+msgstr "Aleatorizar"
+
+#: app/generatorPage.js:490 prefs.js:416
 msgid "Set as Wallpaper"
 msgstr "Definir como Papel de Parede"
 
-msgid "Automatically apply the downloaded wallpaper"
-msgstr "Aplicar automaticamente o wallpaper baixado"
+#: app/generatorPage.js:494
+msgid "Export…"
+msgstr "Exportar…"
 
-msgid "Page Size"
-msgstr "Tamanho da Página"
+#: app/generatorPage.js:583
+msgid "The generator needs python3 with numpy and Pillow."
+msgstr "O gerador precisa de python3 com numpy e Pillow."
 
-msgid "Number of wallpapers per page (1-24)"
-msgstr "Número de wallpapers por página (1-24)"
+#: app/generatorPage.js:672
+msgid "No palettes"
+msgstr "Nenhuma paleta"
 
-#: prefs.js (Help Center page)
-msgid "Help Center"
-msgstr "Central de Ajuda"
+#: app/generatorPage.js:723 app/generatorPage.js:833 app/generatorPage.js:868
+#: app/generatorPage.js:917 app/window.js:75 ui/gallery.js:292
+msgid "Error"
+msgstr "Erro"
 
-msgid "Provider Setup Guides"
-msgstr "Guias de Configuração de Provedores"
+#: app/generatorPage.js:821 app/generatorPage.js:849
+msgid "Choose a palette first."
+msgstr "Escolha uma paleta primeiro."
 
-msgid "Step-by-step instructions to configure each wallpaper provider."
-msgstr "Instruções passo a passo para configurar cada provedor de wallpapers."
+#: app/generatorPage.js:831
+msgid "Wallpaper applied."
+msgstr "Papel de parede aplicado."
 
-msgid "Wallhaven"
-msgstr "Wallhaven"
+#: app/generatorPage.js:866
+msgid "Saved:"
+msgstr "Salvo:"
 
-msgid "Wallpaper community with SFW, Sketchy, and NSFW content."
-msgstr "Comunidade de wallpapers com conteúdo SFW, Sketchy e NSFW."
+#: app/generatorPage.js:892
+msgid "Choose a palette to generate a preview."
+msgstr "Escolha uma paleta para gerar uma prévia."
 
-msgid "Create an account at wallhaven.cc"
-msgstr "Crie uma conta no wallhaven.cc"
+#: app/generatorPage.js:911
+msgid "Ready."
+msgstr "Pronto."
 
-msgid "Go to Account Settings and generate an API key"
-msgstr "Vá para Configurações da Conta e gere uma chave de API"
+#: app/window.js:51 app/window.js:82 prefs.js:44
+msgid "Mopivo"
+msgstr "Mopivo"
 
-msgid "Paste the API key in the Providers tab above"
-msgstr "Cole a chave de API na aba Provedores acima"
+#: app/window.js:88
+msgid "Preferences"
+msgstr "Preferências"
 
-msgid "No official rate limit, but be respectful (max ~3 req/s recommended)."
-msgstr "Sem limite de taxa oficial, mas seja respeitoso (máx ~3 req/s recomendado)."
+#: app/window.js:97 prefs.js:288 prefs.js:308
+msgid "Filters"
+msgstr "Filtros"
 
-msgid "Pexels"
-msgstr "Pexels"
+#: app/window.js:116
+msgid "Video mode"
+msgstr "Modo vídeo"
 
-msgid "Free high-quality stock photos and wallpapers."
-msgstr "Fotos e wallpapers de alta qualidade gratuitos."
+#: app/window.js:166
+msgid "Search wallpapers…"
+msgstr "Pesquisar papéis de parede…"
 
-msgid "Create a free account at pexels.com"
-msgstr "Crie uma conta gratuita no pexels.com"
+#: app/window.js:172 prefs.js:82
+msgid "Provider"
+msgstr "Provedor"
 
-msgid "Go to pexels.com/api and request an API key"
-msgstr "Vá para pexels.com/api e solicite uma chave de API"
+#: app/window.js:258
+msgid "Page"
+msgstr "Página"
 
-msgid "200 requests/hour for free accounts."
-msgstr "200 requisições/hora para contas gratuitas."
+#: app/window.js:306
+msgid "Provider unavailable:"
+msgstr "Provedor indisponível:"
 
-msgid "Unsplash"
-msgstr "Unsplash"
+#: prefs.js:69
+msgid "Providers"
+msgstr "Provedores"
 
-msgid "High-resolution free photography."
-msgstr "Fotografia gratuita em alta resolução."
+#: prefs.js:76
+msgid "Active Provider"
+msgstr "Provedor Ativo"
 
-msgid "Create an account at unsplash.com"
-msgstr "Crie uma conta no unsplash.com"
+#: prefs.js:77
+msgid "Choose which wallpaper provider to use."
+msgstr "Escolha qual provedor de wallpapers usar."
 
-msgid "Go to unsplash.com/developers and create an application"
-msgstr "Vá para unsplash.com/developers e crie uma aplicação"
+#: prefs.js:83
+msgid "Select the active wallpaper provider"
+msgstr "Selecione o provedor de wallpapers ativo"
 
-msgid "Copy the Access Key and paste in the Providers tab above"
-msgstr "Copie a Chave de Acesso e cole na aba Provedores acima"
+#: prefs.js:96
+msgid "API Keys"
+msgstr "Chaves de API"
 
-msgid "50 requests/hour for demo apps, 5000/hour for production."
-msgstr "50 requisições/hora para apps de demonstração, 5000/hora para produção."
+#: prefs.js:97
+msgid ""
+"Configure API keys for each provider. Keys are required to enable the "
+"corresponding provider."
+msgstr ""
+"Configure as chaves de API para cada provedor. As chaves são necessárias "
+"para ativar o provedor correspondente."
 
-msgid "Anime image board — SFW only, no API key required."
-msgstr "Board de imagens de anime — apenas SFW, nenhuma chave de API necessária."
+#: prefs.js:135 ui/prefs_helpers.js:225
+msgid "Safebooru"
+msgstr "Safebooru"
 
-msgid "No API key needed — just select Safebooru in the Providers tab"
-msgstr "Nenhuma chave de API necessária — basta selecionar Safebooru na aba Provedores"
+#: prefs.js:136
+msgid "No API key required"
+msgstr "Nenhuma chave de API necessária"
 
-msgid "Use tags separated by spaces in the search query"
-msgstr "Use tags separadas por espaços na consulta de busca"
-
-msgid "Safebooru only serves SFW content"
-msgstr "Safebooru serve apenas conteúdo SFW"
-
-msgid "Be respectful; avoid excessive rapid requests."
-msgstr "Seja respeitoso; evite requisições rápidas excessivas."
-
-msgid "Pixabay"
-msgstr "Pixabay"
-
-msgid "Free images with a permissive license."
-msgstr "Imagens gratuitas com licença permissiva."
-
-msgid "Create a free account at pixabay.com"
-msgstr "Crie uma conta gratuita no pixabay.com"
-
-msgid "Go to pixabay.com/api/docs and copy your API key"
-msgstr "Vá para pixabay.com/api/docs e copie sua chave de API"
-
-msgid "100 requests/hour for free accounts (basic key)."
-msgstr "100 requisições/hora para contas gratuitas (chave básica)."
-
-msgid "Waifu.im"
-msgstr "Waifu.im"
-
-msgid "Curated anime image archive — SFW only, no API key required."
-msgstr "Arquivo de imagens de anime com curadoria — somente SFW, sem necessidade de chave de API."
-
-msgid "No API key needed — just select Waifu.im in the Providers tab"
-msgstr "Nenhuma chave de API necessária — basta selecionar Waifu.im na aba Provedores"
-
-msgid "Use tags separated by spaces in the search query (e.g. \"maid uniform\")"
-msgstr "Use tags separadas por espaços na busca (ex.: \"maid uniform\")"
-
-msgid "Leave the query empty to browse random waifus"
-msgstr "Deixe a busca vazia para ver waifus aleatórias"
-
-msgid "1 request every 200ms. Each search returns up to 30 fresh random images."
-msgstr "1 requisição a cada 200ms. Cada busca retorna até 30 imagens aleatórias."
-
+#: prefs.js:145 ui/prefs_helpers.js:264 ui/videoControls.js:85
 msgid "Local Files"
 msgstr "Arquivos Locais"
 
+#: prefs.js:146
 msgid "Search wallpapers in folders on this computer."
 msgstr "Busque papéis de parede em pastas deste computador."
 
+#: prefs.js:152 prefs.js:193
 msgid "Default Folder"
 msgstr "Pasta Padrão"
 
+#: prefs.js:153 prefs.js:194
 msgid "Not found"
 msgstr "Não encontrada"
 
+#: prefs.js:159 prefs.js:200
 msgid "Extra Folders"
 msgstr "Pastas Extras"
 
+#: prefs.js:163
 msgid "/home/user/Wallpapers:/mnt/photos"
 msgstr "/home/usuario/Wallpapers:/mnt/fotos"
 
+#: prefs.js:172 prefs.js:213
 msgid "Separate multiple folders with a colon (:)"
 msgstr "Separe múltiplas pastas com dois-pontos (:)"
 
+#: prefs.js:178 prefs.js:219
 msgid "Include Subfolders"
 msgstr "Incluir Subpastas"
 
+#: prefs.js:179 prefs.js:220
 msgid "Search inside subfolders recursively"
 msgstr "Buscar dentro das subpastas recursivamente"
 
-msgid "Your own image collection on this computer — no network needed."
-msgstr "Sua própria coleção de imagens neste computador — sem necessidade de rede."
-
-msgid "Your Pictures folder is searched by default"
-msgstr "Sua pasta Imagens é pesquisada por padrão"
-
-msgid "Add more folders in the Providers tab, separated by colons"
-msgstr "Adicione mais pastas na aba Provedores, separadas por dois-pontos"
-
-msgid "Toggle subfolder search and leave the query empty to browse everything"
-msgstr "Ative a busca em subpastas e deixe a busca vazia para ver tudo"
-
-msgid "General Tips"
-msgstr "Dicas Gerais"
-
-msgid "Switching Providers"
-msgstr "Alternando Provedores"
-
-msgid "Select a provider in the Providers tab. Each provider has its own search filters and content. You can switch at any time."
-msgstr "Selecione um provedor na aba Provedores. Cada provedor tem seus próprios filtros de busca e conteúdo. Você pode alternar a qualquer momento."
-
-msgid "NSFW Content"
-msgstr "Conteúdo NSFW"
-
-msgid "NSFW content is only available through Wallhaven and requires a valid API key. Enable the NSFW purity filter only if you have a Wallhaven API key configured."
-msgstr "Conteúdo NSFW está disponível apenas através do Wallhaven e requer uma chave de API válida. Ative o filtro de pureza NSFW apenas se tiver uma chave de API do Wallhaven configurada."
-
-msgid "Safebooru Tag Syntax"
-msgstr "Sintaxe de Tags do Safebooru"
-
-msgid "Safebooru uses tags for search. Use underscores for multi-word tags (e.g. \"blue_hair, solo\"). Combine tags with commas."
-msgstr "Safebooru usa tags para busca. Use underscores para tags com múltiplas palavras (ex: \"blue_hair, solo\"). Combine tags com vírgulas."
-
-#: prefs.js (Video page)
-msgid "Video"
-msgstr "Vídeo"
-
-msgid "Source"
-msgstr "Fonte"
-
-msgid "Configure the video wallpaper source."
-msgstr "Configure a fonte do papel de parede em vídeo."
-
-msgid "Enable Video Mode"
-msgstr "Ativar Modo Vídeo"
-
-msgid "Switch from image browsing to video wallpaper mode"
-msgstr "Alternar da navegação de imagens para o modo de papel de parede em vídeo"
-
-msgid "Source Type"
-msgstr "Tipo de Fonte"
-
-msgid "Type of video source"
-msgstr "Tipo de fonte de vídeo"
-
-msgid "Video Folder"
-msgstr "Pasta de Vídeos"
-
-msgid "Video Path"
-msgstr "Caminho do Vídeo"
-
-msgid "Streaming URL"
-msgstr "URL de Streaming"
-
-msgid "Webpage URL"
-msgstr "URL da Página Web"
-
-msgid "Local HTML File"
-msgstr "Arquivo HTML Local"
-
-msgid "Playback"
-msgstr "Reprodução"
-
-msgid "Audio and video playback settings."
-msgstr "Configurações de reprodução de áudio e vídeo."
-
-msgid "Volume"
-msgstr "Volume"
-
-msgid "Audio volume of the video wallpaper (0-100)"
-msgstr "Volume do áudio do papel de parede em vídeo (0-100)"
-
-msgid "Mute"
-msgstr "Silenciar"
-
-msgid "Mute the video wallpaper audio"
-msgstr "Silenciar o áudio do papel de parede em vídeo"
-
-msgid "Fade Duration"
-msgstr "Duração do Fade"
-
-msgid "Volume fade duration in seconds"
-msgstr "Duração do fade de volume em segundos"
-
-msgid "Audio Only on Primary Monitor"
-msgstr "Áudio Apenas no Monitor Principal"
-
-msgid "Play audio only on the primary monitor"
-msgstr "Reproduzir áudio apenas no monitor principal"
-
-msgid "Fit Mode"
-msgstr "Modo de Ajuste"
-
-msgid "How the video is fitted on screen"
-msgstr "Como o vídeo é ajustado na tela"
-
-msgid "Random Start"
-msgstr "Início Aleatório"
-
-msgid "Seek to a random position when playback starts"
-msgstr "Ir para uma posição aleatória quando a reprodução iniciar"
-
-msgid "Per-Monitor Video Paths"
-msgstr "Caminhos de Vídeo por Monitor"
-
-msgid "Auto-Pause"
-msgstr "Auto-Pausa"
-
-msgid "Automatically pause the video wallpaper."
-msgstr "Pausar automaticamente o papel de parede em vídeo."
-
-msgid "Never"
-msgstr "Nunca"
-
-msgid "Any monitor"
-msgstr "Qualquer monitor"
-
-msgid "All monitors"
-msgstr "Todos os monitores"
-
-msgid "Pause on Maximize/Fullscreen"
-msgstr "Pausar ao Maximizar/Tela Cheia"
-
-msgid "Pause video when a window is maximized or fullscreen"
-msgstr "Pausar o vídeo quando uma janela estiver maximizada ou em tela cheia"
-
-msgid "Pause on Window Focus"
-msgstr "Pausar ao Focar Janela"
-
-msgid "Pause video whenever any window has focus"
-msgstr "Pausar o vídeo sempre que uma janela tiver foco"
-
-msgid "Pause on Battery"
-msgstr "Pausar na Bateria"
-
-msgid "Pause video based on power status"
-msgstr "Pausar o vídeo com base no status da energia"
-
-msgid "Low battery"
-msgstr "Bateria baixa"
-
-msgid "Always"
-msgstr "Sempre"
-
-msgid "Low Battery Threshold"
-msgstr "Limite de Bateria Baixa"
-
-msgid "Battery percentage below which to pause"
-msgstr "Porcentagem da bateria abaixo da qual pausar"
-
-msgid "Pause on Media Playing"
-msgstr "Pausar ao Reproduzir Mídia"
-
-msgid "Pause video whenever a media player is playing"
-msgstr "Pausar o vídeo sempre que um reprodutor de mídia estiver reproduzindo"
-
-msgid "Auto-Change"
-msgstr "Auto-Troca"
-
-msgid "Automatically change the video wallpaper periodically."
-msgstr "Trocar automaticamente o papel de parede em vídeo periodicamente."
-
-msgid "Auto-Change Wallpaper"
-msgstr "Auto-Trocar Papel de Parede"
-
-msgid "Periodically change the video wallpaper from a directory"
-msgstr "Trocar periodicamente o papel de parede em vídeo de um diretório"
-
-msgid "Auto-Change Directory"
-msgstr "Diretório de Auto-Troca"
-
-msgid "Auto-Change Interval"
-msgstr "Intervalo de Auto-Troca"
-
-msgid "Minutes between automatic wallpaper changes"
-msgstr "Minutos entre as trocas automáticas de papel de parede"
-
-msgid "Change Mode"
-msgstr "Modo de Troca"
-
-msgid "Order when changing wallpapers"
-msgstr "Ordem ao trocar papéis de parede"
-
-msgid "Sequential"
-msgstr "Sequencial"
-
-msgid "Reverse"
-msgstr "Invertido"
-
-msgid "Random"
-msgstr "Aleatório"
-
-msgid "Static"
-msgstr "Estático"
-
-msgid "Extract a frame from the video as static wallpaper."
-msgstr "Extrair um quadro do vídeo como papel de parede estático."
-
-msgid "Extract Static Wallpaper from Video"
-msgstr "Extrair Papel de Parede Estático do Vídeo"
-
-msgid "Extract a frame and set it as the static desktop background"
-msgstr "Extrair um quadro e defini-lo como fundo da área de trabalho estático"
-
-msgid "Blur Static Wallpaper"
-msgstr "Desfocar Papel de Parede Estático"
-
-msgid "Blur the extracted frame before setting as wallpaper"
-msgstr "Desfocar o quadro extraído antes de definir como papel de parede"
-
-msgid "Blur Radius"
-msgstr "Raio de Desfoque"
-
-msgid "Gaussian blur radius for the static wallpaper"
-msgstr "Raio de desfoque gaussiano para o papel de parede estático"
-
-msgid "Advanced"
-msgstr "Avançado"
-
-msgid "Show on Lock Screen"
-msgstr "Mostrar na Tela de Bloqueio"
-
-msgid "Keep the video wallpaper visible on the lock screen"
-msgstr "Manter o papel de parede em vídeo visível na tela de bloqueio"
-
-msgid "Startup Delay"
-msgstr "Atraso na Inicialização"
-
-msgid "Milliseconds to wait before launching the renderer"
-msgstr "Milissegundos a aguardar antes de iniciar o renderizador"
-
-msgid "Show Panel Menu"
-msgstr "Mostrar Menu do Painel"
-
-msgid "Show the video control menu in the panel"
-msgstr "Mostrar o menu de controle de vídeo no painel"
-
-msgid "Enable VA-API Hardware Decoding"
-msgstr "Ativar Decodificação por Hardware VA-API"
-
-msgid "Prefer VA-API hardware decoding for the video wallpaper"
-msgstr "Preferir decodificação por hardware VA-API para o papel de parede em vídeo"
-
-msgid "Enable NVIDIA Stateless Decoders"
-msgstr "Ativar Decodificadores NVIDIA Stateless"
-
-msgid "Use NVIDIA stateless decoders for hardware decoding"
-msgstr "Usar decodificadores NVIDIA stateless para decodificação por hardware"
-
-msgid "Prefer Clappersink"
-msgstr "Preferir Clappersink"
-
-msgid "Prefer clappersink over gtk4paintablesink"
-msgstr "Preferir clappersink ao invés de gtk4paintablesink"
-
-msgid "Force GTK MediaFile Backend"
-msgstr "Forçar Backend GTK MediaFile"
-
-msgid "Use Gtk.MediaFile backend instead of GStreamer"
-msgstr "Usar o backend Gtk.MediaFile ao invés do GStreamer"
-
-#: lib/video/panelMenu.js
-msgid "Video mode: OFF"
-msgstr "Modo vídeo: DESL"
-
-msgid "Video mode: ON"
-msgstr "Modo vídeo: LIG"
-
-msgid "Next"
-msgstr "Próximo"
-
-msgid "Lucky"
-msgstr "Sorte"
-
-msgid "Browse…"
-msgstr "Explorar…"
-
-#: ui/videoPicker.js
-msgid "Search videos…"
-msgstr "Buscar vídeos…"
-
-msgid "No matching videos."
-msgstr "Nenhum vídeo correspondente."
-
-msgid "No videos found."
-msgstr "Nenhum vídeo encontrado."
-
+#: prefs.js:186 ui/prefs_helpers.js:277
 msgid "Wallrus"
 msgstr "Wallrus"
 
+#: prefs.js:187 ui/prefs_helpers.js:278
 msgid "Browse wallpapers generated by the Wallrus app."
 msgstr "Navegue por papéis de parede gerados pelo Wallrus."
 
+#: prefs.js:204
+msgid "/home/user/Downloads/Wallrus:/home/user/Pictures/Wallrus"
+msgstr "/home/usuario/Downloads/Wallrus:/home/usuario/Imagens/Wallrus"
+
+#: prefs.js:227
+msgid "Provider Status"
+msgstr "Status do Provedor"
+
+#: prefs.js:263 prefs.js:273 prefs.js:279
+msgid "Active provider: "
+msgstr "Provedor ativo: "
+
+#: prefs.js:263 prefs.js:273
+msgid "Ready"
+msgstr "Pronto"
+
+#: prefs.js:279
+msgid "API key required"
+msgstr "Chave de API necessária"
+
+#: prefs.js:295
+msgid "Search"
+msgstr "Busca"
+
+#: prefs.js:300
+msgid "Search Query"
+msgstr "Consulta de Busca"
+
+#: prefs.js:302
+msgid "Leave empty for recent wallpapers"
+msgstr "Deixe vazio para wallpapers recentes"
+
+#: prefs.js:313
+msgid "Categories"
+msgstr "Categorias"
+
+#: prefs.js:315
+msgid "111 (general, anime, people)"
+msgstr "111 (geral, anime, pessoas)"
+
+#: prefs.js:320
+msgid "Purity"
+msgstr "Pureza"
+
+#: prefs.js:322
+msgid "100 (sfw, sketchy, nsfw)"
+msgstr "100 (sfw, sketchy, nsfw)"
+
+#: prefs.js:328
+msgid "Sorting"
+msgstr "Ordenação"
+
+#: prefs.js:329
+msgid "Sort method for results"
+msgstr "Método de ordenação dos resultados"
+
+#: prefs.js:338
+msgid "Order"
+msgstr "Ordem"
+
+#: prefs.js:339
+msgid "Sort direction"
+msgstr "Direção da ordenação"
+
+#: prefs.js:348
+msgid "Top Range"
+msgstr "Período Top"
+
+#: prefs.js:349
+msgid "Time range for toplist sorting"
+msgstr "Período para ordenação da toplist"
+
+#: prefs.js:358
+msgid "At Least (minimum resolution)"
+msgstr "No Mínimo (resolução mínima)"
+
+#: prefs.js:365
+msgid "Resolutions"
+msgstr "Resoluções"
+
+#: prefs.js:372
+msgid "Aspect Ratios"
+msgstr "Proporções de Aspecto"
+
+#: prefs.js:387
+msgid "AI Art Filter"
+msgstr "Filtro de Arte IA"
+
+#: prefs.js:388
+msgid "Filter out AI-generated content"
+msgstr "Filtrar conteúdo gerado por IA"
+
+#: prefs.js:398
+msgid "Downloads"
+msgstr "Downloads"
+
+#: prefs.js:404
+msgid "Download Settings"
+msgstr "Configurações de Download"
+
+#: prefs.js:409
+msgid "Download Folder"
+msgstr "Pasta de Download"
+
+#: prefs.js:417
+msgid "Automatically apply the downloaded wallpaper"
+msgstr "Aplicar automaticamente o wallpaper baixado"
+
+#: prefs.js:431
+msgid "Page Size"
+msgstr "Tamanho da Página"
+
+#: prefs.js:432
+msgid "Number of wallpapers per page (1-24)"
+msgstr "Número de wallpapers por página (1-24)"
+
+#: prefs.js:444 ui/videoControls.js:77
+msgid "Video"
+msgstr "Vídeo"
+
+#: prefs.js:451 ui/videoControls.js:95
+msgid "Source"
+msgstr "Fonte"
+
+#: prefs.js:452
+msgid "Configure the video wallpaper source."
+msgstr "Configure a fonte do papel de parede em vídeo."
+
+#: prefs.js:457
+msgid "Enable Video Mode"
+msgstr "Ativar Modo Vídeo"
+
+#: prefs.js:458
+msgid "Switch from image browsing to video wallpaper mode"
+msgstr ""
+"Alternar da navegação de imagens para o modo de papel de parede em vídeo"
+
+#: prefs.js:464
+msgid "Source Type"
+msgstr "Tipo de Fonte"
+
+#: prefs.js:465
+msgid "Type of video source"
+msgstr "Tipo de fonte de vídeo"
+
+#: prefs.js:473
+msgid "Video Folder"
+msgstr "Pasta de Vídeos"
+
+#: prefs.js:480 ui/videoControls.js:100
+msgid "Video Path"
+msgstr "Caminho do Vídeo"
+
+#: prefs.js:487 ui/videoControls.js:85 ui/videoControls.js:110
+msgid "Streaming URL"
+msgstr "URL de Streaming"
+
+#: prefs.js:494
+msgid "Webpage URL"
+msgstr "URL da Página Web"
+
+#: prefs.js:501
+msgid "Local HTML File"
+msgstr "Arquivo HTML Local"
+
+#: prefs.js:509
+msgid "Playback"
+msgstr "Reprodução"
+
+#: prefs.js:510
+msgid "Audio and video playback settings."
+msgstr "Configurações de reprodução de áudio e vídeo."
+
+#: prefs.js:522
+msgid "Volume"
+msgstr "Volume"
+
+#: prefs.js:523
+msgid "Audio volume of the video wallpaper (0-100)"
+msgstr "Volume do áudio do papel de parede em vídeo (0-100)"
+
+#: prefs.js:531 ui/videoControls.js:162
+msgid "Mute"
+msgstr "Silenciar"
+
+#: prefs.js:532
+msgid "Mute the video wallpaper audio"
+msgstr "Silenciar o áudio do papel de parede em vídeo"
+
+#: prefs.js:545
+msgid "Fade Duration"
+msgstr "Duração do Fade"
+
+#: prefs.js:546
+msgid "Volume fade duration in seconds"
+msgstr "Duração do fade de volume em segundos"
+
+#: prefs.js:554
+msgid "Audio Only on Primary Monitor"
+msgstr "Áudio Apenas no Monitor Principal"
+
+#: prefs.js:555
+msgid "Play audio only on the primary monitor"
+msgstr "Reproduzir áudio apenas no monitor principal"
+
+#: prefs.js:561 ui/videoControls.js:194
+msgid "Fit Mode"
+msgstr "Modo de Ajuste"
+
+#: prefs.js:562
+msgid "How the video is fitted on screen"
+msgstr "Como o vídeo é ajustado na tela"
+
+#: prefs.js:570
+msgid "Random Start"
+msgstr "Início Aleatório"
+
+#: prefs.js:571
+msgid "Seek to a random position when playback starts"
+msgstr "Ir para uma posição aleatória quando a reprodução iniciar"
+
+#: prefs.js:577
+msgid "Per-Monitor Video Paths"
+msgstr "Caminhos de Vídeo por Monitor"
+
+#: prefs.js:591
+msgid "Auto-Pause"
+msgstr "Auto-Pausa"
+
+#: prefs.js:592
+msgid "Automatically pause the video wallpaper."
+msgstr "Pausar automaticamente o papel de parede em vídeo."
+
+#: prefs.js:596 prefs.js:618
+msgid "Never"
+msgstr "Nunca"
+
+#: prefs.js:596
+msgid "Any monitor"
+msgstr "Qualquer monitor"
+
+#: prefs.js:596
+msgid "All monitors"
+msgstr "Todos os monitores"
+
+#: prefs.js:598
+msgid "Pause on Maximize/Fullscreen"
+msgstr "Pausar ao Maximizar/Tela Cheia"
+
+#: prefs.js:599
+msgid "Pause video when a window is maximized or fullscreen"
+msgstr "Pausar o vídeo quando uma janela estiver maximizada ou em tela cheia"
+
+#: prefs.js:612
+msgid "Pause on Window Focus"
+msgstr "Pausar ao Focar Janela"
+
+#: prefs.js:613
+msgid "Pause video whenever any window has focus"
+msgstr "Pausar o vídeo sempre que uma janela tiver foco"
+
+#: prefs.js:618
+msgid "Low battery"
+msgstr "Bateria baixa"
+
+#: prefs.js:618
+msgid "Always"
+msgstr "Sempre"
+
+#: prefs.js:620
+msgid "Pause on Battery"
+msgstr "Pausar na Bateria"
+
+#: prefs.js:621
+msgid "Pause video based on power status"
+msgstr "Pausar o vídeo com base no status da energia"
+
+#: prefs.js:641
+msgid "Low Battery Threshold"
+msgstr "Limite de Bateria Baixa"
+
+#: prefs.js:642
+msgid "Battery percentage below which to pause"
+msgstr "Porcentagem da bateria abaixo da qual pausar"
+
+#: prefs.js:650
+msgid "Pause on Media Playing"
+msgstr "Pausar ao Reproduzir Mídia"
+
+#: prefs.js:651
+msgid "Pause video whenever a media player is playing"
+msgstr "Pausar o vídeo sempre que um reprodutor de mídia estiver reproduzindo"
+
+#: prefs.js:657
+msgid "Auto-pause is unavailable on GNOME Wayland"
+msgstr "A pausa automática não está disponível no GNOME Wayland"
+
+#: prefs.js:664
+msgid "Auto-Change"
+msgstr "Auto-Troca"
+
+#: prefs.js:665
+msgid "Automatically change the video wallpaper periodically."
+msgstr "Trocar automaticamente o papel de parede em vídeo periodicamente."
+
+#: prefs.js:670
+msgid "Auto-Change Wallpaper"
+msgstr "Auto-Trocar Papel de Parede"
+
+#: prefs.js:671
+msgid "Periodically change the video wallpaper from a directory"
+msgstr "Trocar periodicamente o papel de parede em vídeo de um diretório"
+
+#: prefs.js:677
+msgid "Auto-Change Directory"
+msgstr "Diretório de Auto-Troca"
+
+#: prefs.js:691
+msgid "Auto-Change Interval"
+msgstr "Intervalo de Auto-Troca"
+
+#: prefs.js:692
+msgid "Minutes between automatic wallpaper changes"
+msgstr "Minutos entre as trocas automáticas de papel de parede"
+
+#: prefs.js:699
+msgid "Sequential"
+msgstr "Sequencial"
+
+#: prefs.js:699
+msgid "Reverse"
+msgstr "Invertido"
+
+#: prefs.js:699
+msgid "Random"
+msgstr "Aleatório"
+
+#: prefs.js:701
+msgid "Change Mode"
+msgstr "Modo de Troca"
+
+#: prefs.js:702
+msgid "Order when changing wallpapers"
+msgstr "Ordem ao trocar papéis de parede"
+
+#: prefs.js:716
+msgid "Static"
+msgstr "Estático"
+
+#: prefs.js:717
+msgid "Extract a frame from the video as static wallpaper."
+msgstr "Extrair um quadro do vídeo como papel de parede estático."
+
+#: prefs.js:722
+msgid "Extract Static Wallpaper from Video"
+msgstr "Extrair Papel de Parede Estático do Vídeo"
+
+#: prefs.js:723
+msgid "Extract a frame and set it as the static desktop background"
+msgstr "Extrair um quadro e defini-lo como fundo da área de trabalho estático"
+
+#: prefs.js:729
+msgid "Blur Static Wallpaper"
+msgstr "Desfocar Papel de Parede Estático"
+
+#: prefs.js:730
+msgid "Blur the extracted frame before setting as wallpaper"
+msgstr "Desfocar o quadro extraído antes de definir como papel de parede"
+
+#: prefs.js:743
+msgid "Blur Radius"
+msgstr "Raio de Desfoque"
+
+#: prefs.js:744
+msgid "Gaussian blur radius for the static wallpaper"
+msgstr "Raio de desfoque gaussiano para o papel de parede estático"
+
+#: prefs.js:753
+msgid "Advanced"
+msgstr "Avançado"
+
+#: prefs.js:758
+msgid "Show on Lock Screen"
+msgstr "Mostrar na Tela de Bloqueio"
+
+#: prefs.js:759
+msgid "Keep the video wallpaper visible on the lock screen"
+msgstr "Manter o papel de parede em vídeo visível na tela de bloqueio"
+
+#: prefs.js:772
+msgid "Startup Delay"
+msgstr "Atraso na Inicialização"
+
+#: prefs.js:773
+msgid "Milliseconds to wait before launching the renderer"
+msgstr "Milissegundos a aguardar antes de iniciar o renderizador"
+
+#: prefs.js:781
+msgid "Show Panel Menu"
+msgstr "Mostrar Menu do Painel"
+
+#: prefs.js:782
+msgid "Show the video control menu in the panel"
+msgstr "Mostrar o menu de controle de vídeo no painel"
+
+#: prefs.js:788
+msgid "Enable VA-API Hardware Decoding"
+msgstr "Ativar Decodificação por Hardware VA-API"
+
+#: prefs.js:789
+msgid "Prefer VA-API hardware decoding for the video wallpaper"
+msgstr ""
+"Preferir decodificação por hardware VA-API para o papel de parede em vídeo"
+
+#: prefs.js:795
+msgid "Enable NVIDIA Stateless Decoders"
+msgstr "Ativar Decodificadores NVIDIA Stateless"
+
+#: prefs.js:796
+msgid "Use NVIDIA stateless decoders for hardware decoding"
+msgstr "Usar decodificadores NVIDIA stateless para decodificação por hardware"
+
+#: prefs.js:802
+msgid "Prefer Clappersink"
+msgstr "Preferir Clappersink"
+
+#: prefs.js:803
+msgid "Prefer clappersink over gtk4paintablesink"
+msgstr "Preferir clappersink ao invés de gtk4paintablesink"
+
+#: prefs.js:809
+msgid "Force GTK MediaFile Backend"
+msgstr "Forçar Backend GTK MediaFile"
+
+#: prefs.js:810
+msgid "Use Gtk.MediaFile backend instead of GStreamer"
+msgstr "Usar o backend Gtk.MediaFile ao invés do GStreamer"
+
+#: ui/filters.js:259
+msgid "API key required for NSFW content"
+msgstr "Chave de API necessária para conteúdo NSFW"
+
+#: ui/filters.js:265
+msgid "Only available with toplist sorting"
+msgstr "Disponível apenas com ordenação toplist"
+
+#: ui/gallery.js:218
+msgid "First page"
+msgstr "Primeira página"
+
+#: ui/gallery.js:219
+msgid "Previous page"
+msgstr "Página anterior"
+
+#: ui/gallery.js:221
+msgid "Next page"
+msgstr "Próxima página"
+
+#: ui/gallery.js:222
+msgid "Last page"
+msgstr "Última página"
+
+#: ui/gallery.js:270
+msgid "Searching…"
+msgstr "Pesquisando…"
+
+#: ui/gallery.js:276
+msgid "No results found."
+msgstr "Nenhum resultado encontrado."
+
+#: ui/gallery.js:290
+msgid "Authentication failed. Check your API key."
+msgstr "Falha na autenticação. Verifique sua chave de API."
+
+#: ui/gallery.js:291 ui/gallery.js:388
+msgid "Rate limited. Please wait and try again."
+msgstr "Limite de requisições atingido. Aguarde e tente novamente."
+
+#: ui/gallery.js:373
+msgid "No download URL available."
+msgstr "Nenhuma URL de download disponível."
+
+#: ui/gallery.js:374
+msgid "Downloading full resolution…"
+msgstr "Baixando em resolução total…"
+
+#: ui/gallery.js:379
+msgid "Wallpaper set:"
+msgstr "Papel de parede definido:"
+
+#: ui/gallery.js:381
+msgid "Downloaded:"
+msgstr "Baixado:"
+
+#: ui/gallery.js:387
+msgid "Authentication failed downloading image."
+msgstr "Falha na autenticação ao baixar a imagem."
+
+#: ui/gallery.js:389
+msgid "Download error:"
+msgstr "Erro de download:"
+
+#: ui/prefs_helpers.js:116
+msgid "Description"
+msgstr "Descrição"
+
+#: ui/prefs_helpers.js:125
+msgid "Step"
+msgstr "Passo"
+
+#: ui/prefs_helpers.js:134
+msgid "Rate Limit"
+msgstr "Limite de Taxa"
+
+#: ui/prefs_helpers.js:143
+msgid "Get API Key"
+msgstr "Obter Chave de API"
+
+#: ui/prefs_helpers.js:173
+msgid "Help Center"
+msgstr "Central de Ajuda"
+
+#: ui/prefs_helpers.js:180
+msgid "Provider Setup Guides"
+msgstr "Guias de Configuração de Provedores"
+
+#: ui/prefs_helpers.js:181
+msgid "Step-by-step instructions to configure each wallpaper provider."
+msgstr "Instruções passo a passo para configurar cada provedor de wallpapers."
+
+#: ui/prefs_helpers.js:186
+msgid "Wallhaven"
+msgstr "Wallhaven"
+
+#: ui/prefs_helpers.js:187
+msgid "Wallpaper community with SFW, Sketchy, and NSFW content."
+msgstr "Comunidade de wallpapers com conteúdo SFW, Sketchy e NSFW."
+
+#: ui/prefs_helpers.js:190
+msgid "Create an account at wallhaven.cc"
+msgstr "Crie uma conta no wallhaven.cc"
+
+#: ui/prefs_helpers.js:191
+msgid "Go to Account Settings and generate an API key"
+msgstr "Vá para Configurações da Conta e gere uma chave de API"
+
+#: ui/prefs_helpers.js:192 ui/prefs_helpers.js:205 ui/prefs_helpers.js:244
+msgid "Paste the API key in the Providers tab above"
+msgstr "Cole a chave de API na aba Provedores acima"
+
+#: ui/prefs_helpers.js:194
+msgid "No official rate limit, but be respectful (max ~3 req/s recommended)."
+msgstr ""
+"Sem limite de taxa oficial, mas seja respeitoso (máx ~3 req/s recomendado)."
+
+#: ui/prefs_helpers.js:199
+msgid "Pexels"
+msgstr "Pexels"
+
+#: ui/prefs_helpers.js:200
+msgid "Free high-quality stock photos and wallpapers."
+msgstr "Fotos e wallpapers de alta qualidade gratuitos."
+
+#: ui/prefs_helpers.js:203
+msgid "Create a free account at pexels.com"
+msgstr "Crie uma conta gratuita no pexels.com"
+
+#: ui/prefs_helpers.js:204
+msgid "Go to pexels.com/api and request an API key"
+msgstr "Vá para pexels.com/api e solicite uma chave de API"
+
+#: ui/prefs_helpers.js:207
+msgid "200 requests/hour for free accounts."
+msgstr "200 requisições/hora para contas gratuitas."
+
+#: ui/prefs_helpers.js:212
+msgid "Unsplash"
+msgstr "Unsplash"
+
+#: ui/prefs_helpers.js:213
+msgid "High-resolution free photography."
+msgstr "Fotografia gratuita em alta resolução."
+
+#: ui/prefs_helpers.js:216
+msgid "Create an account at unsplash.com"
+msgstr "Crie uma conta no unsplash.com"
+
+#: ui/prefs_helpers.js:217
+msgid "Go to unsplash.com/developers and create an application"
+msgstr "Vá para unsplash.com/developers e crie uma aplicação"
+
+#: ui/prefs_helpers.js:218
+msgid "Copy the Access Key and paste in the Providers tab above"
+msgstr "Copie a Chave de Acesso e cole na aba Provedores acima"
+
+#: ui/prefs_helpers.js:220
+msgid "50 requests/hour for demo apps, 5000/hour for production."
+msgstr ""
+"50 requisições/hora para apps de demonstração, 5000/hora para produção."
+
+#: ui/prefs_helpers.js:226
+msgid "Anime image board — SFW only, no API key required."
+msgstr ""
+"Board de imagens de anime — apenas SFW, nenhuma chave de API necessária."
+
+#: ui/prefs_helpers.js:229
+msgid "No API key needed — just select Safebooru in the Providers tab"
+msgstr ""
+"Nenhuma chave de API necessária — basta selecionar Safebooru na aba "
+"Provedores"
+
+#: ui/prefs_helpers.js:230
+msgid "Use tags separated by spaces in the search query"
+msgstr "Use tags separadas por espaços na consulta de busca"
+
+#: ui/prefs_helpers.js:231
+msgid "Safebooru only serves SFW content"
+msgstr "Safebooru serve apenas conteúdo SFW"
+
+#: ui/prefs_helpers.js:233
+msgid "Be respectful; avoid excessive rapid requests."
+msgstr "Seja respeitoso; evite requisições rápidas excessivas."
+
+#: ui/prefs_helpers.js:238
+msgid "Pixabay"
+msgstr "Pixabay"
+
+#: ui/prefs_helpers.js:239
+msgid "Free images with a permissive license."
+msgstr "Imagens gratuitas com licença permissiva."
+
+#: ui/prefs_helpers.js:242
+msgid "Create a free account at pixabay.com"
+msgstr "Crie uma conta gratuita no pixabay.com"
+
+#: ui/prefs_helpers.js:243
+msgid "Go to pixabay.com/api/docs and copy your API key"
+msgstr "Vá para pixabay.com/api/docs e copie sua chave de API"
+
+#: ui/prefs_helpers.js:246
+msgid "100 requests/hour for free accounts (basic key)."
+msgstr "100 requisições/hora para contas gratuitas (chave básica)."
+
+#: ui/prefs_helpers.js:251
+msgid "Waifu.im"
+msgstr "Waifu.im"
+
+#: ui/prefs_helpers.js:252
+msgid "Curated anime image archive — SFW only, no API key required."
+msgstr ""
+"Arquivo de imagens de anime com curadoria — somente SFW, sem necessidade de "
+"chave de API."
+
+#: ui/prefs_helpers.js:255
+msgid "No API key needed — just select Waifu.im in the Providers tab"
+msgstr ""
+"Nenhuma chave de API necessária — basta selecionar Waifu.im na aba Provedores"
+
+#: ui/prefs_helpers.js:256
+msgid ""
+"Use tags separated by spaces in the search query (e.g. \"maid uniform\")"
+msgstr "Use tags separadas por espaços na busca (ex.: \"maid uniform\")"
+
+#: ui/prefs_helpers.js:257
+msgid "Leave the query empty to browse random waifus"
+msgstr "Deixe a busca vazia para ver waifus aleatórias"
+
+#: ui/prefs_helpers.js:259
+msgid ""
+"1 request every 200ms. Each search returns up to 30 fresh random images."
+msgstr ""
+"1 requisição a cada 200ms. Cada busca retorna até 30 imagens aleatórias."
+
+#: ui/prefs_helpers.js:265
+msgid "Your own image collection on this computer — no network needed."
+msgstr ""
+"Sua própria coleção de imagens neste computador — sem necessidade de rede."
+
+#: ui/prefs_helpers.js:268
+msgid "Your Pictures folder is searched by default"
+msgstr "Sua pasta Imagens é pesquisada por padrão"
+
+#: ui/prefs_helpers.js:269
+msgid "Add more folders in the Providers tab, separated by colons"
+msgstr "Adicione mais pastas na aba Provedores, separadas por dois-pontos"
+
+#: ui/prefs_helpers.js:270
+msgid "Toggle subfolder search and leave the query empty to browse everything"
+msgstr "Ative a busca em subpastas e deixe a busca vazia para ver tudo"
+
+#: ui/prefs_helpers.js:281
 msgid "Wallrus exports images to ~/Pictures/Wallrus by default"
 msgstr "O Wallrus exporta imagens para ~/Pictures/Wallrus por padrão."
 
-msgid "Add more folders in the Providers tab if your Wallrus exports go elsewhere"
-msgstr "Adicione mais pastas na aba de Provedores se suas exportações forem para outro lugar."
+#: ui/prefs_helpers.js:282
+msgid ""
+"Add more folders in the Providers tab if your Wallrus exports go elsewhere"
+msgstr ""
+"Adicione mais pastas na aba de Provedores se suas exportações forem para "
+"outro lugar."
 
+#: ui/prefs_helpers.js:283
 msgid "Use the search box to filter by name; leave empty to browse all"
-msgstr "Use a caixa de busca para filtrar por nome; deixe vazio para ver todos."
+msgstr ""
+"Use a caixa de busca para filtrar por nome; deixe vazio para ver todos."
 
-msgid "/home/user/Downloads/Wallrus:/home/user/Pictures/Wallrus"
-msgstr "/home/usuario/Downloads/Wallrus:/home/usuario/Imagens/Wallrus"
+#: ui/prefs_helpers.js:291
+msgid "General Tips"
+msgstr "Dicas Gerais"
+
+#: ui/prefs_helpers.js:296
+msgid "Switching Providers"
+msgstr "Alternando Provedores"
+
+#: ui/prefs_helpers.js:297
+msgid ""
+"Select a provider in the Providers tab. Each provider has its own search "
+"filters and content. You can switch at any time."
+msgstr ""
+"Selecione um provedor na aba Provedores. Cada provedor tem seus próprios "
+"filtros de busca e conteúdo. Você pode alternar a qualquer momento."
+
+#: ui/prefs_helpers.js:303
+msgid "NSFW Content"
+msgstr "Conteúdo NSFW"
+
+#: ui/prefs_helpers.js:304
+msgid ""
+"NSFW content is only available through Wallhaven and requires a valid API "
+"key. Enable the NSFW purity filter only if you have a Wallhaven API key "
+"configured."
+msgstr ""
+"Conteúdo NSFW está disponível apenas através do Wallhaven e requer uma chave "
+"de API válida. Ative o filtro de pureza NSFW apenas se tiver uma chave de "
+"API do Wallhaven configurada."
+
+#: ui/prefs_helpers.js:310
+msgid "Safebooru Tag Syntax"
+msgstr "Sintaxe de Tags do Safebooru"
+
+#: ui/prefs_helpers.js:311
+msgid ""
+"Safebooru uses tags for search. Use underscores for multi-word tags (e.g. "
+"\"blue_hair, solo\"). Combine tags with commas."
+msgstr ""
+"Safebooru usa tags para busca. Use underscores para tags com múltiplas "
+"palavras (ex: \"blue_hair, solo\"). Combine tags com vírgulas."
+
+#: ui/videoControls.js:85 ui/videoControls.js:117
+msgid "Webpage"
+msgstr "Página da web"
+
+#: ui/videoControls.js:88
+msgid "Video wallpaper source"
+msgstr "Fonte do papel de parede em vídeo"
+
+#: ui/videoControls.js:98 ui/videoControls.js:314
+msgid "Browse…"
+msgstr "Explorar…"
+
+#: ui/videoControls.js:104
+msgid "https://…"
+msgstr "https://…"
+
+#: ui/videoControls.js:113
+msgid "Configure the webpage in Preferences → Video."
+msgstr "Configure a página da web em Preferências → Vídeo."
+
+#: ui/videoControls.js:135 ui/videoControls.js:288
+msgid "Play"
+msgstr "Reproduzir"
+
+#: ui/videoControls.js:142
+msgid "Next"
+msgstr "Próximo"
+
+#: ui/videoControls.js:145
+msgid "Lucky"
+msgstr "Sorte"
+
+#: ui/videoControls.js:185
+msgid "Fill"
+msgstr "Preencher"
+
+#: ui/videoControls.js:185
+msgid "Contain"
+msgstr "Conter"
+
+#: ui/videoControls.js:185
+msgid "Cover"
+msgstr "Cobrir"
+
+#: ui/videoControls.js:185
+msgid "Scale down"
+msgstr "Reduzir"
+
+#: ui/videoControls.js:288
+msgid "Pause"
+msgstr "Pausar"
+
+#: ui/videoControls.js:335
+msgid "Videos"
+msgstr "Vídeos"
+
+#~ msgid "Wallhaven API Key"
+#~ msgstr "Chave de API do Wallhaven"
+
+#~ msgid "Pexels API Key"
+#~ msgstr "Chave de API do Pexels"
+
+#~ msgid "Unsplash API Key"
+#~ msgstr "Chave de API do Unsplash"
+
+#~ msgid "Pixabay API Key"
+#~ msgstr "Chave de API do Pixabay"
+
+#~ msgid " is configured."
+#~ msgstr " está configurada."
+
+#~ msgid "Video mode: OFF"
+#~ msgstr "Modo vídeo: DESL"
+
+#~ msgid "No matching videos."
+#~ msgstr "Nenhum vídeo correspondente."

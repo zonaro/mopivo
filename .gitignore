@@ -2,6 +2,7 @@
 build/
 *.zip
 schemas/gschemas.compiled
+locale/**/LC_MESSAGES/*.mo
 
 # Agent / editor state
 .omo/

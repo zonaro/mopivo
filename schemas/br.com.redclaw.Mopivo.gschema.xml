@@ -444,5 +444,41 @@
       <description>Force the GstPlay/Gtk.MediaFile playback path instead of the manual playbin pipeline.</description>
     </key>
 
+    <!-- Generator: Selected Preset -->
+    <key name="generator-preset" type="s">
+      <default>'Bars'</default>
+      <summary>Generator Preset</summary>
+      <description>Last shader preset selected in the wallpaper Generator: Bars, Circle, Plasma, Waves, Terrain, Dunes or Spark.</description>
+    </key>
+
+    <!-- Generator: Selected Palette -->
+    <key name="generator-palette" type="s">
+      <default>''</default>
+      <summary>Generator Palette</summary>
+      <description>Absolute path of the last palette image used by the wallpaper Generator.</description>
+    </key>
+
+    <!-- Generator: Export Resolution -->
+    <key name="generator-resolution" type="i">
+      <default>0</default>
+      <summary>Generator Export Resolution</summary>
+      <description>Export resolution index: 0 Display, 1 HD (1920x1080), 2 QHD (2560x1440), 3 4K (3840x2160), 4 Phone (1080x2400).</description>
+      <range min="0" max="4"/>
+    </key>
+
+    <!-- Generator: Export Format -->
+    <key name="generator-format" type="s">
+      <default>'png'</default>
+      <summary>Generator Export Format</summary>
+      <description>Image format used when exporting a generated wallpaper: png or jpg.</description>
+    </key>
+
+    <!-- Generator: Export Folder -->
+    <key name="generator-export-folder" type="s">
+      <default>''</default>
+      <summary>Generator Export Folder</summary>
+      <description>Folder where generated wallpapers are saved. Empty uses the XDG Pictures directory.</description>
+    </key>
+
   </schema>
 </schemalist>

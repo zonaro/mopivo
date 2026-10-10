@@ -63,7 +63,7 @@ O install script:
    (`wallpaper-providers-gnome@redclaw.com.br`) se presente, e remove seu
    diretório em `~/.local/share/gnome-shell/extensions/`.
 2. Copia a árvore de runtime (`main.js`, `app/`, `ui/`, `lib/`, `renderer/`,
-   `schemas/`, `locale/`) para `~/.local/share/mopivo/` (APP_DIR),
+   `schemas/`, `locale/`, `data/`) para `~/.local/share/mopivo/` (APP_DIR),
    removendo arquivos obsoletos.
 3. Compila o schema em `APP_DIR/schemas/` (o renderer carrega de lá) e instala
    globalmente em `~/.local/share/glib-2.0/schemas/`, recompilando o diretório.
@@ -100,6 +100,7 @@ Para rodar do checkout: `gjs -m main.js`, ou `make smoke` para o smoke test.
 - GStreamer com `gtk4paintablesink` (vídeo-wallpaper)
 - `xprop` (camada desktop X11/XWayland)
 - `glib-compile-schemas` e `msgfmt` (só no install)
+- `python3` com `numpy` e `Pillow` (gerador de wallpapers — aba Generator)
 - Opcional: [yt-dlp](https://github.com/yt-dlp/yt-dlp) (streaming)
 - Opcional: WebKitGTK 6.0 (fonte webpage)
 
@@ -168,8 +169,10 @@ Grupos principais:
 - **Advanced** — `show-on-lock-screen`, mais as seis chaves do renderer
   `startup-delay`, `show-panel-menu`, `enable-va`, `enable-nvsl`,
   `prefer-clappersink`, `force-mediafile`.
+- **Gerador** — `generator-preset`, `generator-palette`,
+  `generator-resolution`, `generator-format`, `generator-export-folder`.
 
-57 chaves no total.
+62 chaves no total.
 
 ## Modo imagem
 
@@ -221,6 +224,35 @@ desktop X11, cai para `fullscreen_on_monitor`.
 app standalone não tem — não é aplicado lá (avisado na página Video). Auto-change
 e static-wallpaper são do renderer e independem do auto-pause.
 
+## Gerador
+
+A terceira aba do header (ícone de paleta) gera wallpapers abstratos no mesmo
+estilo do app Wallrus, sem ler wallpapers prontos e sem GPU: a matemática dos
+shaders foi portada para `renderer/generator.py`, um subprocesso Python que usa
+`numpy` + `Pillow`. O motor é acessado por `lib/generator/engine.js` via
+`Gio.Subprocess`, então um preview roda num processo separado e nunca trava a UI.
+
+- **7 presets**: Bars, Waves, Plasma, Terrain, Circle, Dunes, Spark — cada um com
+  seus próprios controles (angle, scale, speed/time, center, variation).
+- **Paletas**: `data/palettes/` (categorias `cold` e `dark`); as 4 cores são
+  amostradas do PNG com `lib/generator/palettes.js`.
+- **Pipeline**: Scene → Blur → Bloom → Chromatic Aberration → Effects (noise,
+  dither, grain) e Lighting (bevel/gradient/vignette).
+- **Ações**: **Randomize** (sorteia preset, paleta e parâmetros), **Set as
+  Wallpaper** e **Export** (Display / HD / QHD / 4K / Phone, em PNG ou JPEG).
+- **Prévia**: debounced (~250 ms) para `~/.cache/mopivo/generator/`.
+
+Se `python3`, `numpy` ou `Pillow` não estiverem presentes, a aba mostra uma
+mensagem explicando como instalar.
+
+| Setting | Padrão | Descrição |
+|---|---|---|
+| `generator-preset` | `Bars` | Preset atual |
+| `generator-palette` | `` (vazio) | Caminho da paleta atual |
+| `generator-resolution` | `0` | 0=Display, 1=HD, 2=QHD, 3=4K, 4=Phone |
+| `generator-format` | `png` | `png` ou `jpg` |
+| `generator-export-folder` | `` (vazio) | Pasta de export; vazio = `~/Pictures` |
+
 ## Troubleshooting
 
 ```bash
@@ -246,8 +278,9 @@ install.sh            One-liner installer (raiz — bootstrap remoto + delega a 
 uninstall.sh          One-liner uninstaller (raiz — bootstrap remoto + delega a scripts/)
 docs/                 Landing page (GitHub Pages, source: /docs)
 app/
-  window.js           Main window: image + video stacks, provider switching
+  window.js           Main window: image + video + generator stacks, provider switching
   videoController.js  Renderer lifecycle, D-Bus channel, next/lucky/streaming
+  generatorPage.js    Generator tab: presets, palettes, live preview, export
 ui/
   gallery.js          Gtk.FlowBox thumbnail gallery + pagination
   filters.js          Wallhaven filter popover
@@ -260,13 +293,17 @@ lib/
   providers/          One module per source + registry (see lib/providers/README.md)
   video/              Video subsystem (constants, dbus, launcher, ytDlp,
                       videoThumbs, playbackState, staticBlur)
+  generator/          Generator engine (presets, palettes, spec builder)
 renderer/
   renderer.js         GStreamer/WebKit renderer subprocess (one window per monitor)
   stylesheet.css      Renderer window CSS
+  generator.py        Abstract wallpaper generator (numpy + Pillow)
 schemas/              GSettings schema
 locale/               .pot template + pt_BR / es translations
-tests/                Headless unit tests (tests/run.js, gallery, filters, videoController)
-data/                 Desktop entry template + app icon (data/icons/)
+tests/                Headless unit tests (tests/run.js, gallery, filters,
+                      videoController, generator)
+data/                 Desktop entry template, app icon (data/icons/) and
+                      generator palettes (data/palettes/)
 scripts/              install.sh, uninstall.sh, export-icons.sh
 ```
 

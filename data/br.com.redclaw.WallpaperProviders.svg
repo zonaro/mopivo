@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b5d8a"/>
+      <stop offset="1" stop-color="#8ecae6"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d6a4f"/>
+      <stop offset="1" stop-color="#16342a"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d8bfd"/>
+      <stop offset="1" stop-color="#1c71d8"/>
+    </linearGradient>
+    <clipPath id="plateClip">
+      <rect x="8" y="8" width="112" height="112" rx="26" ry="26"/>
+    </clipPath>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="26" ry="26" fill="url(#sky)" stroke="#123b5e" stroke-width="4"/>
+  <g clip-path="url(#plateClip)">
+    <rect x="8" y="82" width="112" height="38" fill="url(#ground)"/>
+    <circle cx="46" cy="50" r="14" fill="#ffd166"/>
+    <polygon points="60,82 84,44 108,82" fill="#38755a"/>
+    <polygon points="86,82 104,58 122,82" fill="#245040"/>
+  </g>
+  <circle cx="95" cy="95" r="25" fill="#ffffff"/>
+  <circle cx="95" cy="95" r="20" fill="url(#badge)"/>
+  <polygon points="89,85 89,105 106,95" fill="#ffffff"/>
+</svg>

@@ -1,41 +1,92 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-UUID="wallpaper-providers-gnome@redclaw.com.br"
-SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DEST="$HOME/.local/share/gnome-shell/extensions/$UUID"
+APP_ID="br.com.redclaw.WallpaperProviders"
+OLD_UUID="wallpaper-providers-gnome@redclaw.com.br"
+GETTEXT_DOMAIN="wallpaper-providers-gnome"
 
-echo "==> Compiling schemas..."
-glib-compile-schemas --strict "$SRC/schemas/"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+APP_DIR="$HOME/.local/share/wallpaper-providers"
 
-echo "==> Installing $UUID to $DEST ..."
-mkdir -p "$DEST"
-cp -f "$SRC/metadata.json" "$SRC/extension.js" "$SRC/prefs.js" "$SRC/stylesheet.css" "$DEST/"
-cp -rf "$SRC/lib" "$SRC/ui" "$SRC/schemas" "$SRC/locale" "$SRC/renderer" "$DEST/"
+echo "==> Removing old GNOME Shell extension (if present)..."
+gnome-extensions disable "$OLD_UUID" || true
+gnome-extensions uninstall "$OLD_UUID" || true
+rm -rf "$HOME/.local/share/gnome-shell/extensions/$OLD_UUID"
 
-echo "==> Compiling translations..."
-for po in "$DEST"/locale/*/LC_MESSAGES/*.po; do
-    [ -f "$po" ] || continue
-    msgfmt "$po" -o "${po%.po}.mo"
+echo "==> Installing runtime files to $APP_DIR ..."
+mkdir -p "$APP_DIR"
+
+RUNTIME_ITEMS=(main.js app ui lib renderer schemas locale)
+EXISTING_ITEMS=()
+for item in "${RUNTIME_ITEMS[@]}"; do
+    if [ -e "$REPO_ROOT/$item" ]; then
+        EXISTING_ITEMS+=("$REPO_ROOT/$item")
+    else
+        echo "WARN: $item not found in repo, skipping."
+    fi
 done
 
-if command -v restorecon >/dev/null 2>&1; then
-    echo "==> Fixing SELinux context..."
-    restorecon -R "$DEST"
+if [ "${#EXISTING_ITEMS[@]}" -gt 0 ]; then
+    if command -v rsync >/dev/null 2>&1; then
+        rsync -a --delete "${EXISTING_ITEMS[@]}" "$APP_DIR/"
+    else
+        echo "NOTE: rsync not found, using cp fallback."
+        for item in "${RUNTIME_ITEMS[@]}"; do
+            [ -e "$REPO_ROOT/$item" ] || continue
+            rm -rf "$APP_DIR/$item"
+            cp -a "$REPO_ROOT/$item" "$APP_DIR/$item"
+        done
+    fi
 fi
 
-echo "==> Enabling extension..."
-if gnome-extensions enable "$UUID" 2>/dev/null; then
-    echo "Enabled."
+if [ -d "$APP_DIR/schemas" ]; then
+    echo "==> Compiling schema in place for the renderer loader..."
+    glib-compile-schemas --strict "$APP_DIR/schemas"
+fi
+
+SCHEMA_XML="$REPO_ROOT/schemas/$APP_ID.gschema.xml"
+if [ -f "$SCHEMA_XML" ]; then
+    echo "==> Installing $APP_ID schema globally..."
+    install -D -m644 "$SCHEMA_XML" "$HOME/.local/share/glib-2.0/schemas/"
+    glib-compile-schemas --strict "$HOME/.local/share/glib-2.0/schemas"
 else
-    echo "NOTE: shell has not picked up the extension yet (normal on first"
-    echo "install: the running GNOME Shell only scans new extensions on start)."
-    echo "Restart the shell, then run this script again (or just enable):"
-    echo "  Wayland: log out and back in, then: gnome-extensions enable $UUID"
-    echo "  X11:     Alt+F2 -> r -> Enter, then: gnome-extensions enable $UUID"
-    exit 0
+    echo "WARN: $SCHEMA_XML not found, skipping global schema install."
+fi
+
+echo "==> Compiling translations..."
+if command -v msgfmt >/dev/null 2>&1; then
+    for po in "$REPO_ROOT"/locale/*/LC_MESSAGES/*.po; do
+        [ -f "$po" ] || continue
+        lang="$(basename "$(dirname "$(dirname "$po")")")"
+        target_dir="$HOME/.local/share/locale/$lang/LC_MESSAGES"
+        mkdir -p "$target_dir"
+        msgfmt -o "$target_dir/$GETTEXT_DOMAIN.mo" "$po"
+    done
+else
+    echo "WARN: msgfmt not found, skipping translations."
+fi
+
+DESKTOP_IN="$REPO_ROOT/data/$APP_ID.desktop.in"
+DESKTOP_OUT="$HOME/.local/share/applications/$APP_ID.desktop"
+if [ -f "$DESKTOP_IN" ]; then
+    echo "==> Installing desktop entry..."
+    mkdir -p "$(dirname "$DESKTOP_OUT")"
+    sed "s|@APPDIR@|$APP_DIR|g" "$DESKTOP_IN" > "$DESKTOP_OUT"
+    update-desktop-database "$HOME/.local/share/applications" || true
+else
+    echo "WARN: $DESKTOP_IN not found, skipping desktop entry."
+fi
+
+ICON_SRC="$REPO_ROOT/data/$APP_ID.svg"
+ICON_DEST="$HOME/.local/share/icons/hicolor/scalable/apps/$APP_ID.svg"
+if [ -f "$ICON_SRC" ]; then
+    echo "==> Installing icon..."
+    install -D -m644 "$ICON_SRC" "$ICON_DEST"
+    gtk-update-icon-cache -f "$HOME/.local/share/icons/hicolor" || true
+else
+    echo "WARN: $ICON_SRC not found, skipping icon."
 fi
 
 echo ""
-echo "Verify with: gnome-extensions list | grep wallhaven"
-echo "Logs (Looking Glass / journal): journalctl -f -o cat /usr/bin/gnome-shell"
+echo "Installation complete."
+echo "You can now launch \"Wallpaper Providers\" from the app grid."

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="wallpaper-providers-gnome">
-  <schema id="org.gnome.shell.extensions.wallpaper-providers-gnome"
-          path="/org/gnome/shell/extensions/wallpaper-providers-gnome/">
+  <schema id="br.com.redclaw.WallpaperProviders"
+          path="/br/com/redclaw/WallpaperProviders/">
 
     <!-- Active Provider -->
     <key name="active-provider" type="s">
@@ -400,6 +400,48 @@
       <default>true</default>
       <summary>Search Subfolders</summary>
       <description>Recursively search subfolders in the Wallrus provider.</description>
+    </key>
+
+    <!-- Startup Delay -->
+    <key name="startup-delay" type="i">
+      <default>1000</default>
+      <summary>Renderer Startup Delay</summary>
+      <description>Renderer startup delay in milliseconds before initializing the video subsystem.</description>
+    </key>
+
+    <!-- Show Panel Menu -->
+    <key name="show-panel-menu" type="b">
+      <default>true</default>
+      <summary>Show Panel Menu</summary>
+      <description>Whether the notification/panel indicator for video mode is shown (kept for schema compatibility even though the app has no panel menu).</description>
+    </key>
+
+    <!-- Enable VA-API -->
+    <key name="enable-va" type="b">
+      <default>false</default>
+      <summary>Enable VA-API Hardware Acceleration</summary>
+      <description>Enable VA-API hardware acceleration in the renderer's GStreamer pipeline.</description>
+    </key>
+
+    <!-- Enable NVIDIA NVDEC/NVENC -->
+    <key name="enable-nvsl" type="b">
+      <default>false</default>
+      <summary>Enable NVIDIA Hardware Acceleration</summary>
+      <description>Enable NVIDIA NVDEC/NVENC hardware acceleration in the renderer's GStreamer pipeline.</description>
+    </key>
+
+    <!-- Prefer Clapper Sink -->
+    <key name="prefer-clappersink" type="b">
+      <default>false</default>
+      <summary>Prefer Clapper Sink</summary>
+      <description>Prefer clapper sink over gtk4paintablesink when building the renderer pipeline.</description>
+    </key>
+
+    <!-- Force Media File Playback Path -->
+    <key name="force-mediafile" type="b">
+      <default>false</default>
+      <summary>Force Media File Playback</summary>
+      <description>Force the GstPlay/Gtk.MediaFile playback path instead of the manual playbin pipeline.</description>
     </key>
 
   </schema>

@@ -521,6 +521,16 @@ const Renderer = GObject.registerClass(
 
             this._dbus = Gio.DBusExportedObject.wrapJSObject(dbusXml, this);
             this._dbus.export(Gio.DBus.session, RENDERER_OBJECT_PATH);
+            // Own the well-known name so the app's RendererDBus proxy
+            // resolves. (Gtk.Application with NON_UNIQUE does not own its
+            // application_id itself.) REPLACE: a fresh renderer always takes
+            // over from a dying one during restarts.
+            Gio.bus_own_name(
+                Gio.BusType.SESSION,
+                APPLICATION_ID,
+                Gio.BusNameOwnerFlags.REPLACE,
+                null, null, null
+            );
         }
 
         // ─────────────────────────────────────────────────────────────

@@ -9,7 +9,6 @@
 // ═══════════════════════════════════════════════════════════════════════════
 imports.gi.versions.Gtk = '4.0';
 imports.gi.versions.Gdk = '4.0';
-imports.gi.versions.GdkX11 = '4.0';
 
 const {GObject, Gtk, Gio, GLib, Gdk, Gst} = imports.gi;
 
@@ -67,15 +66,6 @@ try {
     console.warn(`${LOG_PREFIX} WebKit6 typelib not found — webpage mode unavailable`);
 }
 const haveWebKit = WebKit !== null;
-
-// GdkX11 loads only under the X11 backend; the versions pin above must come first.
-let GdkX11 = null;
-try {
-    GdkX11 = imports.gi.GdkX11;
-} catch (e) {
-    console.warn(`${LOG_PREFIX} GdkX11 typelib not found — X11 desktop layer disabled`);
-}
-const haveGdkX11 = GdkX11 !== null;
 
 const haveContentFit = isGtkVersionAtLeast(4, 8);
 const useGstGL = isGstVersionAtLeast(1, 24);
@@ -206,26 +196,9 @@ function scanVideoDir(dirPath) {
     return paths.sort();
 }
 
-/**
- * True when the renderer should run in X11 desktop-layer mode: the
- * launcher spawns it with GDK_BACKEND=x11 (XWayland), the GdkX11 typelib
- * loaded, and no-hide debug mode inactive.
- */
-function isX11DesktopMode() {
-    return haveGdkX11 && !nohide &&
-        GLib.getenv('GDK_BACKEND') === 'x11';
-}
-
-// Find xprop once; a cached null silences the warning after first attempt.
-let xpropPath;
-function findXprop() {
-    if (xpropPath === undefined) {
-        xpropPath = GLib.find_program_in_path('xprop') || null;
-        if (!xpropPath)
-            console.warn(`${LOG_PREFIX} xprop not found — desktop layer skipped`);
-    }
-    return xpropPath;
-}
+// Do NOT set _NET_WM_WINDOW_TYPE_DESKTOP on these windows: fullscreen +
+// DESKTOP type on XWayland crashes Mutter with SIGFPE. Plain fullscreen
+// matches the original extension behavior and is crash-free.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Renderer — Gtk.Application subclass
@@ -1307,84 +1280,8 @@ const RendererWindow = GObject.registerClass(
 
             this.set_child(widget);
 
-            // Per-monitor geometry via fullscreen (GTK4 removed
-            // Gtk.Window.move() and GdkX11 offers no surface move, so explicit
-            // positioning is impossible — fullscreen_on_monitor is the only
-            // reliable way to cover exactly one monitor, including ones with
-            // negative geometry origins).
             this.fullscreen_on_monitor(gdkMonitor);
-            if (isX11DesktopMode()) {
-                // Drop to the desktop layer behind normal windows (xprop after
-                // map, when the XID is valid). Layering comes from the DESKTOP
-                // window type; geometry comes from fullscreen above.
-                this.set_resizable(false);
-                this.connect('map', () => {
-                    if (this._desktopLayerMapped)
-                        return;
-                    this._desktopLayerMapped = true;
-                    // XID is only valid after map — schedule in idle.
-                    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                        this._placeOnDesktopLayer();
-                        return GLib.SOURCE_REMOVE;
-                    });
-                });
-            }
-        }
-
-        _placeOnDesktopLayer() {
-            const surface = this.get_surface();
-            if (!surface)
-                return;
-
-            let xid = 0;
-            try {
-                // Runtime GType is X11Surface under X11; get_xid throws
-                // (or returns 0) for non-X11 surfaces.
-                xid = surface.get_xid();
-            } catch (e) {
-                xid = 0;
-            }
-            if (!xid) {
-                console.debug(
-                    `${LOG_PREFIX} Surface has no X11 XID — desktop layer skipped`
-                );
-                return;
-            }
-
-            const xprop = findXprop();
-            if (!xprop)
-                return;
-
-            const launcher = new Gio.SubprocessLauncher();
-            launcher.set_flags(Gio.SubprocessFlags.STDERR_PIPE);
-            let proc;
-            try {
-                proc = launcher.spawnv([
-                    xprop,
-                    '-id', String(xid),
-                    '-f', '_NET_WM_WINDOW_TYPE', '32a',
-                    '-set', '_NET_WM_WINDOW_TYPE',
-                    '_NET_WM_WINDOW_TYPE_DESKTOP',
-                ]);
-            } catch (e) {
-                console.warn(
-                    `${LOG_PREFIX} Failed to spawn xprop (window ${xid}): ${e.message}`
-                );
-                return;
-            }
-
-            proc.wait_check_async(null, (subprocess, res) => {
-                try {
-                    subprocess.wait_check_finish(res);
-                    console.log(
-                        `${LOG_PREFIX} Window ${xid} set to desktop layer`
-                    );
-                } catch (e) {
-                    console.warn(
-                        `${LOG_PREFIX} xprop failed (window ${xid}): ${e.message}`
-                    );
-                }
-            });
+            this.set_resizable(false);
         }
     }
 );

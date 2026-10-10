@@ -238,7 +238,8 @@ const Renderer = GObject.registerClass(
         constructor() {
             super({
                 application_id: APPLICATION_ID,
-                flags: Gio.ApplicationFlags.NON_UNIQUE,
+                flags: Gio.ApplicationFlags.NON_UNIQUE |
+                    Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
             });
 
             // Window / widget bookkeeping
@@ -272,7 +273,7 @@ const Renderer = GObject.registerClass(
             });
 
             this.connect('command-line', (app, commandLine) => {
-                const argv = commandLine.get_arguments();
+                const argv = commandLine.get_arguments().slice(1);
                 if (this._parseAndInit(argv)) {
                     this.activate();
                     commandLine.set_exit_status(0);
@@ -1389,4 +1390,4 @@ GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, 15, () => {
     return GLib.SOURCE_REMOVE;
 });
 
-app.run(ARGV);
+app.run([GLib.get_prgname() || 'renderer.js', ...ARGV]);

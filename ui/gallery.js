@@ -1,29 +1,192 @@
-import St from 'gi://St';
-import Clutter from 'gi://Clutter';
+// SPDX-License-Identifier: GPL-3.0-or-later
+// GTK4 thumbnail gallery + pagination for Wallpaper Providers.
+//
+// Standalone (app) rewrite of the old GNOME Shell St/Clutter gallery: renders
+// search results into a Gtk.FlowBox of Gtk.Picture thumbnails, downloads the
+// full-resolution image on click and applies it as desktop wallpaper via
+// lib/wallpaper.js. Pure ESM — no St/Clutter/Meta/Main/resource:// imports.
+//
+// The app window (phase P4) hydrates a GalleryManager with the FlowBox it owns
+// (or lets us create one) and calls the frozen interface below. The status
+// label and the pagination bar are separate widgets the window packs wherever
+// it wants; the manager only toggles their visibility.
+
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk?version=4.0';
+
 import {downloadToFile} from '../lib/download.js';
+import {_} from '../lib/i18n.js';
+import {setDesktopWallpaper} from '../lib/wallpaper.js';
 
 const CACHE_BASE = GLib.get_home_dir() + '/.cache/wallpaper-providers-gnome';
 const GRID_COLS = 3;
 const THUMB_SIZE = 200;
-const BG_SCHEMA = 'org.gnome.desktop.background';
+const THUMB_HEIGHT = 150;
+
+// Async GTK4 picture loader for local files. set_filename is the preferred
+// async API (risk R5: never block on Gdk.Texture.new_from_filename); the file
+// property fallback behaves the same way. Probed once at module load — it only
+// touches introspection, no widget is constructed.
+const _setPictureFile = typeof Gtk.Picture.prototype.set_filename === 'function'
+    ? (picture, path) => picture.set_filename(path)
+    : (picture, path) => { picture.file = Gio.File.new_for_path(path); };
 
 function _ensureDir(p) {
     const d = Gio.File.new_for_path(p);
     if (!d.query_exists(null)) d.make_directory_with_parents(null);
 }
+
 function _cacheDir(pid) {
     return GLib.build_filenamev([CACHE_BASE, pid || 'wallhaven']);
 }
 
-export class GalleryManager {
-    constructor({grid, client, settings, session}) {
-        this._grid = grid;
-        this._client = client;
-        this._settings = settings;
-        this._session = session;
+function _parseWidth(res) {
+    if (!res || typeof res !== 'string') return 0;
+    const idx = res.indexOf('x');
+    if (idx <= 0) return 0;
+    const w = parseInt(res.substring(0, idx), 10);
+    return Number.isFinite(w) ? w : 0;
+}
+
+function _parseHeight(res) {
+    if (!res || typeof res !== 'string') return 0;
+    const idx = res.indexOf('x');
+    if (idx < 0) return 0;
+    const h = parseInt(res.substring(idx + 1), 10);
+    return Number.isFinite(h) ? h : 0;
+}
+
+/**
+ * Map a single raw provider item to the normalized gallery item shape.
+ * Tolerant of both already-normalized items (previewUrl/fullUrl/resolution)
+ * and raw provider records (thumbs.small/path/resolution/url).
+ */
+function _mapItem(item = {}) {
+    const resolution = item.resolution || item.dimensions || item.url?.WxH || '';
+    const previewUrl = item.previewUrl || item.thumbs?.small
+        || item.thumbs?.medium || item.thumbs?.large
+        || item.thumbnail || item.urls?.thumb || '';
+    const fullUrl = item.fullUrl || item.path || item.image
+        || item.urls?.full || item.imageUrl || '';
+
+    return {
+        id: item.id ?? null,
+        previewUrl,
+        fullUrl,
+        path: fullUrl,
+        resolution,
+        width: Number.isInteger(item.previewWidth) && item.previewWidth > 0
+            ? item.previewWidth
+            : _parseWidth(resolution),
+        height: Number.isInteger(item.previewHeight) && item.previewHeight > 0
+            ? item.previewHeight
+            : _parseHeight(resolution),
+        source: item.source || '',
+        sourceUrl: item.sourceUrl || item.pageUrl || item.url || '',
+    };
+}
+
+function _computeTotalPage(raw, meta) {
+    const last = meta.last_page ?? raw.lastPage ?? raw.pages ?? 0;
+    if (Number.isFinite(last) && last >= 1)
+        return Math.round(last);
+    const total = meta.total ?? raw.total ?? 0;
+    const per = meta.per_page ?? raw.perPage ?? 0;
+    if (Number.isFinite(total) && total >= 1 && Number.isFinite(per) && per >= 1)
+        return Math.max(1, Math.ceil(total / per));
+    return 1;
+}
+
+/**
+ * Normalize a raw provider search payload into the canonical gallery shape.
+ *
+ * Handles the two shapes the legacy module consumed:
+ *   - wallhaven raw `{items|data: [...], meta: {current_page, last_page, total, per_page}}`
+ *   - already-normalized `{items: [...], total, page, lastPage}` (modern
+ *     providers via lib/providers registry).
+ * Malformed/empty payloads degrade gracefully to an empty list while keeping
+ * `fallbackPage` as the page number.
+ *
+ * @param {object|null} raw          Raw provider search result.
+ * @param {number}      fallbackPage Page to report when the payload carries none.
+ * @returns {{results: object[], page: number, totalPage: number}}
+ */
+export function normalizeResult(raw, fallbackPage = 1) {
+    if (!raw || typeof raw !== 'object')
+        return {results: [], page: fallbackPage, totalPage: 1};
+
+    const rawItems = Array.isArray(raw.items) ? raw.items
+        : Array.isArray(raw.data) ? raw.data
+        : null;
+    if (!rawItems)
+        return {results: [], page: fallbackPage, totalPage: 1};
+
+    const meta = raw.meta || {};
+    const rawPage = meta.current_page ?? raw.page ?? fallbackPage;
+    const page = Number.isFinite(rawPage) && rawPage >= 1
+        ? Math.round(rawPage)
+        : fallbackPage;
+
+    return {
+        results: rawItems
+            .map(item => _mapItem(item))
+            .filter(it => it.id !== null || it.previewUrl !== ''),
+        page,
+        totalPage: _computeTotalPage(raw, meta),
+    };
+}
+
+/**
+ * Thumbnail gallery + pagination on a Gtk.FlowBox.
+ *
+ * Frozen interface (see .omo/plans/app-conversion.md §3):
+ *   new GalleryManager({flowbox?, client?, settings?, session?})
+ *     .setProvider(id, instance)  .search(params)  .loadRecent()  .clear()
+ *     .setVisible(on)             .connect('page-changed', cb)   .pagination
+ *     .flowbox  .statusLabel  .paginationBar
+ *
+ * `flowbox` is normally provided by the window (the legacy module never owned
+ * its grid — extension.js built it and the manager attached a layout to it).
+ * If omitted, the manager creates one; append `gallery.flowbox` anywhere.
+ * `client` is the legacy WallhavenClient used only when no provider instance
+ * was set (the old wallhaven fallback path); modern callers rely on
+ * setProvider(). `settings` provides page-size/set-background/api-key and
+ * `session` is the shared Soup session for downloads. Both are optional, but
+ * search fail gracefully without them.
+ *
+ * Emits `page-changed` (int page number) whenever the committed page moves.
+ * `.pagination` returns the current {page, totalPage}.
+ */
+const GalleryManager = GObject.registerClass({
+    Signals: {
+        'page-changed': {param_types: [GObject.TYPE_INT]},
+    },
+}, class GalleryManager extends GObject.Object {
+    _init(opts = {}) {
+        super._init();
+
+        this._flowbox = opts.flowbox ?? new Gtk.FlowBox({
+            row_spacing: 8,
+            column_spacing: 8,
+            homogeneous: true,
+            selection_mode: Gtk.SelectionMode.NONE,
+            max_children_per_line: GRID_COLS,
+            min_children_per_line: 1,
+            halign: Gtk.Align.FILL,
+            valign: Gtk.Align.START,
+            hexpand: true,
+            vexpand: true,
+        });
+        this._flowbox.selection_mode = Gtk.SelectionMode.NONE;
+        this._flowbox.set_row_spacing(8);
+        this._flowbox.set_column_spacing(8);
+
+        this._client = opts.client ?? null;
+        this._settings = opts.settings ?? null;
+        this._session = opts.session ?? null;
+
         this._providerId = 'wallhaven';
         this._provider = null;
         this._page = 1;
@@ -32,31 +195,51 @@ export class GalleryManager {
         this._thumbs = [];
         this._currentParams = null;
         this._loading = false;
-        this._errorLabel = null;
+        this._statusShown = false;
 
-        this._layout = new Clutter.GridLayout({column_spacing: 8, row_spacing: 8});
-        this._grid.set_layout_manager(this._layout);
-
-        this._paginationBox = new St.BoxLayout({
-            style_class: 'wp-pagination', vertical: false,
-            x_expand: true, x_align: Clutter.ActorAlign.CENTER,
+        this._statusLabel = new Gtk.Label({
+            halign: Gtk.Align.CENTER,
+            margin_top: 12,
+            visible: false,
         });
-        this._prevBtn = new St.Button({label: '\u2190 Prev',
-            style_class: 'wp-pagination-btn', can_focus: true, reactive: true});
-        this._nextBtn = new St.Button({label: 'Next \u2192',
-            style_class: 'wp-pagination-btn', can_focus: true, reactive: true});
-        this._pageLabel = new St.Label({text: 'Page 1',
-            style_class: 'wp-page-label', y_align: Clutter.ActorAlign.CENTER});
-        this._prevBtn.connect('clicked', () => this.prevPage());
-        this._nextBtn.connect('clicked', () => this.nextPage());
-        this._paginationBox.add_child(this._prevBtn);
-        this._paginationBox.add_child(this._pageLabel);
-        this._paginationBox.add_child(this._nextBtn);
-        this._paginationBox.hide();
+        this._buildPagination();
         _ensureDir(_cacheDir('wallhaven'));
     }
 
-    get paginationWidget() { return this._paginationBox; }
+    _buildPagination() {
+        this._paginationBar = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            spacing: 6,
+            halign: Gtk.Align.CENTER,
+            margin_top: 8,
+            visible: false,
+        });
+
+        this._firstBtn = new Gtk.Button({label: '\u23EE', tooltip_text: _('First page')});
+        this._prevBtn = new Gtk.Button({label: '\u2039', tooltip_text: _('Previous page')});
+        this._pageLabel = new Gtk.Label({label: 'Page 1', margin_start: 8, margin_end: 8});
+        this._nextBtn = new Gtk.Button({label: '\u203A', tooltip_text: _('Next page')});
+        this._lastBtn = new Gtk.Button({label: '\u23ED', tooltip_text: _('Last page')});
+
+        this._firstBtn.connect('clicked', () => this._goTo(1));
+        this._prevBtn.connect('clicked', () => this._goTo(this._page - 1));
+        this._nextBtn.connect('clicked', () => this._goTo(this._page + 1));
+        this._lastBtn.connect('clicked', () => this._goTo(this._lastPage));
+
+        this._paginationBar.append(this._firstBtn);
+        this._paginationBar.append(this._prevBtn);
+        this._paginationBar.append(this._pageLabel);
+        this._paginationBar.append(this._nextBtn);
+        this._paginationBar.append(this._lastBtn);
+    }
+
+    get providerId() { return this._providerId; }
+    get flowbox() { return this._flowbox; }
+    get statusLabel() { return this._statusLabel; }
+    get pagination() { return {page: this._page, totalPage: this._lastPage}; }
+    get paginationBar() { return this._paginationBar; }
+    // Legacy alias kept for the old extension wiring that toggled this widget.
+    get paginationWidget() { return this._paginationBar; }
 
     setProvider(id, instance) {
         this._providerId = id || 'wallhaven';
@@ -64,15 +247,14 @@ export class GalleryManager {
         _ensureDir(_cacheDir(this._providerId));
     }
 
-    get providerId() { return this._providerId; }
-
     async loadRecent() {
         if (this._providerId === 'wallhaven' && !this._provider) {
+            const s = this._settings;
             await this.search({
-                sorting: this._settings.get_string('sorting') || 'date_added',
-                order: this._settings.get_string('order') || 'desc',
-                purity: this._settings.get_string('purity') || '100',
-                categories: this._settings.get_string('categories') || '111',
+                sorting: s?.get_string?.('sorting') || 'date_added',
+                order: s?.get_string?.('order') || 'desc',
+                purity: s?.get_string?.('purity') || '100',
+                categories: s?.get_string?.('categories') || '111',
             });
         } else {
             await this.search({q: ''});
@@ -85,104 +267,98 @@ export class GalleryManager {
         this._page = params.page || 1;
         this._currentParams = {...params};
         this.clear();
-        this._showError('Loading...');
+        this._showStatus(_('Searching\u2026'));
 
         try {
-            let result;
-            if (this._provider) {
-                const perPage = this._settings.get_int('page-size') || 24;
-                result = await this._provider.search(
-                    {q: params.q || '', page: this._page, perPage},
-                    this._session, this._settings);
-            } else {
-                const k = this._settings.get_string('api-key');
-                if (k) this._client.setApiKey(k);
-                result = await this._client.search({...params, page: this._page});
+            const result = await this._runSearch(params);
+            const norm = normalizeResult(result, this._page);
+            if (!norm.results.length) {
+                this._showStatus(_('No results found.'));
+                this._updatePag();
+                return;
             }
-            const norm = this._norm(result);
-            if (!norm.items.length) { this._showError('No results found.'); this._loading = false; return; }
-            this._items = norm.items;
-            this._lastPage = norm.lastPage;
-            this._page = norm.page;
-            this._hideError();
+            this._items = norm.results;
+            this._lastPage = norm.totalPage;
+            this._updatePage(norm.page);
+            this._hideStatus();
             await this._loadThumbs(this._items);
             this._updatePag();
         } catch (e) {
             const m = e.message || String(e);
-            this._showError(m.includes('401') || m.includes('403')
-                ? 'Authentication failed. Check your API key.'
-                : m.includes('429') ? 'Rate limited. Please wait and try again.'
-                : `Error: ${m}`);
+            this._showStatus(
+                m.includes('401') || m.includes('403')
+                    ? _('Authentication failed. Check your API key.')
+                    : m.includes('429') ? _('Rate limited. Please wait and try again.')
+                    : `${_('Error')}: ${m}`);
+            console.error(`[wp] Search failed: ${m}`);
         } finally {
             this._loading = false;
         }
     }
 
-    _norm(r) {
-        if (!r) return {items: [], total: 0, page: 1, lastPage: 1};
-        if (Array.isArray(r.items))
-            return {items: r.items, total: r.total || 0, page: r.page || this._page, lastPage: r.lastPage || 1};
-        if (Array.isArray(r.data))
-            return {items: r.data, total: r.meta?.total || 0,
-                page: r.meta?.current_page || this._page, lastPage: r.meta?.last_page || 1};
-        return {items: [], total: 0, page: 1, lastPage: 1};
-    }
-
-    clear() {
-        for (const c of [...this._grid.get_children()]) { this._grid.remove_child(c); c.destroy(); }
-        this._errorLabel = null;
-        this._thumbs = [];
-        this._items = [];
-    }
-
-    _showError(text) {
-        if (!this._errorLabel) {
-            this._errorLabel = new St.Label({style_class: 'wp-error-label',
-                x_expand: true, y_expand: true, x_align: Clutter.ActorAlign.CENTER,
-                y_align: Clutter.ActorAlign.CENTER, x_margin_top: 40});
-            this._grid.add_child(this._errorLabel);
-            this._layout.set_column_span(this._errorLabel, GRID_COLS);
+    async _runSearch(params) {
+        if (this._provider)
+            return this._provider.search(
+                {
+                    q: params.q || '',
+                    page: this._page,
+                    perPage: this._settings?.get_int?.('page-size') || 24,
+                },
+                this._session,
+                this._settings,
+            );
+        if (this._client) {
+            const k = this._settings?.get_string?.('api-key');
+            if (k) this._client.setApiKey(k);
+            return this._client.search({...params, page: this._page});
         }
-        this._errorLabel.set_text(text);
-        this._errorLabel.show();
-    }
-
-    _hideError() {
-        if (!this._errorLabel) return;
-        this._errorLabel.hide();
-        this._grid.remove_child(this._errorLabel);
-        this._errorLabel.destroy();
-        this._errorLabel = null;
+        throw new Error('No provider configured');
     }
 
     async _loadThumbs(items) {
-        await Promise.allSettled(items.map((item, i) => this._mkThumb(item, i)));
+        this._thumbs = [];
+        const boxes = [];
+        for (const item of items) {
+            const box = this._newThumbBox(item);
+            const child = new Gtk.FlowBoxChild({child: box});
+            this._flowbox.append(child);
+            this._thumbs.push(child);
+            boxes.push(box);
+        }
+        await Promise.allSettled(items.map((item, i) => this._mkThumb(item, i, boxes[i])));
     }
 
-    async _mkThumb(item, index) {
+    _newThumbBox(item) {
+        const picture = new Gtk.Picture({
+            width_request: THUMB_SIZE,
+            height_request: THUMB_HEIGHT,
+            can_shrink: true,
+            content_fit: Gtk.ContentFit.COVER,
+            halign: Gtk.Align.CENTER,
+        });
+        const box = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 4,
+            halign: Gtk.Align.CENTER,
+        });
+        box.append(picture);
+        if (item.resolution)
+            box.append(new Gtk.Label({label: item.resolution, halign: Gtk.Align.CENTER}));
+
+        const gesture = new Gtk.GestureClick();
+        gesture.connect('released', (_g, _n, _x, _y) => this._onSelect(item));
+        box.add_controller(gesture);
+        return box;
+    }
+
+    async _mkThumb(item, _index, box) {
         const url = item.previewUrl || item.thumbs?.small;
         if (!url) return;
         const path = GLib.build_filenamev([_cacheDir(this._providerId), `${item.id}.jpg`]);
         try {
             if (!GLib.file_test(path, GLib.FileTest.EXISTS))
                 await downloadToFile(this._session, url, path);
-            const gicon = Gio.FileIcon.new(Gio.File.new_for_path(path));
-            const icon = new St.Icon({gicon, icon_size: THUMB_SIZE, style_class: 'wp-thumb-icon'});
-            const btn = new St.Button({style_class: 'wp-thumb-button', child: icon,
-                can_focus: true, reactive: true, x_align: Clutter.ActorAlign.CENTER,
-                y_align: Clutter.ActorAlign.CENTER});
-            if (item.resolution) {
-                const lbl = new St.Label({text: item.resolution, style_class: 'wp-thumb-label',
-                    x_align: Clutter.ActorAlign.CENTER});
-                const box = new St.BoxLayout({vertical: true, x_align: Clutter.ActorAlign.CENTER});
-                box.add_child(icon);
-                box.add_child(lbl);
-                btn.set_child(box);
-            }
-            btn.connect('clicked', () => this._onSelect(item));
-            this._grid.add_child(btn);
-            this._layout.attach(btn, index % GRID_COLS, Math.floor(index / GRID_COLS), 1, 1);
-            this._thumbs.push(btn);
+            _setPictureFile(box.get_first_child(), path);
         } catch (e) {
             console.error(`[wp] Thumb failed for ${item.id}: ${e.message}`);
         }
@@ -194,46 +370,95 @@ export class GalleryManager {
         try {
             if (!GLib.file_test(full, GLib.FileTest.EXISTS)) {
                 const u = item.fullUrl || item.path;
-                if (!u) { this._showError('No download URL available.'); return; }
-                this._showError('Downloading full resolution...');
+                if (!u) { this._showStatus(_('No download URL available.')); return; }
+                this._showStatus(_('Downloading full resolution\u2026'));
                 await downloadToFile(this._session, u, full);
-                this._hideError();
             }
-            const bg = new Gio.Settings({schema_id: BG_SCHEMA});
-            const uri = Gio.File.new_for_path(full).get_uri();
-            bg.reset('picture-uri'); bg.reset('picture-uri-dark');
-            bg.set_string('picture-uri', uri); bg.set_string('picture-uri-dark', uri);
-            bg.sync(); bg.apply();
-            Main.notify('Wallpaper Providers', `Wallpaper set: ${item.id}`);
+            if (this._settings?.get_boolean?.('set-background') !== false) {
+                setDesktopWallpaper(Gio.File.new_for_path(full).get_uri());
+                this._showStatus(_('Wallpaper set:') + ` ${item.id}`);
+            } else {
+                this._showStatus(_('Downloaded:') + ` ${full}`);
+            }
         } catch (e) {
             const m = e.message || String(e);
-            this._showError(m.includes('401') || m.includes('403')
-                ? 'Authentication failed downloading image.'
-                : m.includes('429') ? 'Rate limited. Please wait and try again.'
-                : `Download error: ${m}`);
+            this._showStatus(
+                m.includes('401') || m.includes('403')
+                    ? _('Authentication failed downloading image.')
+                    : m.includes('429') ? _('Rate limited. Please wait and try again.')
+                    : `${_('Download error:')}: ${m}`);
             console.error(`[wp] Failed to set wallpaper for ${item.id}: ${m}`);
         }
     }
 
+    /**
+     * Commit a page number; emits `page-changed` only on a real change.
+     * @returns {number} The committed page.
+     */
+    _updatePage(page) {
+        const next = Number.isFinite(page) && page >= 1 ? Math.round(page) : this._page;
+        if (next === this._page) return next;
+        this._page = next;
+        this._pageLabel.text = `Page ${next} / ${this._lastPage}`;
+        this.emit('page-changed', next);
+        return next;
+    }
+
     _updatePag() {
-        if (this._lastPage <= 1) { this._paginationBox.hide(); return; }
-        this._paginationBox.show();
-        this._prevBtn.reactive = this._page > 1;
-        this._prevBtn.set_style(this._page > 1 ? 'wp-pagination-btn' : 'wp-pagination-btn-disabled');
-        this._nextBtn.reactive = this._page < this._lastPage;
-        this._nextBtn.set_style(this._page < this._lastPage ? 'wp-pagination-btn' : 'wp-pagination-btn-disabled');
-        this._pageLabel.set_text(`Page ${this._page} / ${this._lastPage}`);
+        const on = this._lastPage > 1;
+        this._paginationBar.visible = on;
+        this._pageLabel.text = `Page ${this._page} / ${this._lastPage}`;
+        this._firstBtn.sensitive = on && this._page > 1;
+        this._prevBtn.sensitive = on && this._page > 1;
+        this._nextBtn.sensitive = on && this._page < this._lastPage;
+        this._lastBtn.sensitive = on && this._page < this._lastPage;
     }
 
-    async nextPage() {
-        if (this._page >= this._lastPage || this._loading) return;
-        this._page++;
-        await this.search({...this._currentParams, page: this._page});
+    _goTo(page) {
+        if (this._loading || !this._currentParams) return;
+        const target = Math.min(Math.max(page, 1), this._lastPage);
+        if (target === this._page) return;
+        this._updatePage(target);
+        this.search({...this._currentParams, page: target});
     }
 
-    async prevPage() {
-        if (this._page <= 1 || this._loading) return;
-        this._page--;
-        await this.search({...this._currentParams, page: this._page});
+    firstPage() { this._goTo(1); }
+    lastPage() { this._goTo(this._lastPage); }
+    nextPage() { this._goTo(this._page + 1); }
+    prevPage() { this._goTo(this._page - 1); }
+
+    setVisible(on) {
+        this._flowbox.visible = on;
+        this._paginationBar.visible = on && this._lastPage > 1;
+        this._statusLabel.visible = on && this._statusShown;
     }
-}
+
+    _showStatus(text) {
+        this._statusShown = true;
+        this._statusLabel.text = text;
+        this._statusLabel.visible = true;
+    }
+
+    _hideStatus() {
+        this._statusShown = false;
+        this._statusLabel.visible = false;
+    }
+
+    clear() {
+        if (typeof this._flowbox.remove_all === 'function')
+            this._flowbox.remove_all();
+        else {
+            let child = this._flowbox.get_first_child();
+            while (child) {
+                const next = child.get_next_sibling();
+                this._flowbox.remove(child);
+                child = next;
+            }
+        }
+        this._thumbs = [];
+        this._items = [];
+        this._hideStatus();
+    }
+});
+
+export {GalleryManager};

@@ -10,7 +10,7 @@ lib/providers/
   registry.js          Dynamic provider registry + metadata (PROVIDER_IDS, PROVIDER_META)
   wallhaven.js         WallhavenProvider — wraps the raw client, normalizes output
   wallhaven-client.js  WallhavenClient — raw Wallhaven API v1 HTTP client
-                       (imported directly by extension.js; keep the class/file
+                       (imported by wallhaven.js; keep the class/file
                        names in sync: file <name>.js holds the legacy client,
                        provider modules are named after the provider id)
   pexels.js            PexelsProvider (API key required)
@@ -107,14 +107,14 @@ const {data, meta} = await client.search({q: 'nature'});
 2. Add the id to `PROVIDER_IDS` in `registry.js`
 3. Add metadata to `PROVIDER_META` in `registry.js`
 4. Add the module to `PROVIDER_MODULES` in `registry.js`
-5. Add `{id, label, module}` to `PROVIDERS` in `extension.js`
-6. Add the id/label/key mapping to `PROVIDER_OPTIONS`, `PROVIDER_LABELS`,
+   (the app window builds its provider list dynamically from `PROVIDER_IDS`)
+5. Add the id/label/key mapping to `PROVIDER_OPTIONS`, `PROVIDER_LABELS`,
    `PROVIDER_KEY_MAP` in `prefs.js` (`null` key = no API key needed)
-7. Add a `buildProviderHelp({...})` block in `ui/prefs_helpers.js`
+6. Add a `buildProviderHelp({...})` block in `ui/prefs_helpers.js`
    (omit `getKeyUrl` when there is no URL — the link row is skipped)
-8. Add any new GSettings keys to the `.gschema.xml`
+7. Add any new GSettings keys to the `.gschema.xml`
    (note: keyless providers like `local`/`safebooru` need no key)
-9. Add new translatable strings to `locale/wallpaper-providers-gnome.pot` and both `.po` files
+8. Add new translatable strings to `locale/wallpaper-providers-gnome.pot` and both `.po` files
 
 ### API Key Convention
 

@@ -114,7 +114,7 @@ const {data, meta} = await client.search({q: 'nature'});
    (omit `getKeyUrl` when there is no URL — the link row is skipped)
 7. Add any new GSettings keys to the `.gschema.xml`
    (note: keyless providers like `local`/`safebooru` need no key)
-8. Add new translatable strings to `locale/wallpaper-providers-gnome.pot` and both `.po` files
+8. Add new translatable strings to `locale/mopivo.pot` and both `.po` files
 
 ### API Key Convention
 

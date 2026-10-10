@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Wallpaper Providers — standalone GTK4/libadwaita app entry point (ESM).
+// Mopivo — standalone GTK4/libadwaita app entry point (ESM).
 //
 // Run as:  gjs -m main.js [--smoke-test | --prefs | --version | --help]
 //   (no flags)     open the main window
@@ -21,8 +21,8 @@ import {programArgs} from 'system';
 import {EXT_SCHEMA_ID} from './lib/video/constants.js';
 import {PROVIDER_IDS, getProvider} from './lib/providers/registry.js';
 
-const APP_ID = 'br.com.redclaw.WallpaperProviders';
-const APP_NAME = 'wallpaper-providers-gnome';
+const APP_ID = 'br.com.redclaw.Mopivo';
+const APP_NAME = 'mopivo';
 const VERSION = '1.0.0';
 
 // GLib does not expose SIGTERM/SIGINT as JS constants; use the POSIX numbers.

@@ -8,14 +8,15 @@ Mopivo (antes *Wallpaper Providers*) é um app standalone GTK4 + libadwaita para
 navegar e aplicar wallpapers de múltiplas fontes — e para tocar vídeo-wallpapers
 locais, via streaming ou páginas web.
 
-- Application id / GSettings schema id: `br.com.redclaw.WallpaperProviders`
-- Settings schema path: `/br/com/redclaw/WallpaperProviders/`
-- Gettext domain: `wallpaper-providers-gnome`
-- Renderer D-Bus name: `org.redclaw.WallpaperProvidersRenderer`
+- Application id / GSettings schema id: `br.com.redclaw.Mopivo`
+- Settings schema path: `/br/com/redclaw/Mopivo/`
+- Gettext domain: `mopivo`
+- Renderer D-Bus name: `org.redclaw.MopivoRenderer`
 
-> **Nota sobre o nome:** o projeto e o repositório agora se chamam **Mopivo**.
-> Os IDs técnicos (App ID, schema, domínios, pastas em `~/.local`) foram mantidos
-> de propósito para não quebrar quem já tinha o app instalado — basta reinstalar.
+> **Nota sobre o nome:** o projeto e o repositório se chamam **Mopivo**, e todos os
+> IDs técnicos (App ID, schema, domínios, pastas em `~/.local`) usam `mopivo`.
+> Como o app nunca foi lançado, não há camada de compatibilidade nem migração —
+> basta instalar normalmente.
 
 Feito com GJS (ESM). Não roda dentro do GNOME Shell: o vídeo toca num subprocesso
 renderer separado, então um crash do GStreamer nunca derruba o Shell.
@@ -62,21 +63,21 @@ O install script:
    (`wallpaper-providers-gnome@redclaw.com.br`) se presente, e remove seu
    diretório em `~/.local/share/gnome-shell/extensions/`.
 2. Copia a árvore de runtime (`main.js`, `app/`, `ui/`, `lib/`, `renderer/`,
-   `schemas/`, `locale/`) para `~/.local/share/wallpaper-providers/` (APP_DIR),
+   `schemas/`, `locale/`) para `~/.local/share/mopivo/` (APP_DIR),
    removendo arquivos obsoletos.
 3. Compila o schema em `APP_DIR/schemas/` (o renderer carrega de lá) e instala
    globalmente em `~/.local/share/glib-2.0/schemas/`, recompilando o diretório.
 4. Compila as traduções para
-   `~/.local/share/locale/<lang>/LC_MESSAGES/wallpaper-providers-gnome.mo`.
+   `~/.local/share/locale/<lang>/LC_MESSAGES/mopivo.mo`.
 5. Instala o .desktop em
-   `~/.local/share/applications/br.com.redclaw.WallpaperProviders.desktop` e o
-   ícone em
-   `~/.local/share/icons/hicolor/scalable/apps/br.com.redclaw.WallpaperProviders.svg`.
+   `~/.local/share/applications/br.com.redclaw.Mopivo.desktop` e o
+   ícone (conjunto hicolor PNG 64–512px) em
+   `~/.local/share/icons/hicolor/<size>x<size>/apps/br.com.redclaw.Mopivo.png`.
 
 Depois, abra **Mopivo** na grade de apps, ou rode direto:
 
 ```bash
-gjs -m ~/.local/share/wallpaper-providers/main.js
+gjs -m ~/.local/share/mopivo/main.js
 ```
 
 Flags:
@@ -135,13 +136,13 @@ Para o renderer (`pkill -f renderer/renderer.js`) e remove APP_DIR, .desktop,
 
 ## Configuração
 
-Tudo vive no schema `br.com.redclaw.WallpaperProviders`, editável na janela de
+Tudo vive no schema `br.com.redclaw.Mopivo`, editável na janela de
 Preferências (5 páginas: Providers, Filters, Downloads, Help Center, Video) ou
 via `gsettings`:
 
 ```bash
-gsettings list-keys br.com.redclaw.WallpaperProviders
-gsettings set br.com.redclaw.WallpaperProviders video-mode true
+gsettings list-keys br.com.redclaw.Mopivo
+gsettings set br.com.redclaw.Mopivo video-mode true
 ```
 
 Grupos principais:
@@ -174,7 +175,7 @@ Grupos principais:
 
 Janela principal com busca, dropdown de provedor e galeria com paginação. Clicar
 numa miniatura baixa a imagem em resolução máxima, cacheia em
-`~/.cache/wallpaper-providers-gnome/<provider>/` e — com `set-background`
+`~/.cache/mopivo/<provider>/` e — com `set-background`
 ligado — aplica como papel de parede. Popover de filtros Wallhaven (categorias,
 pureza, ordenação, top range, resolução mínima, resoluções, proporções, cores e
 filtro AI-art).
@@ -224,11 +225,11 @@ e static-wallpaper são do renderer e independem do auto-pause.
 
 ```bash
 journalctl -f -o cat /usr/bin/gjs
-gsettings list-keys br.com.redclaw.WallpaperProviders
-gsettings get br.com.redclaw.WallpaperProviders video-mode
+gsettings list-keys br.com.redclaw.Mopivo
+gsettings get br.com.redclaw.Mopivo video-mode
 gdbus introspect --session \
-  --dest org.redclaw.WallpaperProvidersRenderer \
-  --object-path /org/redclaw/WallpaperProvidersRenderer
+  --dest org.redclaw.MopivoRenderer \
+  --object-path /org/redclaw/MopivoRenderer
 ```
 
 - Renderer não inicia: confira `gtk4paintablesink` + `xprop` e fonte de vídeo.
@@ -265,8 +266,8 @@ renderer/
 schemas/              GSettings schema
 locale/               .pot template + pt_BR / es translations
 tests/                Headless unit tests (tests/run.js, gallery, filters, videoController)
-data/                 Desktop entry template + app icon
-scripts/              install.sh, uninstall.sh
+data/                 Desktop entry template + app icon (data/icons/)
+scripts/              install.sh, uninstall.sh, export-icons.sh
 ```
 
 Novo provider? Checklist em
@@ -283,6 +284,9 @@ make i18n     # compila .mo in-tree
 make compile  # compila o schema
 make clean    # limpa schema compilado e .mo in-tree
 ```
+
+Ícones: o master é `data/icons/br.com.redclaw.Mopivo.png`; regenere o conjunto
+hicolor + os assets da landing page com `scripts/export-icons.sh`.
 
 ## Licença
 

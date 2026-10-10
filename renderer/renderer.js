@@ -19,9 +19,9 @@ const {GObject, Gtk, Gio, GLib, Gdk, Gst, GdkX11} = imports.gi;
 // ═══════════════════════════════════════════════════════════════════════════
 // Constants — mirrored from lib/video/constants.js
 // ═══════════════════════════════════════════════════════════════════════════
-const APPLICATION_ID = 'org.redclaw.WallpaperProvidersRenderer';
-const RENDERER_OBJECT_PATH = '/org/redclaw/WallpaperProvidersRenderer';
-const EXT_SCHEMA_ID = 'br.com.redclaw.WallpaperProviders';
+const APPLICATION_ID = 'org.redclaw.MopivoRenderer';
+const RENDERER_OBJECT_PATH = '/org/redclaw/MopivoRenderer';
+const EXT_SCHEMA_ID = 'br.com.redclaw.Mopivo';
 const LOG_PREFIX = '[wp-video]';
 const IMPL_NAME = 'playbin + xvimagesink';
 

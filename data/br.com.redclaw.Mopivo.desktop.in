@@ -1,0 +1,18 @@
+# Mopivo - desktop entry template.
+# Placeholder scheme: @APPDIR@.
+#   scripts/install.sh substitutes every occurrence of @APPDIR@ with the real
+#   absolute AppDir path ($HOME/.local/share/mopivo) at install
+#   time using sed, because .desktop files must not contain a literal $HOME.
+# The installed Exec therefore becomes:
+#   /usr/bin/gjs -m <APP_DIR>/main.js
+[Desktop Entry]
+Type=Application
+Name=Mopivo
+Comment=Browse and set wallpapers and video wallpapers
+Exec=/usr/bin/gjs -m @APPDIR@/main.js
+Icon=br.com.redclaw.Mopivo
+Terminal=false
+Categories=GTK;GNOME;Utility;
+StartupNotify=true
+Keywords=wallpaper;background;image;video;
+NoDisplay=false

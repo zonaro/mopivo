@@ -3,13 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mopivo — Wallpapers incríveis + vídeo-wallpapers para GNOME</title>
-<meta name="description" content="Mopivo é o app GTK4/libadwaita para navegar, baixar e aplicar wallpapers de 8 fontes + vídeo-wallpapers locais, streaming e páginas web. Instale em 30 segundos.">
-<meta property="og:title" content="Mopivo — seu desktop vivo">
-<meta property="og:description" content="8 provedores de wallpapers + vídeo-wallpapers. 1 comando para instalar. Grátis e open-source (GPL-3.0).">
+<title>Mopivo — Wallpapers incríveis e vídeo-wallpapers para seu GNOME</title>
+<meta name="description" content="Mopivo traz wallpapers de 8 fontes e toca vídeo-wallpapers no seu desktop. Um comando, 30 segundos, grátis para sempre.">
+<meta property="og:title" content="Mopivo — seu desktop ganha vida">
+<meta property="og:description" content="8 fontes de wallpapers + vídeo-wallpapers. Instala com 1 comando. Grátis, open-source, sem conta.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://zonaro.github.io/mopivo/">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect x='8' y='8' width='112' height='112' rx='26' fill='%232b5d8a'/%3E%3Ccircle cx='46' cy='50' r='14' fill='%23ffd166'/%3E%3Ccircle cx='95' cy='95' r='25' fill='white'/%3E%3Ccircle cx='95' cy='95' r='20' fill='%233d8bfd'/%3E%3C/svg%3E">
+<meta property="og:image" content="https://zonaro.github.io/mopivo/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta name="theme-color" content="#070b16">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{
   --bg:#070b16; --bg2:#0d1326; --card:rgba(255,255,255,.045);
@@ -27,7 +32,8 @@ a{color:inherit}
 nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(7,11,22,.72);border-bottom:1px solid var(--border)}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
 .brand{display:flex;gap:11px;align-items:center;font-weight:800;font-size:19px;letter-spacing:-.02em;text-decoration:none}
-.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--a1),var(--a2));display:grid;place-items:center;font-size:19px;box-shadow:0 8px 26px rgba(124,108,255,.4)}
+.logo{width:34px;height:34px;border-radius:10px;display:block;box-shadow:0 8px 26px rgba(124,108,255,.4)}
+.hero-icon{width:132px;height:132px;border-radius:30px;display:block;margin:0 auto 22px;box-shadow:0 26px 64px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.07)}
 .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--muted)}
 .nav-links a{text-decoration:none}.nav-links a:hover{color:var(--text)}
 .btn{display:inline-flex;align-items:center;gap:9px;border:0;border-radius:999px;padding:13px 24px;font-weight:750;font-size:15px;cursor:pointer;text-decoration:none;transition:.18s}
@@ -90,21 +96,22 @@ footer{border-top:1px solid var(--border);padding:28px 0 46px;color:var(--muted)
 </head>
 <body>
 <nav><div class="wrap nav-in">
-  <a class="brand" href="#"><span class="logo">◍</span> Mopivo</a>
+  <a class="brand" href="#"><img class="logo" src="favicon.png" alt="Mopivo" width="34" height="34"> Mopivo</a>
   <div class="nav-links"><a href="#recursos">Recursos</a><a href="#provedores">Provedores</a><a href="#como-funciona">Instalação</a><a href="#faq">FAQ</a></div>
   <a class="btn btn-primary btn-sm" href="#instalar">⬇ Baixar grátis</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero" id="instalar">
-  <span class="badge">✨ Novo nome · antes Wallpaper Providers · v1.0.0 · GPL-3.0</span>
-  <h1>Seu GNOME<br><span class="grad">vivo em 30 segundos.</span></h1>
-  <p class="sub">Mopivo busca wallpapers em <b style="color:var(--text)">8 fontes</b>, aplica com 1 clique e ainda toca <b style="color:var(--text)">vídeo-wallpapers</b> — arquivos locais, streaming e páginas web. Nativo GTK4 + libadwaita. Grátis, open-source, sem conta.</p>
+  <img class="hero-icon" src="icon-512.png" alt="Mopivo — paisagens nas quatro estações" width="132" height="132">
+  <span class="badge">✨ Mopivo · v1.0.0 · GPL-3.0</span>
+  <h1>Seu GNOME<br><span class="grad">ganha vida em 30 segundos.</span></h1>
+  <p class="sub">Mopivo busca wallpapers em <b style="color:var(--text)">8 fontes</b>, aplica com 1 clique e ainda toca <b style="color:var(--text)">vídeo-wallpapers</b> — arquivos seus, streaming ou páginas web. Feito para GNOME, grátis, open-source, sem cadastro.</p>
 
   <div class="install-card">
     <div class="install-head">
       <div style="display:flex;gap:10px;align-items:center"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><span class="install-label">Copie · cole no terminal · enter</span></div>
-      <span style="font-size:12.5px;color:var(--ok)">● testado em GNOME 45–50</span>
+      <span style="font-size:12.5px;color:var(--ok)">● funciona no GNOME 45 a 50</span>
     </div>
     <div class="cmd"><span class="p">$</span> <code id="oneliner">curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash</code><button class="copy" onclick="copyCmd()">⧉ Copiar</button></div>
     <div style="margin-top:10px;font-size:13px;color:var(--muted)">Prefere <span style="font-family:var(--mono)">wget</span>? <code style="font-family:var(--mono);color:var(--text)">wget -qO- https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash</code></div>
@@ -114,13 +121,13 @@ footer{border-top:1px solid var(--border);padding:28px 0 46px;color:var(--muted)
     <button class="btn btn-primary" onclick="copyCmd()">⬇ Instalar agora — 1 comando</button>
     <a class="btn btn-ghost" href="https://github.com/zonaro/mopivo" target="_blank" rel="noopener">★ Ver no GitHub</a>
   </div>
-  <p class="micro"><b>✓</b> Sem sudo &nbsp;·&nbsp; <b>✓</b> instala em <span style="font-family:var(--mono)">~/.local</span> &nbsp;·&nbsp; <b>✓</b> desinstala limpo com <span style="font-family:var(--mono)">uninstall.sh</span> &nbsp;·&nbsp; <b>✓</b> 30 segundos</p>
+  <p class="micro"><b>✓</b> Sem sudo &nbsp;·&nbsp; <b>✓</b> fica na sua pasta pessoal &nbsp;·&nbsp; <b>✓</b> remove tudo limpo &nbsp;·&nbsp; <b>✓</b> 30 segundos</p>
 
   <div class="stats">
-    <div class="stat"><b>8</b><span>provedores de imagem</span></div>
-    <div class="stat"><b>3</b><span>fontes de vídeo (local, streaming, web)</span></div>
-    <div class="stat"><b>57</b><span>ajustes no GSettings</span></div>
-    <div class="stat"><b>0</b><span>contas, trackers ou paywall</span></div>
+    <div class="stat"><b>8</b><span>fontes de wallpaper</span></div>
+    <div class="stat"><b>3</b><span>tipos de vídeo (arquivo, streaming, web)</span></div>
+    <div class="stat"><b>∞</b><span>personalize do seu jeito</span></div>
+    <div class="stat"><b>0</b><span>contas, rastreadores ou paywall</span></div>
   </div>
 </header>
 
@@ -159,8 +166,8 @@ footer{border-top:1px solid var(--border);padding:28px 0 46px;color:var(--muted)
   <h2>3 passos. Sem sudo. Sem risco.</h2>
   <div class="steps">
     <div class="step"><div class="num">01</div><h3>Copie o comando</h3><p>O oneliner baixa o <span style="font-family:var(--mono)">install.sh</span> oficial do GitHub e verifica dependências (gjs, schemas, gettext) com dicas por distro.</p></div>
-    <div class="step"><div class="num">02</div><h3>Rode e relaxe</h3><p>Ele copia o app para <span style="font-family:var(--mono)">~/.local/share/wallpaper-providers</span>, compila schema + traduções e cria o ícone no menu.</p></div>
-    <div class="step"><div class="num">03</div><h3>Abra o Mopivo</h3><p>Aparece na grade de apps. <span style="font-family:var(--mono)">gjs -m ~/.local/share/wallpaper-providers/main.js</span> também roda direto. Flags: <span style="font-family:var(--mono)">--prefs --smoke-test --version</span>.</p></div>
+    <div class="step"><div class="num">02</div><h3>Rode e relaxe</h3><p>Ele copia o app para <span style="font-family:var(--mono)">~/.local/share/mopivo</span>, compila schema + traduções e cria o ícone no menu.</p></div>
+    <div class="step"><div class="num">03</div><h3>Abra o Mopivo</h3><p>Aparece na grade de apps. <span style="font-family:var(--mono)">gjs -m ~/.local/share/mopivo/main.js</span> também roda direto. Flags: <span style="font-family:var(--mono)">--prefs --smoke-test --version</span>.</p></div>
   </div>
   <div class="install-card" style="margin-top:22px">
     <div class="install-head"><span class="install-label">Requisitos · Fedora / Ubuntu / Arch</span></div>
@@ -174,7 +181,7 @@ footer{border-top:1px solid var(--border);padding:28px 0 46px;color:var(--muted)
   <h2>Perguntas diretas, respostas diretas.</h2>
   <div class="faq">
     <details open><summary>É seguro rodar um curl | bash?</summary><p>Sim — os scripts são curtos, auditáveis e estão no repo público. Eles só escrevem em <span style="font-family:var(--mono)">~/.local</span>, nunca pedem sudo, e você pode ler antes: abra o link raw no navegador. Desinstalação limpa com o <span style="font-family:var(--mono)">uninstall.sh</span> dedicado (veja “Como desinstalo?” abaixo).</p></details>
-    <details><summary>Por que “Mopivo” se a pasta instalada chama wallpaper-providers?</summary><p>Mopivo é o novo nome do projeto/app. IDs técnicos (App ID, schema GSettings, pastas) foram mantidos de propósito para quem já usava o app não perder configurações. Upgrade = só reinstalar.</p></details>
+    <details><summary>Por que o nome Mopivo?</summary><p>Mopivo é o nome do projeto e do app. Todos os IDs técnicos também usam <span style="font-family:var(--mono)">mopivo</span>: o App ID <span style="font-family:var(--mono)">br.com.redclaw.Mopivo</span>, o schema GSettings, o domínio gettext e as pastas em <span style="font-family:var(--mono)">~/.local/share/mopivo</span>. Como o app nunca foi lançado, não há migração nem camada de compatibilidade.</p></details>
     <details><summary>Funciona no Wayland?</summary><p>Sim. Imagens funcionam em Wayland e X11. Vídeo-wallpaper usa a camada desktop X11/XWayland quando disponível, com fallback fullscreen por monitor. Auto-pause no Wayland é limitado (sem integração com o Shell) — está avisado na página de Vídeo.</p></details>
     <details><summary>Preciso pagar por API?</summary><p>Não. Wallhaven (SFW), Safebooru, Waifu.im, pastas locais e Wallrus funcionam sem chave. Pexels/Unsplash/Pixabay pedem chave gratuita — o app mostra qual está faltando e o Help Center ensina a criar em 2 min.</p></details>
     <details><summary>Como desinstalo?</summary><p>Do jeito que preferir — todos fazem a mesma limpeza (mata o renderer, remove app, .desktop, ícone, schema e traduções; seu papel de parede atual é preservado):<br><br><b>Oneliner dedicado (recomendado):</b> <span style="font-family:var(--mono)">curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh | bash</span><br><b>No checkout:</b> <span style="font-family:var(--mono)">./uninstall.sh</span> (ou <span style="font-family:var(--mono)">./scripts/uninstall.sh</span> / <span style="font-family:var(--mono)">make uninstall</span>)<br><b>Via instalador:</b> <span style="font-family:var(--mono)">./install.sh --uninstall</span> ou <span style="font-family:var(--mono)">curl …/install.sh | bash -s -- --uninstall</span></p></details>

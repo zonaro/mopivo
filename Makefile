@@ -1,4 +1,4 @@
-# Wallpaper Providers — Makefile
+# Mopivo — Makefile
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 # Targets:

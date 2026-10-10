@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// prefs.js — Wallpaper Providers standalone preferences window (GTK4/libadwaita)
+// prefs.js — Mopivo standalone preferences window (GTK4/libadwaita)
 // 5 pages: Providers, Filters, Downloads, Help Center, Video
 // English default; all user strings wrapped in _() for i18n.
 
@@ -41,7 +41,7 @@ const PROVIDER_KEY_MAP = {
 
 export function buildPreferencesWindow(settings) {
     const window = new Adw.PreferencesWindow({
-        title: _('Wallpaper Providers'),
+        title: _('Mopivo'),
     });
 
     // ── Page 1: Providers ──────────────────────────────────────────

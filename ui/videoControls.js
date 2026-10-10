@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Video controls pane (GTK4) for the standalone Wallpaper Providers app.
+// Video controls pane (GTK4) for the standalone Mopivo app.
 //
 // P4 packs `new VideoControls({controller, settings}).widget` into the video
 // stack. The pane is pure GTK4 (no St/Clutter/Meta and no GStreamer):

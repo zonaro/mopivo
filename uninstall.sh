@@ -37,11 +37,11 @@ Options:
   --help, -h       show this help
 
 What it removes:
-  - ~/.local/share/wallpaper-providers/ (APP_DIR)
-  - ~/.local/share/applications/br.com.redclaw.WallpaperProviders.desktop
-  - ~/.local/share/icons/hicolor/scalable/apps/br.com.redclaw.WallpaperProviders.svg
-  - ~/.local/share/glib-2.0/schemas/br.com.redclaw.WallpaperProviders.gschema.xml
-  - ~/.local/share/locale/*/LC_MESSAGES/wallpaper-providers-gnome.mo
+  - ~/.local/share/mopivo/ (APP_DIR)
+  - ~/.local/share/applications/br.com.redclaw.Mopivo.desktop
+  - ~/.local/share/icons/hicolor/*/apps/br.com.redclaw.Mopivo.png
+  - ~/.local/share/glib-2.0/schemas/br.com.redclaw.Mopivo.gschema.xml
+  - ~/.local/share/locale/*/LC_MESSAGES/mopivo.mo
 
 Your wallpaper settings (org.gnome.desktop.background) are left untouched.
 EOF

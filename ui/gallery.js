@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// GTK4 thumbnail gallery + pagination for Wallpaper Providers.
+// GTK4 thumbnail gallery + pagination for Mopivo.
 //
 // Standalone (app) rewrite of the old GNOME Shell St/Clutter gallery: renders
 // search results into a Gtk.FlowBox of Gtk.Picture thumbnails, downloads the
@@ -20,7 +20,7 @@ import {downloadToFile} from '../lib/download.js';
 import {_} from '../lib/i18n.js';
 import {setDesktopWallpaper} from '../lib/wallpaper.js';
 
-const CACHE_BASE = GLib.get_home_dir() + '/.cache/wallpaper-providers-gnome';
+const CACHE_BASE = GLib.get_home_dir() + '/.cache/mopivo';
 const GRID_COLS = 3;
 const THUMB_SIZE = 200;
 const THUMB_HEIGHT = 150;

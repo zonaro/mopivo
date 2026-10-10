@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// GTK4 filter bar for the Wallpaper Providers app (popover content).
+// GTK4 filter bar for the Mopivo app (popover content).
 //
 // Ported from the old GNOME Shell extension (St/Clutter) into standalone GTK4
 // widgets so the app window can drop them into a Gtk.Popover attached to a
@@ -148,7 +148,7 @@ function makeEntry(hint, text) {
 // ---------------------------------------------------------------------------
 
 export const FilterBar = GObject.registerClass({
-    GTypeName: 'WallpaperProvidersFilterBar',
+    GTypeName: 'MopivoFilterBar',
     Signals: {'changed': {}},
 }, class FilterBar extends GObject.Object {
     constructor(settings) {

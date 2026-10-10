@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_ID="br.com.redclaw.WallpaperProviders"
+APP_ID="br.com.redclaw.Mopivo"
 OLD_UUID="wallpaper-providers-gnome@redclaw.com.br"
-GETTEXT_DOMAIN="wallpaper-providers-gnome"
+GETTEXT_DOMAIN="mopivo"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP_DIR="$HOME/.local/share/wallpaper-providers"
+APP_DIR="$HOME/.local/share/mopivo"
 
 echo "==> Removing old GNOME Shell extension (if present)..."
 gnome-extensions disable "$OLD_UUID" || true
@@ -77,16 +77,17 @@ else
     echo "WARN: $DESKTOP_IN not found, skipping desktop entry."
 fi
 
-ICON_SRC="$REPO_ROOT/data/$APP_ID.svg"
-ICON_DEST="$HOME/.local/share/icons/hicolor/scalable/apps/$APP_ID.svg"
-if [ -f "$ICON_SRC" ]; then
-    echo "==> Installing icon..."
-    install -D -m644 "$ICON_SRC" "$ICON_DEST"
-    gtk-update-icon-cache -f "$HOME/.local/share/icons/hicolor" || true
+ICON_SRC_DIR="$REPO_ROOT/data/icons/hicolor"
+ICON_DEST_DIR="$HOME/.local/share/icons/hicolor"
+if [ -d "$ICON_SRC_DIR" ]; then
+    echo "==> Installing icons..."
+    mkdir -p "$ICON_DEST_DIR"
+    cp -a "$ICON_SRC_DIR/." "$ICON_DEST_DIR/"
+    gtk-update-icon-cache -f "$ICON_DEST_DIR" || true
 else
-    echo "WARN: $ICON_SRC not found, skipping icon."
+    echo "WARN: $ICON_SRC_DIR not found, skipping icons."
 fi
 
 echo ""
 echo "Installation complete."
-echo "You can now launch \"Wallpaper Providers\" from the app grid."
+echo "You can now launch \"Mopivo\" from the app grid."

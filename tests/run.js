@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Headless unit tests for the Wallpaper Providers app foundation.
+// Headless unit tests for the Mopivo app foundation.
 //
 // Run with: GDK_BACKEND=headless gjs -m tests/run.js
 // (also wired into `make check`). No network, display or GStreamer needed.
@@ -165,7 +165,7 @@ function testSchema() {
 
     const self = Gio.File.new_for_uri(import.meta.url);
     const file = self.get_parent().get_parent().get_child('schemas')
-        .get_child('br.com.redclaw.WallpaperProviders.gschema.xml');
+        .get_child('br.com.redclaw.Mopivo.gschema.xml');
     const [loaded, contents] = file.load_contents(null);
     g.ok(loaded, 'schema file loads');
     if (!loaded)
@@ -174,12 +174,12 @@ function testSchema() {
     const xml = new TextDecoder().decode(contents);
 
     g.ok(
-        xml.includes('id="br.com.redclaw.WallpaperProviders"'),
-        'schema id is br.com.redclaw.WallpaperProviders'
+        xml.includes('id="br.com.redclaw.Mopivo"'),
+        'schema id is br.com.redclaw.Mopivo'
     );
     g.ok(
-        xml.includes('path="/br/com/redclaw/WallpaperProviders/"'),
-        'schema path is /br/com/redclaw/WallpaperProviders/'
+        xml.includes('path="/br/com/redclaw/Mopivo/"'),
+        'schema path is /br/com/redclaw/Mopivo/'
     );
 
     const foundKeys = [...xml.matchAll(/<key\s+name="([^"]+)"/g)]
@@ -202,8 +202,8 @@ function testSchema() {
 // Group 2 — shared constants
 // ---------------------------------------------------------------------------
 
-const SCHEMA_ID = 'br.com.redclaw.WallpaperProviders';
-const SCHEMA_PATH = '/br/com/redclaw/WallpaperProviders/';
+const SCHEMA_ID = 'br.com.redclaw.Mopivo';
+const SCHEMA_PATH = '/br/com/redclaw/Mopivo/';
 
 function testConstants() {
     const g = new Group('constants');

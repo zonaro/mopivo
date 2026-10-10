@@ -13,9 +13,9 @@
 #   - When piped via curl (no checkout), clones --depth 1 or downloads the
 #     master tarball to a temp dir, then runs the install from there.
 #
-# Mopivo was formerly "Wallpaper Providers" (GNOME). Technical IDs are kept
-# for upgrade compatibility:
-#   App ID: br.com.redclaw.WallpaperProviders
+# All technical IDs use mopivo (the app was never released, so there is no
+# migration/compat layer):
+#   App ID: br.com.redclaw.Mopivo
 set -euo pipefail
 
 REPO="zonaro/mopivo"
@@ -47,7 +47,7 @@ Options:
 What it does:
   1. Fetches the Mopivo sources (uses the local checkout when available,
      otherwise a shallow git clone or tarball download).
-  2. Installs runtime files to ~/.local/share/wallpaper-providers/
+  2. Installs runtime files to ~/.local/share/mopivo/
   3. Compiles the GSettings schema, translations, desktop entry and icon.
 
 Requirements: GNOME 45-50, gjs, GTK4 + libadwaita, glib-compile-schemas, msgfmt.
@@ -185,7 +185,7 @@ main() {
     cat <<'EOF'
 
 Done! Launch "Mopivo" from the app grid, or run:
-  gjs -m ~/.local/share/wallpaper-providers/main.js
+  gjs -m ~/.local/share/mopivo/main.js
 
 Enjoy your new wallpapers.
 EOF

@@ -20,7 +20,7 @@
 // re-emits the renderer's `is-playing-changed` D-Bus signal under the same
 // name so the UI only ever listens to the controller.
 //
-// Source mode mapping (read/write keys, schema br.com.redclaw.WallpaperProviders):
+// Source mode mapping (read/write keys, schema br.com.redclaw.Mopivo):
 //   'local'     → 'video-path' (or 'video-folder' newest-first fallback) → launcher `-F`
 //   'streaming' → 'video-streaming-url' resolved via yt-dlp → 'video-path' → launcher `-F`
 //   'webpage'   → renderer reads 'video-webpage-url' / 'video-webpage-local-html'
@@ -37,7 +37,7 @@ import {listVideoFiles} from '../lib/video/videoThumbs.js';
 import {LOG_PREFIX} from '../lib/video/constants.js';
 
 // This module always lives at <APP_DIR>/app/videoController.js — both in the
-// repo checkout and under the installed ~/.local/share/wallpaper-providers/ —
+// repo checkout and under the installed ~/.local/share/mopivo/ —
 // so the renderer root is exactly two directories up from import.meta.url.
 const APP_DIR = Gio.File.new_for_uri(import.meta.url).get_parent().get_parent().get_path();
 

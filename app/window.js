@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// app/window.js — main application window for the Wallpaper Providers app.
+// app/window.js — main application window for the Mopivo app.
 //
 // The window is the app shell that wires together the GTK4 modules built in
 // earlier phases. It owns a single Soup.Session, the provider instances (via
@@ -47,7 +47,7 @@ const WallpaperWindow = GObject.registerClass({
     GTypeName: 'WpWindow',
 }, class WallpaperWindow extends Adw.ApplicationWindow {
     _init({application, settings}) {
-        super._init({application, title: _('Wallpaper Providers')});
+        super._init({application, title: _('Mopivo')});
 
         this._settings = settings;
         // One shared HTTP session for thumbnails and full-resolution downloads.
@@ -78,7 +78,7 @@ const WallpaperWindow = GObject.registerClass({
 
     _buildLayout() {
         const header = new Adw.HeaderBar();
-        this._title = new Adw.WindowTitle({title: _('Wallpaper Providers')});
+        this._title = new Adw.WindowTitle({title: _('Mopivo')});
         header.set_title_widget(this._title);
 
         // Preferences button.

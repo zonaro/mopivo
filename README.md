@@ -118,10 +118,14 @@ O install usa `rsync` quando disponível, com fallback para `cp`.
 ## Desinstalar
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh | bash
+# ou no checkout
+./uninstall.sh
+# ou
 ./scripts/uninstall.sh
 # ou
 make uninstall
-# ou via oneliner
+# ou via instalador
 curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash -s -- --uninstall
 ```
 
@@ -238,6 +242,7 @@ gdbus introspect --session \
 main.js               Entry point (Adw.Application, flags, smoke test)
 prefs.js              Preferences window (Providers/Filters/Downloads/Help Center/Video)
 install.sh            One-liner installer (raiz — bootstrap remoto + delega a scripts/)
+uninstall.sh          One-liner uninstaller (raiz — bootstrap remoto + delega a scripts/)
 docs/                 Landing page (GitHub Pages, source: /docs)
 app/
   window.js           Main window: image + video stacks, provider switching

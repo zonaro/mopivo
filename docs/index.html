@@ -114,7 +114,7 @@ footer{border-top:1px solid var(--border);padding:28px 0 46px;color:var(--muted)
     <button class="btn btn-primary" onclick="copyCmd()">⬇ Instalar agora — 1 comando</button>
     <a class="btn btn-ghost" href="https://github.com/zonaro/mopivo" target="_blank" rel="noopener">★ Ver no GitHub</a>
   </div>
-  <p class="micro"><b>✓</b> Sem sudo &nbsp;·&nbsp; <b>✓</b> instala em <span style="font-family:var(--mono)">~/.local</span> &nbsp;·&nbsp; <b>✓</b> desinstala limpo com <span style="font-family:var(--mono)">--uninstall</span> &nbsp;·&nbsp; <b>✓</b> 30 segundos</p>
+  <p class="micro"><b>✓</b> Sem sudo &nbsp;·&nbsp; <b>✓</b> instala em <span style="font-family:var(--mono)">~/.local</span> &nbsp;·&nbsp; <b>✓</b> desinstala limpo com <span style="font-family:var(--mono)">uninstall.sh</span> &nbsp;·&nbsp; <b>✓</b> 30 segundos</p>
 
   <div class="stats">
     <div class="stat"><b>8</b><span>provedores de imagem</span></div>
@@ -173,11 +173,12 @@ footer{border-top:1px solid var(--border);padding:28px 0 46px;color:var(--muted)
   <div class="eyebrow">FAQ</div>
   <h2>Perguntas diretas, respostas diretas.</h2>
   <div class="faq">
-    <details open><summary>É seguro rodar um curl | bash?</summary><p>Sim — o script é curto, auditável e está no repo público. Ele só escreve em <span style="font-family:var(--mono)">~/.local</span>, nunca pede sudo, e você pode ler antes: abra o link raw no navegador. Desinstalação limpa com <span style="font-family:var(--mono)">curl … | bash -s -- --uninstall</span>.</p></details>
+    <details open><summary>É seguro rodar um curl | bash?</summary><p>Sim — os scripts são curtos, auditáveis e estão no repo público. Eles só escrevem em <span style="font-family:var(--mono)">~/.local</span>, nunca pedem sudo, e você pode ler antes: abra o link raw no navegador. Desinstalação limpa com o <span style="font-family:var(--mono)">uninstall.sh</span> dedicado (veja “Como desinstalo?” abaixo).</p></details>
     <details><summary>Por que “Mopivo” se a pasta instalada chama wallpaper-providers?</summary><p>Mopivo é o novo nome do projeto/app. IDs técnicos (App ID, schema GSettings, pastas) foram mantidos de propósito para quem já usava o app não perder configurações. Upgrade = só reinstalar.</p></details>
     <details><summary>Funciona no Wayland?</summary><p>Sim. Imagens funcionam em Wayland e X11. Vídeo-wallpaper usa a camada desktop X11/XWayland quando disponível, com fallback fullscreen por monitor. Auto-pause no Wayland é limitado (sem integração com o Shell) — está avisado na página de Vídeo.</p></details>
     <details><summary>Preciso pagar por API?</summary><p>Não. Wallhaven (SFW), Safebooru, Waifu.im, pastas locais e Wallrus funcionam sem chave. Pexels/Unsplash/Pixabay pedem chave gratuita — o app mostra qual está faltando e o Help Center ensina a criar em 2 min.</p></details>
-    <details><summary>Como desinstalo?</summary><p><span style="font-family:var(--mono)">./scripts/uninstall.sh</span>, <span style="font-family:var(--mono)">make uninstall</span> ou o oneliner com <span style="font-family:var(--mono)">--uninstall</span>. Ele mata o renderer, remove app, .desktop, ícone, schema e traduções. Seu papel de parede atual é preservado.</p></details>
+    <details><summary>Como desinstalo?</summary><p>Do jeito que preferir — todos fazem a mesma limpeza (mata o renderer, remove app, .desktop, ícone, schema e traduções; seu papel de parede atual é preservado):<br><br><b>Oneliner dedicado (recomendado):</b> <span style="font-family:var(--mono)">curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh | bash</span><br><b>No checkout:</b> <span style="font-family:var(--mono)">./uninstall.sh</span> (ou <span style="font-family:var(--mono)">./scripts/uninstall.sh</span> / <span style="font-family:var(--mono)">make uninstall</span>)<br><b>Via instalador:</b> <span style="font-family:var(--mono)">./install.sh --uninstall</span> ou <span style="font-family:var(--mono)">curl …/install.sh | bash -s -- --uninstall</span></p></details>
+    <details><summary>Onde estão os scripts install.sh e uninstall.sh?</summary><p>Na raiz do repo: <span style="font-family:var(--mono)">install.sh</span> instala (com bootstrap remoto quando rodado via curl) e <span style="font-family:var(--mono)">uninstall.sh</span> remove. Ambos aceitam <span style="font-family:var(--mono)">--help</span>, <span style="font-family:var(--mono)">--ref &lt;branch|tag&gt;</span> e <span style="font-family:var(--mono)">--yes</span>. A lógica real mora em <span style="font-family:var(--mono)">scripts/install.sh</span> e <span style="font-family:var(--mono)">scripts/uninstall.sh</span> — os da raiz só delegam ou buscam o repo quando preciso. Links raw: <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh">install.sh</a> · <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh">uninstall.sh</a>.</p></details>
   </div>
 </section>
 
@@ -191,7 +192,7 @@ footer{border-top:1px solid var(--border);padding:28px 0 46px;color:var(--muted)
 
 <footer><div class="wrap foot">
   <span><b style="color:var(--text)">Mopivo</b> · formerly Wallpaper Providers · GPL-3.0-or-later · feito com ♥ para o GNOME</span>
-  <span><a href="https://github.com/zonaro/mopivo">GitHub</a> · <a href="https://github.com/zonaro/mopivo/issues">Issues</a> · <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh">install.sh</a></span>
+  <span><a href="https://github.com/zonaro/mopivo">GitHub</a> · <a href="https://github.com/zonaro/mopivo/issues">Issues</a> · <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh">install.sh</a> · <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh">uninstall.sh</a></span>
 </div></footer>
 <div class="toast" id="toast">Comando copiado! Cole no terminal e dê Enter ✨</div>
 <script>

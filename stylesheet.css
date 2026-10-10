@@ -1,0 +1,169 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/* Wallpaper Providers GNOME Shell Extension — stylesheet */
+
+/* ---- Search entry ---- */
+.wp-search {
+    margin: 4px 8px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    min-width: 200px;
+}
+
+/* ---- Scrollable container ---- */
+.wp-scrollview {
+    max-height: 480px;
+    width: 420px;
+    margin: 4px 8px;
+}
+
+/* ---- Thumbnail grid ---- */
+.wp-grid {
+    padding: 4px;
+}
+
+/* ---- Individual thumbnail ---- */
+.wp-thumbnail {
+    margin: 2px;
+    border-radius: 6px;
+    transition-duration: 200ms;
+}
+
+.wp-thumbnail:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
+}
+
+/* ---- Video controls box (inside panel menu) ---- */
+.wp-video-controls {
+    margin: 2px 8px;
+    padding: 4px;
+    spacing: 2px;
+}
+
+/* ---- In-panel video file picker ---- */
+.wp-video-picker {
+    margin: 2px 8px;
+    padding: 4px;
+    spacing: 4px;
+}
+
+.wp-video-search {
+    margin: 0 0 4px 0;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.wp-video-scrollview {
+    max-height: 360px;
+    width: 420px;
+}
+
+.wp-video-list {
+    spacing: 2px;
+    padding: 2px;
+}
+
+.wp-video-empty {
+    padding: 24px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.wp-video-row-button {
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.wp-video-row-button:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.wp-video-row-icon {
+    margin-right: 8px;
+}
+
+.wp-video-row-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---- Filter bar ---- */
+.wp-filter-bar {
+    margin: 2px 8px;
+    padding: 2px 4px;
+}
+
+/* ---- Placeholder label inside grid ---- */
+.wp-placeholder {
+    padding: 24px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.wp-filter-row {
+    margin: 2px 8px;
+    spacing: 6px;
+}
+
+.wp-filter-label {
+    min-width: 90px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.wp-entry {
+    min-width: 160px;
+}
+
+.wp-toggle {
+    margin: 0 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.wp-cycle-btn {
+    padding: 2px 10px;
+    border-radius: 6px;
+}
+
+.wp-action-btn {
+    margin: 4px 8px 4px 0;
+    padding: 4px 14px;
+    border-radius: 8px;
+}
+
+.wp-thumb-button {
+    border-radius: 6px;
+}
+
+.wp-thumb-icon {
+    border-radius: 6px;
+}
+
+.wp-thumb-label {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.wp-error-label {
+    padding: 24px;
+    text-align: center;
+}
+
+.wp-pagination {
+    margin: 4px 8px;
+    spacing: 8px;
+}
+
+.wp-pagination-btn {
+    padding: 2px 12px;
+    border-radius: 6px;
+}
+
+.wp-pagination-btn-disabled {
+    padding: 2px 12px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.wp-page-label {
+    color: rgba(255, 255, 255, 0.8);
+}

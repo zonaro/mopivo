@@ -1,0 +1,619 @@
+# Wallpaper Providers GNOME Shell Extension - Translation Template
+# Copyright (C) 2024 Wallpaper Providers Contributors
+# This file is distributed under the same license as the wallpaper-providers-gnome package.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: wallpaper-providers-gnome 1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: prefs.js
+msgid "Providers"
+msgstr ""
+
+msgid "Active Provider"
+msgstr ""
+
+msgid "Choose which wallpaper provider to use."
+msgstr ""
+
+msgid "Provider"
+msgstr ""
+
+msgid "Select the active wallpaper provider"
+msgstr ""
+
+msgid "API Keys"
+msgstr ""
+
+msgid "Configure API keys for each provider. Keys are required to enable the corresponding provider."
+msgstr ""
+
+msgid "Wallhaven API Key"
+msgstr ""
+
+msgid "Pexels API Key"
+msgstr ""
+
+msgid "Unsplash API Key"
+msgstr ""
+
+msgid "Pixabay API Key"
+msgstr ""
+
+msgid "Safebooru"
+msgstr ""
+
+msgid "No API key required"
+msgstr ""
+
+msgid "Provider Status"
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "API key required"
+msgstr ""
+
+msgid "Active provider: "
+msgstr ""
+
+#: ui/prefs_helpers.js
+msgid " is configured."
+msgstr ""
+
+msgid "API key required to enable "
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Step"
+msgstr ""
+
+msgid "Rate Limit"
+msgstr ""
+
+msgid "Get API Key"
+msgstr ""
+
+#: prefs.js (Filters page)
+msgid "Filters"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Search Query"
+msgstr ""
+
+msgid "Leave empty for recent wallpapers"
+msgstr ""
+
+msgid "Categories"
+msgstr ""
+
+msgid "111 (general, anime, people)"
+msgstr ""
+
+msgid "Purity"
+msgstr ""
+
+msgid "100 (sfw, sketchy, nsfw)"
+msgstr ""
+
+msgid "Sorting"
+msgstr ""
+
+msgid "Sort method for results"
+msgstr ""
+
+msgid "Order"
+msgstr ""
+
+msgid "Sort direction"
+msgstr ""
+
+msgid "Top Range"
+msgstr ""
+
+msgid "Time range for toplist sorting"
+msgstr ""
+
+msgid "At Least (minimum resolution)"
+msgstr ""
+
+msgid "Resolutions"
+msgstr ""
+
+msgid "Aspect Ratios"
+msgstr ""
+
+msgid "Colors"
+msgstr ""
+
+msgid "AI Art Filter"
+msgstr ""
+
+msgid "Filter out AI-generated content"
+msgstr ""
+
+#: prefs.js (Downloads page)
+msgid "Downloads"
+msgstr ""
+
+msgid "Download Settings"
+msgstr ""
+
+msgid "Download Folder"
+msgstr ""
+
+msgid "Set as Wallpaper"
+msgstr ""
+
+msgid "Automatically apply the downloaded wallpaper"
+msgstr ""
+
+msgid "Page Size"
+msgstr ""
+
+msgid "Number of wallpapers per page (1-24)"
+msgstr ""
+
+#: prefs.js (Help Center page)
+msgid "Help Center"
+msgstr ""
+
+msgid "Provider Setup Guides"
+msgstr ""
+
+msgid "Step-by-step instructions to configure each wallpaper provider."
+msgstr ""
+
+msgid "Wallhaven"
+msgstr ""
+
+msgid "Wallpaper community with SFW, Sketchy, and NSFW content."
+msgstr ""
+
+msgid "Create an account at wallhaven.cc"
+msgstr ""
+
+msgid "Go to Account Settings and generate an API key"
+msgstr ""
+
+msgid "Paste the API key in the Providers tab above"
+msgstr ""
+
+msgid "No official rate limit, but be respectful (max ~3 req/s recommended)."
+msgstr ""
+
+msgid "Pexels"
+msgstr ""
+
+msgid "Free high-quality stock photos and wallpapers."
+msgstr ""
+
+msgid "Create a free account at pexels.com"
+msgstr ""
+
+msgid "Go to pexels.com/api and request an API key"
+msgstr ""
+
+msgid "200 requests/hour for free accounts."
+msgstr ""
+
+msgid "Unsplash"
+msgstr ""
+
+msgid "High-resolution free photography."
+msgstr ""
+
+msgid "Create an account at unsplash.com"
+msgstr ""
+
+msgid "Go to unsplash.com/developers and create an application"
+msgstr ""
+
+msgid "Copy the Access Key and paste in the Providers tab above"
+msgstr ""
+
+msgid "50 requests/hour for demo apps, 5000/hour for production."
+msgstr ""
+
+msgid "Anime image board — SFW only, no API key required."
+msgstr ""
+
+msgid "No API key needed — just select Safebooru in the Providers tab"
+msgstr ""
+
+msgid "Use tags separated by spaces in the search query"
+msgstr ""
+
+msgid "Safebooru only serves SFW content"
+msgstr ""
+
+msgid "Be respectful; avoid excessive rapid requests."
+msgstr ""
+
+msgid "Pixabay"
+msgstr ""
+
+msgid "Free images with a permissive license."
+msgstr ""
+
+msgid "Create a free account at pixabay.com"
+msgstr ""
+
+msgid "Go to pixabay.com/api/docs and copy your API key"
+msgstr ""
+
+msgid "100 requests/hour for free accounts (basic key)."
+msgstr ""
+
+msgid "Waifu.im"
+msgstr ""
+
+msgid "Curated anime image archive — SFW only, no API key required."
+msgstr ""
+
+msgid "No API key needed — just select Waifu.im in the Providers tab"
+msgstr ""
+
+msgid "Use tags separated by spaces in the search query (e.g. \"maid uniform\")"
+msgstr ""
+
+msgid "Leave the query empty to browse random waifus"
+msgstr ""
+
+msgid "1 request every 200ms. Each search returns up to 30 fresh random images."
+msgstr ""
+
+msgid "Local Files"
+msgstr ""
+
+msgid "Search wallpapers in folders on this computer."
+msgstr ""
+
+msgid "Default Folder"
+msgstr ""
+
+msgid "Not found"
+msgstr ""
+
+msgid "Extra Folders"
+msgstr ""
+
+msgid "/home/user/Wallpapers:/mnt/photos"
+msgstr ""
+
+msgid "Separate multiple folders with a colon (:)"
+msgstr ""
+
+msgid "Include Subfolders"
+msgstr ""
+
+msgid "Search inside subfolders recursively"
+msgstr ""
+
+msgid "Your own image collection on this computer — no network needed."
+msgstr ""
+
+msgid "Your Pictures folder is searched by default"
+msgstr ""
+
+msgid "Add more folders in the Providers tab, separated by colons"
+msgstr ""
+
+msgid "Toggle subfolder search and leave the query empty to browse everything"
+msgstr ""
+
+msgid "General Tips"
+msgstr ""
+
+msgid "Switching Providers"
+msgstr ""
+
+msgid "Select a provider in the Providers tab. Each provider has its own search filters and content. You can switch at any time."
+msgstr ""
+
+msgid "NSFW Content"
+msgstr ""
+
+msgid "NSFW content is only available through Wallhaven and requires a valid API key. Enable the NSFW purity filter only if you have a Wallhaven API key configured."
+msgstr ""
+
+msgid "Safebooru Tag Syntax"
+msgstr ""
+
+msgid "Safebooru uses tags for search. Use underscores for multi-word tags (e.g. \"blue_hair, solo\"). Combine tags with commas."
+msgstr ""
+
+#: prefs.js (Video page)
+msgid "Video"
+msgstr ""
+
+msgid "Source"
+msgstr ""
+
+msgid "Configure the video wallpaper source."
+msgstr ""
+
+msgid "Enable Video Mode"
+msgstr ""
+
+msgid "Switch from image browsing to video wallpaper mode"
+msgstr ""
+
+msgid "Source Type"
+msgstr ""
+
+msgid "Type of video source"
+msgstr ""
+
+msgid "Video Folder"
+msgstr ""
+
+msgid "Video Path"
+msgstr ""
+
+msgid "Streaming URL"
+msgstr ""
+
+msgid "Webpage URL"
+msgstr ""
+
+msgid "Local HTML File"
+msgstr ""
+
+msgid "Playback"
+msgstr ""
+
+msgid "Audio and video playback settings."
+msgstr ""
+
+msgid "Volume"
+msgstr ""
+
+msgid "Audio volume of the video wallpaper (0-100)"
+msgstr ""
+
+msgid "Mute"
+msgstr ""
+
+msgid "Mute the video wallpaper audio"
+msgstr ""
+
+msgid "Fade Duration"
+msgstr ""
+
+msgid "Volume fade duration in seconds"
+msgstr ""
+
+msgid "Audio Only on Primary Monitor"
+msgstr ""
+
+msgid "Play audio only on the primary monitor"
+msgstr ""
+
+msgid "Fit Mode"
+msgstr ""
+
+msgid "How the video is fitted on screen"
+msgstr ""
+
+msgid "Random Start"
+msgstr ""
+
+msgid "Seek to a random position when playback starts"
+msgstr ""
+
+msgid "Per-Monitor Video Paths"
+msgstr ""
+
+msgid "Auto-Pause"
+msgstr ""
+
+msgid "Automatically pause the video wallpaper."
+msgstr ""
+
+msgid "Never"
+msgstr ""
+
+msgid "Any monitor"
+msgstr ""
+
+msgid "All monitors"
+msgstr ""
+
+msgid "Pause on Maximize/Fullscreen"
+msgstr ""
+
+msgid "Pause video when a window is maximized or fullscreen"
+msgstr ""
+
+msgid "Pause on Window Focus"
+msgstr ""
+
+msgid "Pause video whenever any window has focus"
+msgstr ""
+
+msgid "Pause on Battery"
+msgstr ""
+
+msgid "Pause video based on power status"
+msgstr ""
+
+msgid "Low battery"
+msgstr ""
+
+msgid "Always"
+msgstr ""
+
+msgid "Low Battery Threshold"
+msgstr ""
+
+msgid "Battery percentage below which to pause"
+msgstr ""
+
+msgid "Pause on Media Playing"
+msgstr ""
+
+msgid "Pause video whenever a media player is playing"
+msgstr ""
+
+msgid "Auto-Change"
+msgstr ""
+
+msgid "Automatically change the video wallpaper periodically."
+msgstr ""
+
+msgid "Auto-Change Wallpaper"
+msgstr ""
+
+msgid "Periodically change the video wallpaper from a directory"
+msgstr ""
+
+msgid "Auto-Change Directory"
+msgstr ""
+
+msgid "Auto-Change Interval"
+msgstr ""
+
+msgid "Minutes between automatic wallpaper changes"
+msgstr ""
+
+msgid "Change Mode"
+msgstr ""
+
+msgid "Order when changing wallpapers"
+msgstr ""
+
+msgid "Sequential"
+msgstr ""
+
+msgid "Reverse"
+msgstr ""
+
+msgid "Random"
+msgstr ""
+
+msgid "Static"
+msgstr ""
+
+msgid "Extract a frame from the video as static wallpaper."
+msgstr ""
+
+msgid "Extract Static Wallpaper from Video"
+msgstr ""
+
+msgid "Extract a frame and set it as the static desktop background"
+msgstr ""
+
+msgid "Blur Static Wallpaper"
+msgstr ""
+
+msgid "Blur the extracted frame before setting as wallpaper"
+msgstr ""
+
+msgid "Blur Radius"
+msgstr ""
+
+msgid "Gaussian blur radius for the static wallpaper"
+msgstr ""
+
+msgid "Advanced"
+msgstr ""
+
+msgid "Show on Lock Screen"
+msgstr ""
+
+msgid "Keep the video wallpaper visible on the lock screen"
+msgstr ""
+
+msgid "Startup Delay"
+msgstr ""
+
+msgid "Milliseconds to wait before launching the renderer"
+msgstr ""
+
+msgid "Show Panel Menu"
+msgstr ""
+
+msgid "Show the video control menu in the panel"
+msgstr ""
+
+msgid "Enable VA-API Hardware Decoding"
+msgstr ""
+
+msgid "Prefer VA-API hardware decoding for the video wallpaper"
+msgstr ""
+
+msgid "Enable NVIDIA Stateless Decoders"
+msgstr ""
+
+msgid "Use NVIDIA stateless decoders for hardware decoding"
+msgstr ""
+
+msgid "Prefer Clappersink"
+msgstr ""
+
+msgid "Prefer clappersink over gtk4paintablesink"
+msgstr ""
+
+msgid "Force GTK MediaFile Backend"
+msgstr ""
+
+msgid "Use Gtk.MediaFile backend instead of GStreamer"
+msgstr ""
+
+#: lib/video/panelMenu.js
+msgid "Video mode: OFF"
+msgstr ""
+
+msgid "Video mode: ON"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Lucky"
+msgstr ""
+
+msgid "Browse…"
+msgstr ""
+
+#: ui/videoPicker.js
+msgid "Search videos…"
+msgstr ""
+
+msgid "No matching videos."
+msgstr ""
+
+msgid "No videos found."
+msgstr ""
+
+msgid "Browse wallpapers generated by the Wallrus app."
+msgstr ""
+
+msgid "Wallrus exports images to ~/Pictures/Wallrus by default"
+msgstr ""
+
+msgid "Add more folders in the Providers tab if your Wallrus exports go elsewhere"
+msgstr ""
+
+msgid "Use the search box to filter by name; leave empty to browse all"
+msgstr ""
+
+msgid "/home/user/Downloads/Wallrus:/home/user/Pictures/Wallrus"
+msgstr ""

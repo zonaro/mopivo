@@ -1,0 +1,622 @@
+# Spanish translation for wallpaper-providers-gnome
+# Copyright (C) 2024 Wallpaper Providers Contributors
+# This file is distributed under the same license as the wallpaper-providers-gnome package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wallpaper-providers-gnome 1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: prefs.js
+msgid "Providers"
+msgstr "Proveedores"
+
+msgid "Active Provider"
+msgstr "Proveedor Activo"
+
+msgid "Choose which wallpaper provider to use."
+msgstr "Elige qué proveedor de fondos de pantalla usar."
+
+msgid "Provider"
+msgstr "Proveedor"
+
+msgid "Select the active wallpaper provider"
+msgstr "Selecciona el proveedor de fondos de pantalla activo"
+
+msgid "API Keys"
+msgstr "Claves de API"
+
+msgid "Configure API keys for each provider. Keys are required to enable the corresponding provider."
+msgstr "Configura las claves de API para cada proveedor. Las claves son necesarias para habilitar el proveedor correspondiente."
+
+msgid "Wallhaven API Key"
+msgstr "Clave de API de Wallhaven"
+
+msgid "Pexels API Key"
+msgstr "Clave de API de Pexels"
+
+msgid "Unsplash API Key"
+msgstr "Clave de API de Unsplash"
+
+msgid "Pixabay API Key"
+msgstr "Clave de API de Pixabay"
+
+msgid "Safebooru"
+msgstr "Safebooru"
+
+msgid "No API key required"
+msgstr "No se requiere clave de API"
+
+msgid "Provider Status"
+msgstr "Estado del Proveedor"
+
+msgid "Ready"
+msgstr "Listo"
+
+msgid "API key required"
+msgstr "Clave de API requerida"
+
+msgid "Active provider: "
+msgstr "Proveedor activo: "
+
+#: ui/prefs_helpers.js
+msgid " is configured."
+msgstr " está configurada."
+
+msgid "API key required to enable "
+msgstr "Clave de API requerida para habilitar "
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Step"
+msgstr "Paso"
+
+msgid "Rate Limit"
+msgstr "Límite de Velocidad"
+
+msgid "Get API Key"
+msgstr "Obtener Clave de API"
+
+#: prefs.js (Filters page)
+msgid "Filters"
+msgstr "Filtros"
+
+msgid "Search"
+msgstr "Búsqueda"
+
+msgid "Search Query"
+msgstr "Consulta de Búsqueda"
+
+msgid "Leave empty for recent wallpapers"
+msgstr "Dejar vacío para fondos de pantalla recientes"
+
+msgid "Categories"
+msgstr "Categorías"
+
+msgid "111 (general, anime, people)"
+msgstr "111 (general, anime, personas)"
+
+msgid "Purity"
+msgstr "Pureza"
+
+msgid "100 (sfw, sketchy, nsfw)"
+msgstr "100 (sfw, sketchy, nsfw)"
+
+msgid "Sorting"
+msgstr "Ordenación"
+
+msgid "Sort method for results"
+msgstr "Método de ordenación de resultados"
+
+msgid "Order"
+msgstr "Orden"
+
+msgid "Sort direction"
+msgstr "Dirección de ordenación"
+
+msgid "Top Range"
+msgstr "Rango Top"
+
+msgid "Time range for toplist sorting"
+msgstr "Rango de tiempo para ordenación de lista top"
+
+msgid "At Least (minimum resolution)"
+msgstr "Al Menos (resolución mínima)"
+
+msgid "Resolutions"
+msgstr "Resoluciones"
+
+msgid "Aspect Ratios"
+msgstr "Proporciones de Aspecto"
+
+msgid "Colors"
+msgstr "Colores"
+
+msgid "AI Art Filter"
+msgstr "Filtro de Arte IA"
+
+msgid "Filter out AI-generated content"
+msgstr "Filtrar contenido generado por IA"
+
+#: prefs.js (Downloads page)
+msgid "Downloads"
+msgstr "Descargas"
+
+msgid "Download Settings"
+msgstr "Configuración de Descargas"
+
+msgid "Download Folder"
+msgstr "Carpeta de Descargas"
+
+msgid "Set as Wallpaper"
+msgstr "Establecer como Fondo de Pantalla"
+
+msgid "Automatically apply the downloaded wallpaper"
+msgstr "Aplicar automáticamente el fondo de pantalla descargado"
+
+msgid "Page Size"
+msgstr "Tamaño de Página"
+
+msgid "Number of wallpapers per page (1-24)"
+msgstr "Número de fondos de pantalla por página (1-24)"
+
+#: prefs.js (Help Center page)
+msgid "Help Center"
+msgstr "Centro de Ayuda"
+
+msgid "Provider Setup Guides"
+msgstr "Guías de Configuración de Proveedores"
+
+msgid "Step-by-step instructions to configure each wallpaper provider."
+msgstr "Instrucciones paso a paso para configurar cada proveedor de fondos de pantalla."
+
+msgid "Wallhaven"
+msgstr "Wallhaven"
+
+msgid "Wallpaper community with SFW, Sketchy, and NSFW content."
+msgstr "Comunidad de fondos de pantalla con contenido SFW, Sketchy y NSFW."
+
+msgid "Create an account at wallhaven.cc"
+msgstr "Crea una cuenta en wallhaven.cc"
+
+msgid "Go to Account Settings and generate an API key"
+msgstr "Ve a Configuración de Cuenta y genera una clave de API"
+
+msgid "Paste the API key in the Providers tab above"
+msgstr "Pega la clave de API en la pestaña de Proveedores arriba"
+
+msgid "No official rate limit, but be respectful (max ~3 req/s recommended)."
+msgstr "Sin límite de velocidad oficial, pero sé respetuoso (máx ~3 req/s recomendado)."
+
+msgid "Pexels"
+msgstr "Pexels"
+
+msgid "Free high-quality stock photos and wallpapers."
+msgstr "Fotos de stock y fondos de pantalla de alta calidad gratuitos."
+
+msgid "Create a free account at pexels.com"
+msgstr "Crea una cuenta gratuita en pexels.com"
+
+msgid "Go to pexels.com/api and request an API key"
+msgstr "Ve a pexels.com/api y solicita una clave de API"
+
+msgid "200 requests/hour for free accounts."
+msgstr "200 solicitudes/hora para cuentas gratuitas."
+
+msgid "Unsplash"
+msgstr "Unsplash"
+
+msgid "High-resolution free photography."
+msgstr "Fotografía gratuita en alta resolución."
+
+msgid "Create an account at unsplash.com"
+msgstr "Crea una cuenta en unsplash.com"
+
+msgid "Go to unsplash.com/developers and create an application"
+msgstr "Ve a unsplash.com/developers y crea una aplicación"
+
+msgid "Copy the Access Key and paste in the Providers tab above"
+msgstr "Copia la Clave de Acceso y pega en la pestaña de Proveedores arriba"
+
+msgid "50 requests/hour for demo apps, 5000/hour for production."
+msgstr "50 solicitudes/hora para apps de demostración, 5000/hora en producción."
+
+msgid "Anime image board — SFW only, no API key required."
+msgstr "Tablero de imágenes de anime — solo SFW, no se requiere clave de API."
+
+msgid "No API key needed — just select Safebooru in the Providers tab"
+msgstr "No se necesita clave de API — solo selecciona Safebooru en la pestaña de Proveedores"
+
+msgid "Use tags separated by spaces in the search query"
+msgstr "Usa etiquetas separadas por espacios en la consulta de búsqueda"
+
+msgid "Safebooru only serves SFW content"
+msgstr "Safebooru solo sirve contenido SFW"
+
+msgid "Be respectful; avoid excessive rapid requests."
+msgstr "Sé respetuoso; evita solicitudes rápidas excesivas."
+
+msgid "Pixabay"
+msgstr "Pixabay"
+
+msgid "Free images with a permissive license."
+msgstr "Imágenes gratuitas con licencia permisiva."
+
+msgid "Create a free account at pixabay.com"
+msgstr "Crea una cuenta gratuita en pixabay.com"
+
+msgid "Go to pixabay.com/api/docs and copy your API key"
+msgstr "Ve a pixabay.com/api/docs y copia tu clave de API"
+
+msgid "100 requests/hour for free accounts (basic key)."
+msgstr "100 solicitudes/hora para cuentas gratuitas (clave básica)."
+
+msgid "Waifu.im"
+msgstr "Waifu.im"
+
+msgid "Curated anime image archive — SFW only, no API key required."
+msgstr "Archivo seleccionado de imágenes de anime — solo SFW, sin necesidad de clave de API."
+
+msgid "No API key needed — just select Waifu.im in the Providers tab"
+msgstr "No necesitas clave de API — solo selecciona Waifu.im en la pestaña Proveedores"
+
+msgid "Use tags separated by spaces in the search query (e.g. \"maid uniform\")"
+msgstr "Usa etiquetas separadas por espacios en la búsqueda (p. ej. \"maid uniform\")"
+
+msgid "Leave the query empty to browse random waifus"
+msgstr "Deja la búsqueda vacía para ver waifus aleatorias"
+
+msgid "1 request every 200ms. Each search returns up to 30 fresh random images."
+msgstr "1 solicitud cada 200ms. Cada búsqueda devuelve hasta 30 imágenes aleatorias."
+
+msgid "Local Files"
+msgstr "Archivos locales"
+
+msgid "Search wallpapers in folders on this computer."
+msgstr "Busca fondos de pantalla en carpetas de este equipo."
+
+msgid "Default Folder"
+msgstr "Carpeta predeterminada"
+
+msgid "Not found"
+msgstr "No encontrada"
+
+msgid "Extra Folders"
+msgstr "Carpetas adicionales"
+
+msgid "/home/user/Wallpapers:/mnt/photos"
+msgstr "/home/usuario/Wallpapers:/mnt/fotos"
+
+msgid "Separate multiple folders with a colon (:)"
+msgstr "Separa varias carpetas con dos puntos (:)"
+
+msgid "Include Subfolders"
+msgstr "Incluir subcarpetas"
+
+msgid "Search inside subfolders recursively"
+msgstr "Buscar dentro de las subcarpetas de forma recursiva"
+
+msgid "Your own image collection on this computer — no network needed."
+msgstr "Tu propia colección de imágenes en este equipo — sin necesidad de red."
+
+msgid "Your Pictures folder is searched by default"
+msgstr "Tu carpeta Imágenes se busca de forma predeterminada"
+
+msgid "Add more folders in the Providers tab, separated by colons"
+msgstr "Añade más carpetas en la pestaña Proveedores, separadas por dos puntos"
+
+msgid "Toggle subfolder search and leave the query empty to browse everything"
+msgstr "Activa la búsqueda en subcarpetas y deja la búsqueda vacía para verlo todo"
+
+msgid "General Tips"
+msgstr "Consejos Generales"
+
+msgid "Switching Providers"
+msgstr "Cambiando de Proveedor"
+
+msgid "Select a provider in the Providers tab. Each provider has its own search filters and content. You can switch at any time."
+msgstr "Selecciona un proveedor en la pestaña de Proveedores. Cada proveedor tiene sus propios filtros de búsqueda y contenido. Puedes cambiar en cualquier momento."
+
+msgid "NSFW Content"
+msgstr "Contenido NSFW"
+
+msgid "NSFW content is only available through Wallhaven and requires a valid API key. Enable the NSFW purity filter only if you have a Wallhaven API key configured."
+msgstr "El contenido NSFW solo está disponible a través de Wallhaven y requiere una clave de API válida. Habilita el filtro de pureza NSFW solo si tienes una clave de API de Wallhaven configurada."
+
+msgid "Safebooru Tag Syntax"
+msgstr "Sintaxis de Etiquetas de Safebooru"
+
+msgid "Safebooru uses tags for search. Use underscores for multi-word tags (e.g. \"blue_hair, solo\"). Combine tags with commas."
+msgstr "Safebooru usa etiquetas para búsqueda. Usa guiones bajos para etiquetas de múltiples palabras (ej: \"blue_hair, solo\"). Combina etiquetas con comas."
+
+#: prefs.js (Video page)
+msgid "Video"
+msgstr "Vídeo"
+
+msgid "Source"
+msgstr "Fuente"
+
+msgid "Configure the video wallpaper source."
+msgstr "Configura la fuente del fondo de pantalla en vídeo."
+
+msgid "Enable Video Mode"
+msgstr "Activar Modo Vídeo"
+
+msgid "Switch from image browsing to video wallpaper mode"
+msgstr "Cambiar de navegación de imágenes al modo de fondo de pantalla en vídeo"
+
+msgid "Source Type"
+msgstr "Tipo de Fuente"
+
+msgid "Type of video source"
+msgstr "Tipo de fuente de vídeo"
+
+msgid "Video Folder"
+msgstr "Carpeta de Vídeos"
+
+msgid "Video Path"
+msgstr "Ruta del Vídeo"
+
+msgid "Streaming URL"
+msgstr "URL de Streaming"
+
+msgid "Webpage URL"
+msgstr "URL de Página Web"
+
+msgid "Local HTML File"
+msgstr "Archivo HTML Local"
+
+msgid "Playback"
+msgstr "Reproducción"
+
+msgid "Audio and video playback settings."
+msgstr "Configuraciones de reproducción de audio y vídeo."
+
+msgid "Volume"
+msgstr "Volumen"
+
+msgid "Audio volume of the video wallpaper (0-100)"
+msgstr "Volumen del audio del fondo de pantalla en vídeo (0-100)"
+
+msgid "Mute"
+msgstr "Silenciar"
+
+msgid "Mute the video wallpaper audio"
+msgstr "Silenciar el audio del fondo de pantalla en vídeo"
+
+msgid "Fade Duration"
+msgstr "Duración del Fundido"
+
+msgid "Volume fade duration in seconds"
+msgstr "Duración del fundido de volumen en segundos"
+
+msgid "Audio Only on Primary Monitor"
+msgstr "Audio Solo en Monitor Principal"
+
+msgid "Play audio only on the primary monitor"
+msgstr "Reproducir audio solo en el monitor principal"
+
+msgid "Fit Mode"
+msgstr "Modo de Ajuste"
+
+msgid "How the video is fitted on screen"
+msgstr "Cómo se ajusta el vídeo en la pantalla"
+
+msgid "Random Start"
+msgstr "Inicio Aleatorio"
+
+msgid "Seek to a random position when playback starts"
+msgstr "Ir a una posición aleatoria cuando comience la reproducción"
+
+msgid "Per-Monitor Video Paths"
+msgstr "Rutas de Vídeo por Monitor"
+
+msgid "Auto-Pause"
+msgstr "Auto-Pausa"
+
+msgid "Automatically pause the video wallpaper."
+msgstr "Pausar automáticamente el fondo de pantalla en vídeo."
+
+msgid "Never"
+msgstr "Nunca"
+
+msgid "Any monitor"
+msgstr "Cualquier monitor"
+
+msgid "All monitors"
+msgstr "Todos los monitores"
+
+msgid "Pause on Maximize/Fullscreen"
+msgstr "Pausar al Maximizar/Pantalla Completa"
+
+msgid "Pause video when a window is maximized or fullscreen"
+msgstr "Pausar el vídeo cuando una ventana esté maximizada o en pantalla completa"
+
+msgid "Pause on Window Focus"
+msgstr "Pausar al Enfocar Ventana"
+
+msgid "Pause video whenever any window has focus"
+msgstr "Pausar el vídeo siempre que una ventana tenga foco"
+
+msgid "Pause on Battery"
+msgstr "Pausar con Batería"
+
+msgid "Pause video based on power status"
+msgstr "Pausar el vídeo según el estado de energía"
+
+msgid "Low battery"
+msgstr "Batería baja"
+
+msgid "Always"
+msgstr "Siempre"
+
+msgid "Low Battery Threshold"
+msgstr "Umbral de Batería Baja"
+
+msgid "Battery percentage below which to pause"
+msgstr "Porcentaje de batería bajo el cual pausar"
+
+msgid "Pause on Media Playing"
+msgstr "Pausar al Reproducir Multimedia"
+
+msgid "Pause video whenever a media player is playing"
+msgstr "Pausar el vídeo siempre que un reproductor multimedia esté reproduciendo"
+
+msgid "Auto-Change"
+msgstr "Auto-Cambio"
+
+msgid "Automatically change the video wallpaper periodically."
+msgstr "Cambiar automáticamente el fondo de pantalla en vídeo periódicamente."
+
+msgid "Auto-Change Wallpaper"
+msgstr "Auto-Cambiar Fondo de Pantalla"
+
+msgid "Periodically change the video wallpaper from a directory"
+msgstr "Cambiar periódicamente el fondo de pantalla en vídeo de un directorio"
+
+msgid "Auto-Change Directory"
+msgstr "Directorio de Auto-Cambio"
+
+msgid "Auto-Change Interval"
+msgstr "Intervalo de Auto-Cambio"
+
+msgid "Minutes between automatic wallpaper changes"
+msgstr "Minutos entre cambios automáticos de fondo de pantalla"
+
+msgid "Change Mode"
+msgstr "Modo de Cambio"
+
+msgid "Order when changing wallpapers"
+msgstr "Orden al cambiar fondos de pantalla"
+
+msgid "Sequential"
+msgstr "Secuencial"
+
+msgid "Reverse"
+msgstr "Inverso"
+
+msgid "Random"
+msgstr "Aleatorio"
+
+msgid "Static"
+msgstr "Estático"
+
+msgid "Extract a frame from the video as static wallpaper."
+msgstr "Extraer un cuadro del vídeo como fondo de pantalla estático."
+
+msgid "Extract Static Wallpaper from Video"
+msgstr "Extraer Fondo de Pantalla Estático del Vídeo"
+
+msgid "Extract a frame and set it as the static desktop background"
+msgstr "Extraer un cuadro y establecerlo como fondo de escritorio estático"
+
+msgid "Blur Static Wallpaper"
+msgstr "Difuminar Fondo de Pantalla Estático"
+
+msgid "Blur the extracted frame before setting as wallpaper"
+msgstr "Difuminar el cuadro extraído antes de establecer como fondo de pantalla"
+
+msgid "Blur Radius"
+msgstr "Radio de Desenfoque"
+
+msgid "Gaussian blur radius for the static wallpaper"
+msgstr "Radio de desenfoque gaussiano para el fondo de pantalla estático"
+
+msgid "Advanced"
+msgstr "Avanzado"
+
+msgid "Show on Lock Screen"
+msgstr "Mostrar en Pantalla de Bloqueo"
+
+msgid "Keep the video wallpaper visible on the lock screen"
+msgstr "Mantener el fondo de pantalla en vídeo visible en la pantalla de bloqueo"
+
+msgid "Startup Delay"
+msgstr "Retraso de Inicio"
+
+msgid "Milliseconds to wait before launching the renderer"
+msgstr "Milisegundos a esperar antes de iniciar el renderizador"
+
+msgid "Show Panel Menu"
+msgstr "Mostrar Menú del Panel"
+
+msgid "Show the video control menu in the panel"
+msgstr "Mostrar el menú de control de vídeo en el panel"
+
+msgid "Enable VA-API Hardware Decoding"
+msgstr "Activar Decodificación por Hardware VA-API"
+
+msgid "Prefer VA-API hardware decoding for the video wallpaper"
+msgstr "Preferir decodificación por hardware VA-API para el fondo de pantalla en vídeo"
+
+msgid "Enable NVIDIA Stateless Decoders"
+msgstr "Activar Decodificadores NVIDIA Stateless"
+
+msgid "Use NVIDIA stateless decoders for hardware decoding"
+msgstr "Usar decodificadores NVIDIA stateless para decodificación por hardware"
+
+msgid "Prefer Clappersink"
+msgstr "Preferir Clappersink"
+
+msgid "Prefer clappersink over gtk4paintablesink"
+msgstr "Preferir clappersink en lugar de gtk4paintablesink"
+
+msgid "Force GTK MediaFile Backend"
+msgstr "Forzar Backend GTK MediaFile"
+
+msgid "Use Gtk.MediaFile backend instead of GStreamer"
+msgstr "Usar el backend Gtk.MediaFile en lugar de GStreamer"
+
+#: lib/video/panelMenu.js
+msgid "Video mode: OFF"
+msgstr "Modo vídeo: DES"
+
+msgid "Video mode: ON"
+msgstr "Modo vídeo: ACT"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Lucky"
+msgstr "Suerte"
+
+msgid "Browse…"
+msgstr "Explorar…"
+
+#: ui/videoPicker.js
+msgid "Search videos…"
+msgstr "Buscar vídeos…"
+
+msgid "No matching videos."
+msgstr "Ningún vídeo coincidente."
+
+msgid "No videos found."
+msgstr "No se encontraron vídeos."
+
+msgid "Wallrus"
+msgstr "Wallrus"
+
+msgid "Browse wallpapers generated by the Wallrus app."
+msgstr "Navegue por papéis de parede gerados pelo Wallrus."
+
+msgid "Wallrus exports images to ~/Pictures/Wallrus by default"
+msgstr "O Wallrus exporta imagens para ~/Pictures/Wallrus por padrão."
+
+msgid "Add more folders in the Providers tab if your Wallrus exports go elsewhere"
+msgstr "Adicione mais pastas na aba de Provedores se suas exportações forem para outro lugar."
+
+msgid "Use the search box to filter by name; leave empty to browse all"
+msgstr "Use a caixa de busca para filtrar por nome; deixe vazio para ver todos."
+
+msgid "/home/user/Downloads/Wallrus:/home/user/Pictures/Wallrus"
+msgstr "/home/usuario/Downloads/Wallrus:/home/usuario/Imagens/Wallrus"

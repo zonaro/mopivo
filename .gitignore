@@ -1,0 +1,8 @@
+# Build artifacts
+build/
+*.zip
+schemas/gschemas.compiled
+
+# Agent / editor state
+.omo/
+.vscode/

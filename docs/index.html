@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mopivo — Wallpapers incríveis e vídeo-wallpapers para seu GNOME</title>
-<meta name="description" content="Mopivo traz wallpapers de 8 fontes e toca vídeo-wallpapers no seu desktop. Um comando, 30 segundos, grátis para sempre.">
-<meta property="og:title" content="Mopivo — seu desktop ganha vida">
-<meta property="og:description" content="8 fontes de wallpapers + vídeo-wallpapers. Instala com 1 comando. Grátis, open-source, sem conta.">
+<title>Mopivo — Amazing wallpapers and video wallpapers for your GNOME</title>
+<meta name="description" content="Mopivo brings wallpapers from 8 sources and plays video wallpapers on your desktop. One command, 30 seconds, free forever.">
+<meta property="og:title" content="Mopivo — your desktop comes alive">
+<meta property="og:description" content="8 wallpaper sources + video wallpapers. Install with 1 command. Free, open-source, no account.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://zonaro.github.io/mopivo/">
 <meta property="og:image" content="https://zonaro.github.io/mopivo/icon-512.png">
@@ -30,12 +30,17 @@ body{margin:0;font-family:var(--font);background:radial-gradient(1000px 500px at
 a{color:inherit}
 .wrap{max-width:var(--max);margin:0 auto;padding:0 22px}
 nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(7,11,22,.72);border-bottom:1px solid var(--border)}
-.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
 .brand{display:flex;gap:11px;align-items:center;font-weight:800;font-size:19px;letter-spacing:-.02em;text-decoration:none}
 .logo{width:34px;height:34px;border-radius:10px;display:block;box-shadow:0 8px 26px rgba(124,108,255,.4)}
 .hero-icon{width:132px;height:132px;border-radius:30px;display:block;margin:0 auto 22px;box-shadow:0 26px 64px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.07)}
 .nav-links{display:flex;gap:22px;font-size:14.5px;color:var(--muted)}
 .nav-links a{text-decoration:none}.nav-links a:hover{color:var(--text)}
+.nav-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.lang-switch{display:inline-flex;gap:3px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:999px;padding:3px}
+.lang-switch .lang{border:0;background:transparent;color:var(--muted);font-family:inherit;font-size:11.5px;font-weight:800;padding:5px 9px;border-radius:999px;cursor:pointer;transition:.18s;letter-spacing:.03em;line-height:1}
+.lang-switch .lang:hover{color:var(--text)}
+.lang-switch .lang.active{background:linear-gradient(135deg,var(--a1),var(--a2));color:#081018}
 .btn{display:inline-flex;align-items:center;gap:9px;border:0;border-radius:999px;padding:13px 24px;font-weight:750;font-size:15px;cursor:pointer;text-decoration:none;transition:.18s}
 .btn-primary{background:linear-gradient(135deg,var(--a1),var(--a2));color:#081018;box-shadow:0 12px 34px rgba(124,108,255,.45)}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 18px 44px rgba(56,225,255,.4)}
@@ -91,117 +96,125 @@ footer{border-top:1px solid var(--border);padding:28px 0 46px;color:var(--muted)
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#0ff0b3;color:#04120c;font-weight:800;padding:12px 20px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;z-index:99}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:900px){.grid,.steps{grid-template-columns:1fr 1fr}.providers{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}.nav-links{display:none}}
-@media(max-width:560px){.grid,.steps,.providers{grid-template-columns:1fr}.cmd{font-size:11.5px}}
+@media(max-width:560px){.grid,.steps,.providers{grid-template-columns:1fr}.cmd{font-size:11.5px}.lang-switch{padding:2px}.lang-switch .lang{padding:4px 6px;font-size:11px}.btn-sm{padding:8px 12px;font-size:12.5px}}
 </style>
 </head>
 <body>
 <nav><div class="wrap nav-in">
   <a class="brand" href="#"><img class="logo" src="favicon.png" alt="Mopivo" width="34" height="34"> Mopivo</a>
-  <div class="nav-links"><a href="#recursos">Recursos</a><a href="#provedores">Provedores</a><a href="#como-funciona">Instalação</a><a href="#faq">FAQ</a></div>
-  <a class="btn btn-primary btn-sm" href="#instalar">⬇ Baixar grátis</a>
+  <div class="nav-links"><a href="#recursos" data-i18n="nav.features">Features</a><a href="#provedores" data-i18n="nav.providers">Sources</a><a href="#como-funciona" data-i18n="nav.install">Install</a><a href="#faq" data-i18n="nav.faq">FAQ</a></div>
+  <div class="nav-right">
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button type="button" class="lang" data-lang="pt-BR" aria-pressed="false">PT</button>
+      <button type="button" class="lang" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" class="lang" data-lang="es" aria-pressed="false">ES</button>
+    </div>
+    <a class="btn btn-primary btn-sm" href="#instalar" data-i18n="nav.download">⬇ Download free</a>
+  </div>
 </div></nav>
 
 <div class="wrap">
 <header class="hero" id="instalar">
-  <img class="hero-icon" src="icon-512.png" alt="Mopivo — paisagens nas quatro estações" width="132" height="132">
+  <img class="hero-icon" src="icon-512.png" alt="Mopivo — landscapes through the four seasons" width="132" height="132" data-i18n-alt="hero.iconAlt">
   <span class="badge">✨ Mopivo · v1.0.0 · GPL-3.0</span>
-  <h1>Seu GNOME<br><span class="grad">ganha vida em 30 segundos.</span></h1>
-  <p class="sub">Mopivo busca wallpapers em <b style="color:var(--text)">8 fontes</b>, aplica com 1 clique e ainda toca <b style="color:var(--text)">vídeo-wallpapers</b> — arquivos seus, streaming ou páginas web. Feito para GNOME, grátis, open-source, sem cadastro.</p>
+  <h1 data-i18n-html="hero.title">Your GNOME<br><span class="grad">comes alive in 30 seconds.</span></h1>
+  <p class="sub" data-i18n-html="hero.sub">Mopivo finds wallpapers from <b style="color:var(--text)">8 sources</b>, applies them in 1 click and even plays <b style="color:var(--text)">video wallpapers</b> — your own files, streaming or web pages. Built for GNOME, free, open-source, no sign-up.</p>
 
   <div class="install-card">
     <div class="install-head">
-      <div style="display:flex;gap:10px;align-items:center"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><span class="install-label">Copie · cole no terminal · enter</span></div>
-      <span style="font-size:12.5px;color:var(--ok)">● funciona no GNOME 45 a 50</span>
+      <div style="display:flex;gap:10px;align-items:center"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><span class="install-label" data-i18n="install.label">Copy · paste in the terminal · enter</span></div>
+      <span style="font-size:12.5px;color:var(--ok)" data-i18n="hero.gnomeLine">● works on GNOME 45 to 50</span>
     </div>
-    <div class="cmd"><span class="p">$</span> <code id="oneliner">curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash</code><button class="copy" onclick="copyCmd()">⧉ Copiar</button></div>
-    <div style="margin-top:10px;font-size:13px;color:var(--muted)">Prefere <span style="font-family:var(--mono)">wget</span>? <code style="font-family:var(--mono);color:var(--text)">wget -qO- https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash</code></div>
+    <div class="cmd"><span class="p">$</span> <code id="oneliner">curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash</code><button class="copy" onclick="copyCmd()" data-i18n="install.copy">⧉ Copy</button></div>
+    <div style="margin-top:10px;font-size:13px;color:var(--muted)"><span data-i18n-html="install.wget">Prefer <span style="font-family:var(--mono)">wget</span>?</span> <code style="font-family:var(--mono);color:var(--text)">wget -qO- https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash</code></div>
   </div>
 
   <div class="cta-row">
-    <button class="btn btn-primary" onclick="copyCmd()">⬇ Instalar agora — 1 comando</button>
-    <a class="btn btn-ghost" href="https://github.com/zonaro/mopivo" target="_blank" rel="noopener">★ Ver no GitHub</a>
+    <button class="btn btn-primary" onclick="copyCmd()" data-i18n="cta.installBtn">⬇ Install now — 1 command</button>
+    <a class="btn btn-ghost" href="https://github.com/zonaro/mopivo" target="_blank" rel="noopener" data-i18n="cta.github">★ View on GitHub</a>
   </div>
-  <p class="micro"><b>✓</b> Sem sudo &nbsp;·&nbsp; <b>✓</b> fica na sua pasta pessoal &nbsp;·&nbsp; <b>✓</b> remove tudo limpo &nbsp;·&nbsp; <b>✓</b> 30 segundos</p>
+  <p class="micro" data-i18n-html="hero.micro"><b>✓</b> No sudo &nbsp;·&nbsp; <b>✓</b> stays in your home folder &nbsp;·&nbsp; <b>✓</b> uninstalls cleanly &nbsp;·&nbsp; <b>✓</b> 30 seconds</p>
 
   <div class="stats">
-    <div class="stat"><b>8</b><span>fontes de wallpaper</span></div>
-    <div class="stat"><b>3</b><span>tipos de vídeo (arquivo, streaming, web)</span></div>
-    <div class="stat"><b>∞</b><span>personalize do seu jeito</span></div>
-    <div class="stat"><b>0</b><span>contas, rastreadores ou paywall</span></div>
+    <div class="stat"><b>8</b><span data-i18n="stat.sources">wallpaper sources</span></div>
+    <div class="stat"><b>3</b><span data-i18n="stat.video">video types (file, streaming, web)</span></div>
+    <div class="stat"><b>∞</b><span data-i18n="stat.custom">make it truly yours</span></div>
+    <div class="stat"><b>0</b><span data-i18n="stat.free">accounts, trackers or paywall</span></div>
   </div>
 </header>
 
 <section id="recursos">
-  <div class="eyebrow">Por que Mopivo</div>
-  <h2>Feito para quem troca<br>de wallpaper todo dia.</h2>
-  <p class="lead">Nada de site cheio de anúncio, download manual e ajuste no escuro. Pesquise, filtre, clique — pronto, aplicado no desktop e na tela de bloqueio.</p>
+  <div class="eyebrow" data-i18n="features.eyebrow">Why Mopivo</div>
+  <h2 data-i18n-html="features.title">Made for people who change<br>their wallpaper every day.</h2>
+  <p class="lead" data-i18n="features.lead">No ad-packed websites, no manual downloads, no guesswork. Search, filter, click — done, applied to your desktop and lock screen.</p>
   <div class="grid">
-    <div class="card"><div class="icon">🖼️</div><h3>Galeria com paginação</h3><p>Busca instantânea, dropdown de provedor, thumbnails rápidas e download em resolução máxima com cache inteligente.</p></div>
-    <div class="card"><div class="icon">🎛️</div><h3>Filtros nível Wallhaven</h3><p>Categorias, pureza (SFW/Sketchy/NSFW), ordenação, resolução mínima, proporção, cores e filtro anti-AI-art.</p></div>
-    <div class="card"><div class="icon">🎬</div><h3>Vídeo-wallpaper real</h3><p>Renderer GStreamer separado por monitor, camada desktop via X11/XWayland, fit modes, mute, volume, Next/Lucky e yt-dlp.</p></div>
-    <div class="card"><div class="icon">🔄</div><h3>Troca automática</h3><p>Slideshow por intervalo a partir de qualquer pasta, blur estático de vídeo, modo aleatório e multi-monitor.</p></div>
-    <div class="card"><div class="icon">🔒</div><h3>Privado por design</h3><p>Sem telemetria. Suas chaves de API ficam no GSettings local. Código aberto GPL-3.0, auditável.</p></div>
-    <div class="card"><div class="icon">🌍</div><h3>Em português</h3><p>Interface em inglês com traduções pt-BR e espanhol. Central de ajuda com guia passo a passo por provedor.</p></div>
+    <div class="card"><div class="icon">🖼️</div><h3 data-i18n="card.gallery.title">Fast, beautiful gallery</h3><p data-i18n="card.gallery.desc">Instant search, switch sources in one click, thumbnails that load right away and downloads in the best quality — all with smart caching.</p></div>
+    <div class="card"><div class="icon">🎛️</div><h3 data-i18n="card.filters.title">Powerful filters</h3><p data-i18n="card.filters.desc">Categories, purity level, sorting, minimum resolution, aspect ratio, colors and an anti-AI filter — find exactly what you're looking for.</p></div>
+    <div class="card"><div class="icon">🎬</div><h3 data-i18n="card.video.title">Real video wallpapers</h3><p data-i18n="card.video.desc">Each monitor gets its own video, fit modes, volume, mute, Next and Shuffle buttons — plus support for YouTube links.</p></div>
+    <div class="card"><div class="icon">🔄</div><h3 data-i18n="card.auto.title">Automatic rotation</h3><p data-i18n="card.auto.desc">Timed slideshow from any folder, static video blur, shuffle mode and multi-monitor support.</p></div>
+    <div class="card"><div class="icon">🔒</div><h3 data-i18n="card.privacy.title">Private by nature</h3><p data-i18n="card.privacy.desc">Zero telemetry. Your keys stay only on your computer. Open-source and auditable, GPL-3.0 license.</p></div>
+    <div class="card"><div class="icon">🌍</div><h3 data-i18n="card.lang.title">In your language</h3><p data-i18n="card.lang.desc">Interface in English with translations for pt-BR and Spanish. Help center with a step-by-step guide per source.</p></div>
   </div>
 </section>
 
 <section id="provedores">
-  <div class="eyebrow">Fontes</div>
-  <h2>8 provedores. 0 fricção.</h2>
-  <p class="lead">Três com chave gratuita (Pexels, Unsplash, Pixabay), o resto funciona na hora — incluindo suas pastas locais e os wallpapers do app Wallrus.</p>
+  <div class="eyebrow" data-i18n="providers.eyebrow">Sources</div>
+  <h2 data-i18n="providers.title">8 sources. Zero hassle.</h2>
+  <p class="lead" data-i18n="providers.lead">Three ask for a quick, free sign-up (Pexels, Unsplash, Pixabay); the rest just work — including your folders and wallpapers from the Wallrus app.</p>
   <div class="providers">
-    <div class="prov"><b>🌐 Wallhaven</b><span>Filtros completos, NSFW opcional com API key.</span><br><span class="tag free">opcional key</span></div>
-    <div class="prov"><b>📸 Pexels</b><span>Curadoria top para buscas vazias.</span><br><span class="tag key">precisa key grátis</span></div>
-    <div class="prov"><b>🌅 Unsplash</b><span>Feed fotográfico de alta qualidade.</span><br><span class="tag key">precisa key grátis</span></div>
-    <div class="prov"><b>🎌 Safebooru</b><span>Board anime SFW, tags com underscore.</span><br><span class="tag free">sem key</span></div>
-    <div class="prov"><b>🖌️ Pixabay</b><span>SafeSearch sempre ligado.</span><br><span class="tag key">precisa key grátis</span></div>
-    <div class="prov"><b>⛩️ Waifu.im</b><span>Arquivo anime curado, até 30 fresquinhos.</span><br><span class="tag free">sem key</span></div>
-    <div class="prov"><b>📁 Arquivos locais</b><span>Sua ~/Pictures + pastas extras, newest first.</span><br><span class="tag free">sem key</span></div>
-    <div class="prov"><b>🦭 Wallrus</b><span>Navega os gerados pelo app Wallrus.</span><br><span class="tag free">sem key</span></div>
+    <div class="prov"><b>🌐 Wallhaven</b><span data-i18n="prov.wallhaven.desc">Full filters, optional NSFW with sign-up.</span><br><span class="tag free" data-i18n="prov.wallhaven.tag">optional sign-up</span></div>
+    <div class="prov"><b>📸 Pexels</b><span data-i18n="prov.pexels.desc">Premium curation for empty searches.</span><br><span class="tag key" data-i18n="prov.pexels.tag">free sign-up</span></div>
+    <div class="prov"><b>🌅 Unsplash</b><span data-i18n="prov.unsplash.desc">Top-quality photography.</span><br><span class="tag key" data-i18n="prov.unsplash.tag">free sign-up</span></div>
+    <div class="prov"><b>🎌 Safebooru</b><span data-i18n="prov.safebooru.desc">SFW anime, tag-based search.</span><br><span class="tag free" data-i18n="prov.safebooru.tag">direct, no sign-up</span></div>
+    <div class="prov"><b>🖌️ Pixabay</b><span data-i18n="prov.pixabay.desc">Safe search always on.</span><br><span class="tag key" data-i18n="prov.pixabay.tag">free sign-up</span></div>
+    <div class="prov"><b>⛩️ Waifu.im</b><span data-i18n="prov.waifu.desc">Curated anime, up to 30 fresh ones.</span><br><span class="tag free" data-i18n="prov.waifu.tag">direct, no sign-up</span></div>
+    <div class="prov"><b>📁 Arquivos locais</b><span data-i18n="prov.local.desc">Your Pictures folder + extras, newest first.</span><br><span class="tag free" data-i18n="prov.local.tag">direct, no sign-up</span></div>
+    <div class="prov"><b>🦭 Wallrus</b><span data-i18n="prov.wallrus.desc">Wallpapers generated by the Wallrus app.</span><br><span class="tag free" data-i18n="prov.wallrus.tag">direct, no sign-up</span></div>
   </div>
 </section>
 
 <section id="como-funciona">
-  <div class="eyebrow">Instalação</div>
-  <h2>3 passos. Sem sudo. Sem risco.</h2>
+  <div class="eyebrow" data-i18n="install.eyebrow">Installation</div>
+  <h2 data-i18n="install.title">3 steps. No sudo. No risk.</h2>
   <div class="steps">
-    <div class="step"><div class="num">01</div><h3>Copie o comando</h3><p>O oneliner baixa o <span style="font-family:var(--mono)">install.sh</span> oficial do GitHub e verifica dependências (gjs, schemas, gettext) com dicas por distro.</p></div>
-    <div class="step"><div class="num">02</div><h3>Rode e relaxe</h3><p>Ele copia o app para <span style="font-family:var(--mono)">~/.local/share/mopivo</span>, compila schema + traduções e cria o ícone no menu.</p></div>
-    <div class="step"><div class="num">03</div><h3>Abra o Mopivo</h3><p>Aparece na grade de apps. <span style="font-family:var(--mono)">gjs -m ~/.local/share/mopivo/main.js</span> também roda direto. Flags: <span style="font-family:var(--mono)">--prefs --smoke-test --version</span>.</p></div>
+    <div class="step"><div class="num">01</div><h3 data-i18n="step.copy.title">Copy the command</h3><p data-i18n="step.copy.desc">The command downloads the official installer from GitHub and checks what your system needs, with tips for each distro.</p></div>
+    <div class="step"><div class="num">02</div><h3 data-i18n="step.run.title">Run it and you're set</h3><p data-i18n="step.run.desc">It puts the app in the right place, sets everything up and creates the icon in your apps menu.</p></div>
+    <div class="step"><div class="num">03</div><h3 data-i18n="step.open.title">Open Mopivo</h3><p data-i18n="step.open.desc">Look for "Mopivo" in your apps grid and start using it. It also runs straight from the terminal if you prefer.</p></div>
   </div>
   <div class="install-card" style="margin-top:22px">
-    <div class="install-head"><span class="install-label">Requisitos · Fedora / Ubuntu / Arch</span></div>
-    <div class="cmd"><span class="p">$</span> <code>GNOME 45–50 · gjs · GTK4 + libadwaita · gtk4paintablesink · xprop · glib-compile-schemas · msgfmt</code></div>
-    <p style="color:var(--muted);font-size:13.5px">Opcionais: <b style="color:var(--text)">yt-dlp</b> (streaming) e <b style="color:var(--text)">WebKitGTK 6</b> (fonte webpage). O instalador usa <span style="font-family:var(--mono)">rsync</span> se existir, senão <span style="font-family:var(--mono)">cp</span>.</p>
+    <div class="install-head"><span class="install-label" data-i18n="requirements.label">Requirements · Fedora / Ubuntu / Arch</span></div>
+    <div class="cmd"><span class="p">$</span> <code data-i18n="requirements.code">GNOME 45 to 50 · Fedora, Ubuntu, Arch and derivatives</code></div>
+    <p style="color:var(--muted);font-size:13.5px" data-i18n="requirements.optional">Optional: support for streaming links and web pages. The installer uses whatever is available.</p>
   </div>
 </section>
 
 <section id="faq">
-  <div class="eyebrow">FAQ</div>
-  <h2>Perguntas diretas, respostas diretas.</h2>
+  <div class="eyebrow" data-i18n="faq.eyebrow">FAQ</div>
+  <h2 data-i18n="faq.title">Straight questions, straight answers.</h2>
   <div class="faq">
-    <details open><summary>É seguro rodar um curl | bash?</summary><p>Sim — os scripts são curtos, auditáveis e estão no repo público. Eles só escrevem em <span style="font-family:var(--mono)">~/.local</span>, nunca pedem sudo, e você pode ler antes: abra o link raw no navegador. Desinstalação limpa com o <span style="font-family:var(--mono)">uninstall.sh</span> dedicado (veja “Como desinstalo?” abaixo).</p></details>
-    <details><summary>Por que o nome Mopivo?</summary><p>Mopivo é o nome do projeto e do app. Todos os IDs técnicos também usam <span style="font-family:var(--mono)">mopivo</span>: o App ID <span style="font-family:var(--mono)">br.com.redclaw.Mopivo</span>, o schema GSettings, o domínio gettext e as pastas em <span style="font-family:var(--mono)">~/.local/share/mopivo</span>. Como o app nunca foi lançado, não há migração nem camada de compatibilidade.</p></details>
-    <details><summary>Funciona no Wayland?</summary><p>Sim. Imagens funcionam em Wayland e X11. Vídeo-wallpaper usa a camada desktop X11/XWayland quando disponível, com fallback fullscreen por monitor. Auto-pause no Wayland é limitado (sem integração com o Shell) — está avisado na página de Vídeo.</p></details>
-    <details><summary>Preciso pagar por API?</summary><p>Não. Wallhaven (SFW), Safebooru, Waifu.im, pastas locais e Wallrus funcionam sem chave. Pexels/Unsplash/Pixabay pedem chave gratuita — o app mostra qual está faltando e o Help Center ensina a criar em 2 min.</p></details>
-    <details><summary>Como desinstalo?</summary><p>Do jeito que preferir — todos fazem a mesma limpeza (mata o renderer, remove app, .desktop, ícone, schema e traduções; seu papel de parede atual é preservado):<br><br><b>Oneliner dedicado (recomendado):</b> <span style="font-family:var(--mono)">curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh | bash</span><br><b>No checkout:</b> <span style="font-family:var(--mono)">./uninstall.sh</span> (ou <span style="font-family:var(--mono)">./scripts/uninstall.sh</span> / <span style="font-family:var(--mono)">make uninstall</span>)<br><b>Via instalador:</b> <span style="font-family:var(--mono)">./install.sh --uninstall</span> ou <span style="font-family:var(--mono)">curl …/install.sh | bash -s -- --uninstall</span></p></details>
-    <details><summary>Onde estão os scripts install.sh e uninstall.sh?</summary><p>Na raiz do repo: <span style="font-family:var(--mono)">install.sh</span> instala (com bootstrap remoto quando rodado via curl) e <span style="font-family:var(--mono)">uninstall.sh</span> remove. Ambos aceitam <span style="font-family:var(--mono)">--help</span>, <span style="font-family:var(--mono)">--ref &lt;branch|tag&gt;</span> e <span style="font-family:var(--mono)">--yes</span>. A lógica real mora em <span style="font-family:var(--mono)">scripts/install.sh</span> e <span style="font-family:var(--mono)">scripts/uninstall.sh</span> — os da raiz só delegam ou buscam o repo quando preciso. Links raw: <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh">install.sh</a> · <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh">uninstall.sh</a>.</p></details>
+    <details open><summary data-i18n="faq.q1.q">Is it safe to run a curl | bash?</summary><p data-i18n-html="faq.q1.a">Yes. The scripts are short, open for anyone to read and live in the public repository. They only write to your home folder, never ask for an admin password, and you can inspect the code in your browser first. Uninstalling cleans everything up with the <span style="font-family:var(--mono)">uninstall.sh</span> (see "How do I uninstall?" below).</p></details>
+    <details><summary data-i18n="faq.q2.q">Why the name Mopivo?</summary><p data-i18n="faq.q2.a">Mopivo is the name of both the project and the app — short, catchy and easy to remember. All internal identifiers use the same name. Since the app was never released before, there's no legacy baggage or migration: just install and use it.</p></details>
+    <details><summary data-i18n="faq.q3.q">Does it work on Wayland?</summary><p data-i18n="faq.q3.a">Yes. Images work in your session as usual. Video wallpapers use a desktop layer when available and, if needed, fall back to fullscreen per monitor. Auto-pause has a small limitation on Wayland — flagged on the Video page.</p></details>
+    <details><summary data-i18n="faq.q4.q">Do I have to pay for an API?</summary><p data-i18n="faq.q4.a">No. Wallhaven (SFW), Safebooru, Waifu.im, your folders and Wallrus work with no sign-up. Pexels, Unsplash and Pixabay ask for a free key — the app tells you which one is missing and the Help Center shows you how to create it in 2 minutes.</p></details>
+    <details><summary data-i18n="faq.q5.q">How do I uninstall?</summary><p data-i18n-html="faq.q5.a">However you prefer — they all do the same cleanup (stops the video, removes the app, shortcut, icon, settings and translations; your current wallpaper stays untouched):<br><br><b>Direct command (recommended):</b> <span style="font-family:var(--mono)">curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh | bash</span><br><b>In the downloaded code:</b> <span style="font-family:var(--mono)">./uninstall.sh</span> (or <span style="font-family:var(--mono)">./scripts/uninstall.sh</span> / <span style="font-family:var(--mono)">make uninstall</span>)<br><b>Via the installer:</b> <span style="font-family:var(--mono)">./install.sh --uninstall</span> or <span style="font-family:var(--mono)">curl …/install.sh | bash -s -- --uninstall</span></p></details>
+    <details><summary data-i18n="faq.q6.q">Where are the install and uninstall scripts?</summary><p data-i18n-html="faq.q6.a">In the repository root: <span style="font-family:var(--mono)">install.sh</span> installs (fetches the remote code if run via curl) and <span style="font-family:var(--mono)">uninstall.sh</span> removes. Both accept <span style="font-family:var(--mono)">--help</span>, <span style="font-family:var(--mono)">--ref &lt;branch|tag&gt;</span> and <span style="font-family:var(--mono)">--yes</span>. The real logic lives in <span style="font-family:var(--mono)">scripts/install.sh</span> and <span style="font-family:var(--mono)">scripts/uninstall.sh</span> — the root ones just call or download when needed. Direct links: <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh">install.sh</a> · <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh">uninstall.sh</a>.</p></details>
   </div>
 </section>
 
 <div class="final">
-  <h2 style="margin-top:0">Bora deixar seu desktop vivo? 🚀</h2>
-  <p class="lead" style="margin:0 auto 20px;text-align:center">Um comando. Trinta segundos. Infinitos wallpapers.</p>
-  <div class="cmd" style="max-width:640px;margin:0 auto"><span class="p">$</span> <code>curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash</code><button class="copy" onclick="copyCmd()">⧉ Copiar</button></div>
-  <div class="cta-row"><button class="btn btn-primary" onclick="copyCmd()">Copiar comando de instalação</button><a class="btn btn-ghost" href="https://github.com/zonaro/mopivo" target="_blank" rel="noopener">Documentação no GitHub</a></div>
+  <h2 style="margin-top:0" data-i18n="final.title">Ready to bring your desktop to life? 🚀</h2>
+  <p class="lead" style="margin:0 auto 20px;text-align:center" data-i18n="final.lead">One command. Thirty seconds. Endless wallpapers.</p>
+  <div class="cmd" style="max-width:640px;margin:0 auto"><span class="p">$</span> <code>curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash</code><button class="copy" onclick="copyCmd()" data-i18n="install.copy">⧉ Copy</button></div>
+  <div class="cta-row"><button class="btn btn-primary" onclick="copyCmd()" data-i18n="final.copyBtn">Copy install command</button><a class="btn btn-ghost" href="https://github.com/zonaro/mopivo" target="_blank" rel="noopener" data-i18n="cta.github">★ View on GitHub</a></div>
 </div>
 </div>
 
 <footer><div class="wrap foot">
-  <span><b style="color:var(--text)">Mopivo</b> · formerly Wallpaper Providers · GPL-3.0-or-later · feito com ♥ para o GNOME</span>
+  <span data-i18n-html="footer.tagline"><b style="color:var(--text)">Mopivo</b> · formerly Wallpaper Providers · GPL-3.0-or-later · made with ♥ for GNOME</span>
   <span><a href="https://github.com/zonaro/mopivo">GitHub</a> · <a href="https://github.com/zonaro/mopivo/issues">Issues</a> · <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh">install.sh</a> · <a href="https://raw.githubusercontent.com/zonaro/mopivo/master/uninstall.sh">uninstall.sh</a></span>
 </div></footer>
-<div class="toast" id="toast">Comando copiado! Cole no terminal e dê Enter ✨</div>
+<div class="toast" id="toast" data-i18n="toast.msg">Command copied! Paste it in the terminal and hit Enter ✨</div>
+<script src="i18n.js" defer></script>
 <script>
 var CMD='curl -fsSL https://raw.githubusercontent.com/zonaro/mopivo/master/install.sh | bash';
 function copyCmd(){

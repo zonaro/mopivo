@@ -38,7 +38,7 @@ done
 
 ## Updating the Template
 
-After adding/changing translatable strings (`_("...")`) in the code, regenerate the template:
+After adding/changing translatable strings (`_("...")`) in the code, regenerate the template covering **all** JS sources (same list as `JS_FILES` in the Makefile — this includes `app/`, `ui/`, `lib/`, `main.js`, `prefs.js` and `tests/`):
 
 ```bash
 xgettext --language=JavaScript \
@@ -46,9 +46,7 @@ xgettext --language=JavaScript \
   --keyword=N_ \
   --from-code=UTF-8 \
   --output=locale/mopivo.pot \
-  prefs.js \
-  ui/prefs_helpers.js \
-  lib/i18n.js
+  $(find . -name '*.js' -not -path './.git/*' -not -path './build/*' | sort)
 ```
 
 Then merge into existing `.po` files:
@@ -81,4 +79,7 @@ To test a specific language, set the `LANGUAGE` environment variable:
 LANGUAGE=pt_BR gjs -m main.js --prefs
 ```
 
-Or change the language in the extension's Preferences > Providers > Language.
+Or change the language in the app's Preferences → Providers → Language
+(`language` key; valid values: `en`, `pt_BR`, `es`). The stored value is
+exported via `LANGUAGE` before gettext binds the domain, so it takes effect on
+the next launch (preferences dialog included).

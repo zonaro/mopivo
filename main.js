@@ -19,6 +19,7 @@ import System from 'system';
 import {programArgs} from 'system';
 
 import {EXT_SCHEMA_ID} from './lib/video/constants.js';
+import {initI18n} from './lib/i18n.js';
 import {PROVIDER_IDS, getProvider} from './lib/providers/registry.js';
 
 const APP_ID = 'br.com.redclaw.Mopivo';
@@ -95,8 +96,10 @@ const WallpaperApp = GObject.registerClass({
     }
 
     _getSettings() {
-        if (!this._settings)
+        if (!this._settings) {
             this._settings = loadSettings();
+            initI18n(this._settings.get_string('language'));
+        }
         return this._settings;
     }
 

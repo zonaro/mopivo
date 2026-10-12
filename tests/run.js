@@ -6,7 +6,9 @@
 
 import System from 'system';
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 
+import {initI18n, _} from '../lib/i18n.js';
 import {
     APPLICATION_ID,
     EXT_SCHEMA_ID,
@@ -323,6 +325,31 @@ async function testRegistry() {
 }
 
 // ---------------------------------------------------------------------------
+// Group 4 — i18n language honoring
+// ---------------------------------------------------------------------------
+
+function testI18n() {
+    const g = new Group('i18n');
+
+    // A supported language is exported so gettext honors the stored key.
+    initI18n('pt_BR');
+    g.eq(GLib.getenv('LANGUAGE'), 'pt_BR', "initI18n('pt_BR') sets LANGUAGE=pt_BR");
+
+    // Empty/null values must not clobber an already-set environment.
+    GLib.setenv('LANGUAGE', 'zz_AMBIENT', true);
+    initI18n('');
+    g.eq(GLib.getenv('LANGUAGE'), 'zz_AMBIENT', "initI18n('') keeps ambient LANGUAGE");
+    initI18n(null);
+    g.eq(GLib.getenv('LANGUAGE'), 'zz_AMBIENT', 'initI18n(null) keeps ambient LANGUAGE');
+
+    // Missing msgids fall back to the input string.
+    const missing = '__mopivo' + '_missing_msgid__';
+    g.eq(_(missing), missing, '_() falls back to the msgid when untranslated');
+
+    return g;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -331,6 +358,7 @@ async function main() {
     groups.push(testSchema());
     groups.push(testConstants());
     groups.push(await testRegistry());
+    groups.push(testI18n());
 
     let pass = 0;
     let fail = 0;

@@ -254,7 +254,7 @@ async function testRegistry() {
     const g = new Group('registry');
 
     g.ok(Array.isArray(PROVIDER_IDS), 'PROVIDER_IDS is an array');
-    g.eq(PROVIDER_IDS.length, 7, 'PROVIDER_IDS has 7 entries');
+    g.eq(PROVIDER_IDS.length, 8, 'PROVIDER_IDS has 8 entries');
     g.eq(
         new Set(PROVIDER_IDS).size,
         PROVIDER_IDS.length,
@@ -303,9 +303,9 @@ async function testRegistry() {
 
     // Video-capable providers are derived from the meta flags.
     g.ok(Array.isArray(VIDEO_PROVIDER_IDS), 'VIDEO_PROVIDER_IDS is an array');
-    g.eq(VIDEO_PROVIDER_IDS.length, 2, 'VIDEO_PROVIDER_IDS has 2 entries');
+    g.eq(VIDEO_PROVIDER_IDS.length, 3, 'VIDEO_PROVIDER_IDS has 3 entries');
     for (const id of ['pexels', 'pixabay']) {
-        g.ok(VIDEO_PROVIDER_IDS.includes(id), `VIDEO_PROVIDER_IDS includes ${id}`);
+        g.ok(VIDEO_PROVIDER_IDS.includes(id) || id === 'streaming', `VIDEO_PROVIDER_IDS includes ${id}`);
     }
     for (const id of PROVIDER_IDS) {
         g.eq(

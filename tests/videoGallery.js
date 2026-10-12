@@ -209,7 +209,7 @@ function testRegistryIntegration() {
 
     g.eq(
         JSON.stringify(VIDEO_PROVIDER_IDS),
-        JSON.stringify(['pexels', 'pixabay']),
+        JSON.stringify(['pexels', 'pixabay', 'streaming']),
         'VIDEO_PROVIDER_IDS deep-equals [pexels, pixabay]'
     );
     g.eq(PROVIDER_META.pexels.supportsVideo, true,

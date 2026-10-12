@@ -149,15 +149,35 @@ const WallpaperWindow = GObject.registerClass({
             placeholder_text: _('Search wallpapers\u2026'),
         });
         this._searchEntry.set_text(this._settings.get_string('search-query'));
-        this._providerDrop = new Gtk.DropDown({
-            model: Gtk.StringList.new(
-                PROVIDER_IDS.map(id => PROVIDER_META[id].displayName)),
-            tooltip_text: _('Provider'),
+        this._providerButton = new Gtk.MenuButton({
+            icon_name: 'view-list-symbolic',
+            tooltip_text: _('Providers'),
             valign: Gtk.Align.CENTER,
         });
-        this._selectProvider(this._settings.get_string('active-provider'));
+        this._providerPopover = new Gtk.Popover();
+        this._providerBox = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 4,
+            margin_top: 6,
+            margin_bottom: 6,
+            margin_start: 6,
+            margin_end: 6,
+        });
+        this._providerChecks = [];
+        for (let i = 0; i < PROVIDER_IDS.length; i++) {
+            const id = PROVIDER_IDS[i];
+            const check = new Gtk.CheckButton({
+                label: PROVIDER_META[id].displayName,
+                name: id,
+            });
+            this._providerChecks.push(check);
+            this._providerBox.append(check);
+        }
+        this._providerPopover.set_child(this._providerBox);
+        this._providerButton.set_popover(this._providerPopover);
+        this._loadSelectedProviders();
         searchRow.append(this._searchEntry);
-        searchRow.append(this._providerDrop);
+        searchRow.append(this._providerButton);
 
         // Filters: moved next to the provider selector. The popover is created
         // exactly once (plan risk R6) and holds the FilterBar's widget; the
@@ -251,14 +271,13 @@ const WallpaperWindow = GObject.registerClass({
                 console.error(`[wp] search failed: ${e.message}`));
         });
 
-        this._providerDrop.connect('notify::selected', () => {
-            if (this._syncingProvider)
-                return;
-            const id = PROVIDER_IDS[this._providerDrop.get_selected()];
-            if (id)
-                this._switchProvider(id).catch(e =>
-                    console.error(`[wp] provider switch: ${e.message}`));
-        });
+        for (let i = 0; i < this._providerChecks.length; i++) {
+            const check = this._providerChecks[i];
+            check.connect('toggled', () => {
+                this._saveSelectedProviders();
+                this._onProvidersChanged();
+            });
+        }
 
         this._filterBar.connect('changed', () => {
             this._rerunSearch().catch(e =>
@@ -315,17 +334,10 @@ const WallpaperWindow = GObject.registerClass({
     // ── Provider / search / pagination ──────────────────────────────────
 
     async _bootstrap() {
-        let activeId = 'wallhaven';
-        try {
-            activeId = this._settings.get_string('active-provider') || 'wallhaven';
-        } catch (_e) {
-            activeId = 'wallhaven';
-        }
-        if (!PROVIDER_IDS.includes(activeId))
-            activeId = 'wallhaven';
-
-        this._selectProvider(activeId);
-        await this._switchProvider(activeId, {initial: true});
+        this._saveSelectedProviders();
+        const sel = this._getSelectedProviders();
+        await this._manager.setProviders(sel, this._settings, this._session);
+        await this._manager.loadRecent();
     }
 
     /**
@@ -359,13 +371,49 @@ const WallpaperWindow = GObject.registerClass({
             await this._manager.search({q: ''});
     }
 
-    _selectProvider(id) {
-        const index = PROVIDER_IDS.indexOf(id);
-        if (index < 0)
-            return;
-        this._syncingProvider = true;
-        this._providerDrop.set_selected(index);
-        this._syncingProvider = false;
+
+    _loadSelectedProviders() {
+        try {
+            const sel = this._settings.get_strv('selected-providers');
+            for (let i = 0; i < this._providerChecks.length; i++) {
+                const check = this._providerChecks[i];
+                check.set_active(sel.includes(check.name));
+            }
+        } catch (_e) {
+            if (this._providerChecks[0])
+                this._providerChecks[0].set_active(true);
+        }
+    }
+
+    _saveSelectedProviders() {
+        const sel = [];
+        for (let i = 0; i < this._providerChecks.length; i++) {
+            if (this._providerChecks[i].get_active())
+                sel.push(this._providerChecks[i].name);
+        }
+        if (sel.length === 0 && this._providerChecks.length > 0) {
+            sel.push(this._providerChecks[0].name);
+            this._providerChecks[0].set_active(true);
+        }
+        try {
+            this._settings.set_strv('selected-providers', sel);
+        } catch (_e) { /* ignore */ }
+    }
+
+    async _onProvidersChanged() {
+        const sel = this._getSelectedProviders();
+        if (sel.length === 0) return;
+        await this._manager.setProviders(sel, this._settings, this._session);
+        await this._manager.search({q: this._searchEntry.get_text()});
+    }
+
+    _getSelectedProviders() {
+        const sel = [];
+        for (let i = 0; i < this._providerChecks.length; i++) {
+            if (this._providerChecks[i].get_active())
+                sel.push(this._providerChecks[i].name);
+        }
+        return sel;
     }
 
     /** Enable the filter button only for providers that expose filter rows. */

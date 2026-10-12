@@ -20,6 +20,7 @@ import {downloadToFile} from '../lib/download.js';
 import {_} from '../lib/i18n.js';
 import {setDesktopWallpaper} from '../lib/wallpaper.js';
 import {resolveDownloadFolder} from '../lib/paths.js';
+import {getProvider} from '../lib/providers/registry.js';
 
 const CACHE_BASE = GLib.get_home_dir() + '/.cache/mopivo';
 const GRID_COLS = 3;
@@ -266,8 +267,34 @@ const GalleryManager = GObject.registerClass({
     setProvider(id, instance) {
         this._providerId = id || 'wallhaven';
         this._provider = instance || null;
+        this._providers = instance ? [{id, instance}] : [];
         _ensureDir(_cacheDir(this._providerId));
     }
+
+    async setProviders(providerIds, settings, session) {
+        this._providerIds = Array.isArray(providerIds) ? providerIds : [providerIds].filter(Boolean);
+        this._provider = null;
+        this._providers = [];
+        for (let i = 0; i < this._providerIds.length; i++) {
+            const id = this._providerIds[i];
+            try {
+                const p = await getProvider(id);
+                this._providers.push({id, instance: p});
+                _ensureDir(_cacheDir(id));
+            } catch (e) {
+                console.error(`[wp] provider '${id}' unavailable: ${e.message}`);
+            }
+        }
+        if (this._providers.length === 0 && this._providerIds.length > 0) {
+            // fallback to first
+            try {
+                const p = await getProvider(this._providerIds[0]);
+                this._providers.push({id: this._providerIds[0], instance: p});
+            } catch (_e) {}
+        }
+        this._providerId = this._providers[0]?.id || this._providerIds[0] || 'wallhaven';
+    }
+
 
     async loadRecent() {
         if (this._providerId === 'wallhaven' && !this._provider) {
@@ -319,22 +346,50 @@ const GalleryManager = GObject.registerClass({
     }
 
     async _runSearch(params) {
-        if (this._provider)
-            return this._provider.search(
-                {
-                    q: params.q || '',
-                    page: this._page,
-                    perPage: this._settings?.get_int?.('page-size') || 24,
-                },
-                this._session,
-                this._settings,
-            );
-        if (this._client) {
+        const providers = this._providers || [];
+        if (providers.length === 0 && this._provider) {
+            providers.push({id: this._providerId, instance: this._provider});
+        }
+        if (providers.length === 0 && this._client) {
             const k = this._settings?.get_string?.('api-key');
             if (k) this._client.setApiKey(k);
             return this._client.search({...params, page: this._page});
         }
-        throw new Error('No provider configured');
+        if (providers.length === 0)
+            throw new Error('No provider configured');
+
+        const searchParams = {
+            q: params.q || '',
+            page: this._page,
+            perPage: this._settings?.get_int?.('page-size') || 24,
+        };
+        if (providers.length === 1) {
+            return providers[0].instance.search(searchParams, this._session, this._settings);
+        }
+        const results = await Promise.allSettled(
+            providers.map(p => p.instance.search(searchParams, this._session, this._settings))
+        );
+        const mergedItems = [];
+        let total = 0;
+        let page = this._page;
+        let lastPage = 1;
+        for (let i = 0; i < results.length; i++) {
+            const r = results[i];
+            if (r.status === 'fulfilled' && r.value) {
+                const v = r.value;
+                if (Array.isArray(v.items)) {
+                    for (let j = 0; j < v.items.length; j++) {
+                        const it = v.items[j];
+                        it.source = it.source || providers[i].id;
+                        mergedItems.push(it);
+                    }
+                }
+                total += (v.total || mergedItems.length) || 0;
+                if (v.page && v.page > page) page = v.page;
+                if (v.lastPage && v.lastPage > lastPage) lastPage = v.lastPage;
+            }
+        }
+        return {items: mergedItems, total, page, lastPage};
     }
 
     async _loadThumbs(items) {

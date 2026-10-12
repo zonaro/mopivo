@@ -421,6 +421,9 @@ const GalleryManager = GObject.registerClass({
         box.append(picture);
         if (item.resolution)
             box.append(new Gtk.Label({label: item.resolution, halign: Gtk.Align.CENTER}));
+        const detailsBtn = new Gtk.Button({label: _('Details'), halign: Gtk.Align.CENTER, margin_top: 4});
+        detailsBtn.connect('clicked', () => this._showDetails(item));
+        box.append(detailsBtn);
 
         const gesture = new Gtk.GestureClick();
         gesture.connect('released', (_g, _n, _x, _y) => this._onSelect(item));
@@ -522,6 +525,29 @@ const GalleryManager = GObject.registerClass({
     _hideStatus() {
         this._statusShown = false;
         this._statusLabel.visible = false;
+    }
+
+
+    _showDetails(item) {
+        try {
+            const dialog = new Gtk.Dialog({
+                title: _('Details'),
+                transient_for: this._flowbox.get_root?.()?.get_native?.() || null,
+                modal: true,
+            });
+            dialog.add_button(_('Close'), Gtk.ResponseType.CLOSE);
+            const content = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, spacing: 6, margin_top: 12, margin_bottom: 12, margin_start: 12, margin_end: 12});
+            const data = JSON.stringify(item, null, 2);
+            const label = new Gtk.Label({label: data, selectable: true, wrap: true, xalign: 0});
+            const scroll = new Gtk.ScrolledWindow({hexpand: true, vexpand: true, min_content_height: 300, min_content_width: 400});
+            scroll.set_child(label);
+            content.append(scroll);
+            dialog.get_content_area().append(content);
+            dialog.connect('response', () => dialog.destroy());
+            dialog.show();
+        } catch (e) {
+            console.error(`[wp] show details failed: ${e.message}`);
+        }
     }
 
     clear() {

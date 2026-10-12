@@ -92,25 +92,6 @@ const WallpaperWindow = GObject.registerClass({
         });
         header.pack_end(this._prefsBtn);
 
-        // Filters: the popover is created exactly once (plan risk R6) and holds
-        // the FilterBar's widget. The button keeps it alive, so locals suffice.
-        const filterButton = new Gtk.MenuButton({
-            icon_name: 'view-more-symbolic',
-            tooltip_text: _('Filters'),
-            valign: Gtk.Align.CENTER,
-        });
-        const filterPopover = new Gtk.Popover();
-        const filterScroll = new Gtk.ScrolledWindow({
-            hscrollbar_policy: Gtk.PolicyType.NEVER,
-            vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
-            propagate_natural_height: true,
-            max_content_height: 480,
-        });
-        filterScroll.set_child(this._filterBar.widget);
-        filterPopover.set_child(filterScroll);
-        filterButton.set_popover(filterPopover);
-        header.pack_end(filterButton);
-
         // Video-mode switch.
         this._videoSwitch = new Gtk.Switch({
             active: this._settings.get_boolean('video-mode'),
@@ -177,6 +158,29 @@ const WallpaperWindow = GObject.registerClass({
         this._selectProvider(this._settings.get_string('active-provider'));
         searchRow.append(this._searchEntry);
         searchRow.append(this._providerDrop);
+
+        // Filters: moved next to the provider selector. The popover is created
+        // exactly once (plan risk R6) and holds the FilterBar's widget; the
+        // button keeps it alive. FilterBar.setProvider() rebuilds its content,
+        // so the button is insensitive for providers with no filters.
+        this._filterButton = new Gtk.MenuButton({
+            icon_name: 'view-more-symbolic',
+            tooltip_text: _('Filters'),
+            valign: Gtk.Align.CENTER,
+        });
+        const filterPopover = new Gtk.Popover();
+        const filterScroll = new Gtk.ScrolledWindow({
+            hscrollbar_policy: Gtk.PolicyType.NEVER,
+            vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+            propagate_natural_height: true,
+            max_content_height: 480,
+        });
+        filterScroll.set_child(this._filterBar.widget);
+        filterPopover.set_child(filterScroll);
+        this._filterButton.set_popover(filterPopover);
+        this._filterButton.sensitive = this._filterBar.hasFilters;
+        searchRow.append(this._filterButton);
+
         page.append(searchRow);
 
         const scrolled = new Gtk.ScrolledWindow({hexpand: true, vexpand: true});
@@ -347,6 +351,8 @@ const WallpaperWindow = GObject.registerClass({
 
         this._settings.set_string('active-provider', id);
         this._manager.setProvider(id, instance);
+        this._filterBar.setProvider(id);
+        this._syncFilterButton();
         if (initial)
             await this._manager.loadRecent();
         else
@@ -360,6 +366,12 @@ const WallpaperWindow = GObject.registerClass({
         this._syncingProvider = true;
         this._providerDrop.set_selected(index);
         this._syncingProvider = false;
+    }
+
+    /** Enable the filter button only for providers that expose filter rows. */
+    _syncFilterButton() {
+        if (this._filterButton)
+            this._filterButton.sensitive = this._filterBar.hasFilters;
     }
 
     /** Search entry activated: search by query, or reload the feed when empty. */

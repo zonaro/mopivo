@@ -11,6 +11,8 @@
 //                                            (the popover itself is owned by P4)
 //   bar.getParams()                       -> params object for registry.search()
 //   bar.connect('changed', cb)            -> fired on every filter change
+//   bar.setProvider(id)                   -> swap to the provider's filter rows
+//   bar.hasFilters                        -> whether the provider has any rows
 //   bar.query                             -> search query getter/setter. The
 //                                            window owns the search entry, so it
 //                                            either sets `bar.query` before
@@ -23,7 +25,8 @@
 //     the old bar: general/anime/people and sfw/sketchy/nsfw.
 //   * Sorting / Order / Top range -> Gtk.DropDown over the exact option lists
 //     the old cycle buttons used.
-//   * atleast / resolutions / ratios / colors -> Gtk.Entry.
+//   * atleast / resolutions / ratios -> Gtk.Entry.
+//   * colors -> Gtk.DropDown over WALLHAVEN_COLORS ("Any color" = omit param).
 //   * ai-art-filter -> Gtk.ToggleButton (boolean semantics).
 //
 // Settings are read once at construction to initialise widget state and are
@@ -35,6 +38,7 @@ import Gtk from 'gi://Gtk?version=4.0';
 import GObject from 'gi://GObject';
 
 import {_} from '../lib/i18n.js';
+import {WALLHAVEN_COLORS} from '../lib/providers/wallhaven-client.js';
 
 // Option lists mirror the old St cycle buttons — order matters, it is part of
 // the params contract consumed by the registry search client.
@@ -42,12 +46,46 @@ const SORT_OPTIONS = ['date_added', 'relevance', 'random', 'views', 'favorites',
 const ORDER_OPTIONS = ['desc', 'asc'];
 const TOP_RANGE_OPTIONS = ['1d', '3d', '1w', '1M', '3M', '6M', '1y'];
 
+// Wallhaven's full filter set, in popover order. Every non-Wallhaven provider
+// in this app accepts only the query plus pagination (see the search()
+// signatures in lib/providers/*.js), so their row list is intentionally empty:
+// switching provider clears the Wallhaven-only controls instead of showing
+// dropdowns nothing consumes.
+export const WALLHAVEN_FILTER_ROWS = [
+    'categories', 'purity', 'sorting', 'order',
+    'topRange', 'atleast', 'resolutions', 'ratios', 'colors', 'aiFilter',
+];
+
+const PROVIDER_FILTER_ROWS = {
+    wallhaven: WALLHAVEN_FILTER_ROWS,
+    pexels: [],
+    unsplash: [],
+    safebooru: [],
+    pixabay: [],
+    waifuim: [],
+    local: [],
+};
+
+/**
+ * Row keys the filter popover shows for a provider. Unknown ids get none.
+ * Pure mirror of FilterBar.setProvider() so it is unit-testable headless.
+ *
+ * @param {string} id
+ * @returns {string[]}
+ */
+export function filterRowsForProvider(id) {
+    return (PROVIDER_FILTER_ROWS[id] || []).slice();
+}
+
 /**
  * Convert a plain filter state into the params dict consumed by
  * registry.search(). Same keys and formats as the old St filter bar.
  *
  * @param {Object}  state
  * @param {string}  [state.q='']              Search query (trimmed).
+ * @param {string}  [state.provider='wallhaven'] Provider id. Only Wallhaven
+ *                                            contributes the keys below; other
+ *                                            providers emit `{q}` alone.
  * @param {Object}  state.categories          Bit toggles: {general, anime, people}.
  * @param {Object}  state.purity              Bit toggles: {sfw, sketchy, nsfw}.
  * @param {string}  state.sorting             One of SORT_OPTIONS.
@@ -62,11 +100,17 @@ const TOP_RANGE_OPTIONS = ['1d', '3d', '1w', '1M', '3M', '6M', '1y'];
  * @returns {Object} Flat params object for registry.search().
  */
 export function filtersToParams(state = {}) {
+    const provider = state.provider || 'wallhaven';
+    const q = (state.q ?? '').trim();
+
+    if (provider !== 'wallhaven')
+        return {q};
+
     const cat = state.categories || {};
     const pur = state.purity || {};
 
     const params = {
-        q: (state.q ?? '').trim(),
+        q,
         categories: [
             cat.general ? '1' : '0',
             cat.anime ? '1' : '0',
@@ -143,6 +187,19 @@ function makeEntry(hint, text) {
     });
 }
 
+// "Any color" (index 0) means no `colors` param; the remaining entries are the
+// bare hex values the Wallhaven API accepts.
+function makeColorDropDown(value) {
+    const options = [_('Any color'), ...WALLHAVEN_COLORS];
+    const index = value ? Math.max(0, WALLHAVEN_COLORS.indexOf(value) + 1) : 0;
+    return new Gtk.DropDown({
+        model: Gtk.StringList.new(options),
+        selected: index,
+        valign: Gtk.Align.CENTER,
+        halign: Gtk.Align.START,
+    });
+}
+
 // ---------------------------------------------------------------------------
 // FilterBar
 // ---------------------------------------------------------------------------
@@ -176,33 +233,38 @@ export const FilterBar = GObject.registerClass({
         this._topRangeDrop = makeDropDown(
             TOP_RANGE_OPTIONS, settings.get_string('top-range') || '1M');
 
-        // --- Resolution / ratio / color entries ---
+        // --- Resolution / ratio entries + color palette ---
         this._atleastEntry = makeEntry('Min resolution (e.g. 1920x1080)',
             settings.get_string('atleast'));
         this._resolutionsEntry = makeEntry('Exact resolutions (e.g. 1920x1080)',
             settings.get_string('resolutions'));
         this._ratiosEntry = makeEntry('Aspect ratios (e.g. 16x9)',
             settings.get_string('ratios'));
-        this._colorsEntry = makeEntry('Colors (hex, e.g. ff0000)',
-            settings.get_string('colors'));
+        this._colorsDrop = makeColorDropDown(settings.get_string('colors'));
 
         // --- AI art filter ---
         this._aiToggle = makeToggle('Exclude AI Art', settings.get_boolean('ai-art-filter'));
 
-        // --- Layout: a short vertical box, short enough for a popover without
-        // a scroll view (10 rows). If it grows, wrap `.widget` in a
-        // Gtk.ScrolledWindow from the app window instead. ---
+        // --- Layout: rows are keyed so setProvider() can show only the ones the
+        // active provider supports. The app window wraps `.widget` in a
+        // Gtk.ScrolledWindow, so the popover can grow. ---
+        this._rowWidgets = {
+            categories: makeRow('Categories', [this._catGeneral, this._catAnime, this._catPeople]),
+            purity: makeRow('Purity', [this._purSFW, this._purSketchy, this._purNSFW]),
+            sorting: makeRow('Sorting', [this._sortDrop]),
+            order: makeRow('Order', [this._orderDrop]),
+            topRange: makeRow('Top Range', [this._topRangeDrop]),
+            atleast: makeRow('At Least', [this._atleastEntry]),
+            resolutions: makeRow('Resolutions', [this._resolutionsEntry]),
+            ratios: makeRow('Ratios', [this._ratiosEntry]),
+            colors: makeRow('Colors', [this._colorsDrop]),
+            aiFilter: makeRow('AI Filter', [this._aiToggle]),
+        };
+        this._emptyLabel = makeLabel('No filters for this provider');
+
         this._root = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, spacing: 6});
-        this._root.append(makeRow('Categories', [this._catGeneral, this._catAnime, this._catPeople]));
-        this._root.append(makeRow('Purity', [this._purSFW, this._purSketchy, this._purNSFW]));
-        this._root.append(makeRow('Sorting', [this._sortDrop]));
-        this._root.append(makeRow('Order', [this._orderDrop]));
-        this._root.append(makeRow('Top Range', [this._topRangeDrop]));
-        this._root.append(makeRow('At Least', [this._atleastEntry]));
-        this._root.append(makeRow('Resolutions', [this._resolutionsEntry]));
-        this._root.append(makeRow('Ratios', [this._ratiosEntry]));
-        this._root.append(makeRow('Colors', [this._colorsEntry]));
-        this._root.append(makeRow('AI Filter', [this._aiToggle]));
+        this._provider = 'wallhaven';
+        this._applyProvider(this._provider);
 
         // --- Signal wiring. Connected after initial state is set so building
         // the bar does not fire 'changed'. ---
@@ -218,9 +280,10 @@ export const FilterBar = GObject.registerClass({
         this._orderDrop.connect('notify::selected', onChange);
         this._topRangeDrop.connect('notify::selected', onChange);
         for (const entry of [this._atleastEntry, this._resolutionsEntry,
-            this._ratiosEntry, this._colorsEntry]) {
+            this._ratiosEntry]) {
             entry.connect('changed', onChange);
         }
+        this._colorsDrop.connect('notify::selected', onChange);
 
         // NSFW stays locked until a Wallhaven API key is configured. The
         // settings object is app-owned and outlives this bar, so a plain
@@ -253,6 +316,52 @@ export const FilterBar = GObject.registerClass({
         this._query = String(value ?? '');
     }
 
+    /**
+     * Whether the active provider exposes any filter rows.
+     *
+     * @returns {boolean}
+     */
+    get hasFilters() {
+        return filterRowsForProvider(this._provider).length > 0;
+    }
+
+    /**
+     * Switch the filter set to a provider and rebuild the popover content with
+     * the rows it supports. Never emits 'changed': the app window drives the
+     * follow-up search for a provider switch itself.
+     *
+     * @param {string} id  Provider id (e.g. 'wallhaven', 'safebooru').
+     */
+    setProvider(id) {
+        this._provider = id || 'wallhaven';
+        this._applyProvider(this._provider);
+    }
+
+    _applyProvider(id) {
+        let child = this._root.get_first_child();
+        while (child) {
+            const next = child.get_next_sibling();
+            this._root.remove(child);
+            child = next;
+        }
+
+        const rows = filterRowsForProvider(id);
+        if (!rows.length) {
+            this._root.append(this._emptyLabel);
+            return;
+        }
+        for (const key of rows) {
+            const row = this._rowWidgets[key];
+            if (row)
+                this._root.append(row);
+        }
+    }
+
+    _colorValue() {
+        const index = this._colorsDrop.selected;
+        return index > 0 ? (WALLHAVEN_COLORS[index - 1] || '') : '';
+    }
+
     _updateNSFW() {
         const hasKey = Boolean(this._settings.get_string('api-key'));
         this._purNSFW.sensitive = hasKey;
@@ -273,6 +382,7 @@ export const FilterBar = GObject.registerClass({
     getParams() {
         return filtersToParams({
             q: this._query,
+            provider: this._provider,
             categories: {
                 general: this._catGeneral.active,
                 anime: this._catAnime.active,
@@ -289,7 +399,7 @@ export const FilterBar = GObject.registerClass({
             atleast: this._atleastEntry.text,
             resolutions: this._resolutionsEntry.text,
             ratios: this._ratiosEntry.text,
-            colors: this._colorsEntry.text,
+            colors: this._colorValue(),
             aiArtFilter: this._aiToggle.active,
         });
     }

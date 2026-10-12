@@ -8,7 +8,8 @@
 
 import System from 'system';
 
-import {FilterBar, filtersToParams} from '../ui/filters.js';
+import {FilterBar, filtersToParams, filterRowsForProvider, WALLHAVEN_FILTER_ROWS} from '../ui/filters.js';
+import {WALLHAVEN_COLORS} from '../lib/providers/wallhaven-client.js';
 
 // ---------------------------------------------------------------------------
 // Assertion helpers (same style as tests/run.js)
@@ -263,6 +264,86 @@ function testModuleSurface() {
 
     g.eq(typeof FilterBar, 'function', 'FilterBar is exported as a class');
     g.eq(typeof filtersToParams, 'function', 'filtersToParams is exported');
+    g.eq(typeof filterRowsForProvider, 'function', 'filterRowsForProvider is exported');
+
+    return g;
+}
+
+// ---------------------------------------------------------------------------
+// Group 8 — provider-aware rows (mirror of FilterBar.setProvider)
+// ---------------------------------------------------------------------------
+
+function testSetProvider() {
+    const g = new Group('setProvider');
+
+    // Wallhaven shows the full filter set, in order.
+    g.eq(
+        filterRowsForProvider('wallhaven').join(','),
+        WALLHAVEN_FILTER_ROWS.join(','),
+        'wallhaven exposes the full filter row set in order'
+    );
+    g.eq(filterRowsForProvider('wallhaven').length, 10, 'wallhaven exposes 10 rows');
+    g.ok(
+        filterRowsForProvider('wallhaven').includes('colors'),
+        'wallhaven exposes the colors row'
+    );
+
+    // Every other provider accepts only the query, so no filter rows.
+    g.eq(filterRowsForProvider('safebooru').length, 0, 'safebooru exposes no filter rows');
+    g.eq(filterRowsForProvider('pixabay').length, 0, 'pixabay exposes no filter rows');
+    g.eq(filterRowsForProvider('pexels').length, 0, 'pexels exposes no filter rows');
+    g.eq(filterRowsForProvider('unsplash').length, 0, 'unsplash exposes no filter rows');
+    g.eq(filterRowsForProvider('waifuim').length, 0, 'waifuim exposes no filter rows');
+    g.eq(filterRowsForProvider('local').length, 0, 'local exposes no filter rows');
+    g.eq(filterRowsForProvider('nope').length, 0, 'unknown provider exposes no filter rows');
+
+    // Params follow the provider: only wallhaven emits the rich key set.
+    const wh = filtersToParams({...defaultState(), provider: 'wallhaven'});
+    g.ok(
+        'categories' in wh && 'purity' in wh && 'sorting' in wh,
+        'wallhaven params carry wallhaven-specific keys'
+    );
+
+    const sb = filtersToParams({...defaultState({q: 'blue_hair'}), provider: 'safebooru'});
+    g.eq(sortedKeys(sb), 'q', 'safebooru params are query-only');
+    g.eq(sb.q, 'blue_hair', 'safebooru query passed through');
+
+    const pb = filtersToParams({...defaultState({q: 'sunset'}), provider: 'pixabay'});
+    g.eq(sortedKeys(pb), 'q', 'pixabay params are query-only');
+
+    const un = filtersToParams({...defaultState({q: 'mountain'}), provider: 'unsplash'});
+    g.eq(sortedKeys(un), 'q', 'unsplash params are query-only');
+
+    return g;
+}
+
+// ---------------------------------------------------------------------------
+// Group 9 — wallhaven color dropdown
+// ---------------------------------------------------------------------------
+
+function testColorsDropDown() {
+    const g = new Group('colors-dropdown');
+
+    g.eq(WALLHAVEN_COLORS.length, 29, 'WALLHAVEN_COLORS has the 29 official entries');
+
+    // Spot-check values that only exist in the official list.
+    g.ok(WALLHAVEN_COLORS.includes('ea4c88'), 'official color ea4c88 present');
+    g.ok(WALLHAVEN_COLORS.includes('cc3333'), 'official color cc3333 present');
+    g.ok(WALLHAVEN_COLORS.includes('424153'), 'official color 424153 present');
+    g.ok(!WALLHAVEN_COLORS.includes('1a1a2e'), 'hand-made color 1a1a2e removed');
+    g.ok(
+        WALLHAVEN_COLORS.every(c => /^[0-9a-f]{6}$/.test(c)),
+        'every entry is a bare 6-digit hex value (no leading #)'
+    );
+
+    // Selecting a palette entry emits the same bare-hex `colors` param.
+    const picked = WALLHAVEN_COLORS[4];
+    const params = filtersToParams({...defaultState(), provider: 'wallhaven', colors: picked});
+    g.eq(params.colors, picked, 'selected color emitted as colors param');
+
+    // "Any color" is the empty value and omits the key entirely.
+    const any = filtersToParams({...defaultState(), provider: 'wallhaven', colors: ''});
+    g.ok(!('colors' in any), 'Any color omits the colors param');
 
     return g;
 }
@@ -280,6 +361,8 @@ async function main() {
         testEntries(),
         testQuery(),
         testModuleSurface(),
+        testSetProvider(),
+        testColorsDropDown(),
     ];
 
     let pass = 0;

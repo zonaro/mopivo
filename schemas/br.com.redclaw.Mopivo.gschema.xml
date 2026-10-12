@@ -10,6 +10,13 @@
       <description>Which wallpaper provider to use: wallhaven, pexels, unsplash, safebooru, or pixabay.</description>
     </key>
 
+    <!-- Selected Providers (for multi-provider search) -->
+    <key name="selected-providers" type="as">
+      <default>['wallhaven']</default>
+      <summary>Selected Providers</summary>
+      <description>List of wallpaper providers selected for multi-provider search.</description>
+    </key>
+
     <!-- Language -->
     <key name="language" type="s">
       <default>'en'</default>

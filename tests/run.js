@@ -101,6 +101,7 @@ const emptySettings = {
 // The 51 keys that existed in the original extension schema (unchanged).
 const EXISTING_KEYS = [
     'active-provider',
+    'selected-providers',
     'language',
     'api-key',
     'pexels-api-key',
@@ -215,7 +216,7 @@ function testSchema() {
         ...VIDEO_GALLERY_KEYS,
         ...WALLPAPER_KEYS,
     ];
-    g.eq(foundKeys.length, expectedKeys.length, 'schema key count is 65');
+    g.eq(foundKeys.length, expectedKeys.length, 'schema key count is 66');
 
     for (const key of expectedKeys) {
         g.ok(foundKeys.includes(key), `schema key present: ${key}`);

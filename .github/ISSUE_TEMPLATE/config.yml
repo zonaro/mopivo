@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Issue template chooser config.
+#
+# Blank issues are disabled on purpose: every issue must be categorized with
+# at least one type label (see .agents/issues.md — "no issue, no implementation").
+blank_issues_enabled: false
+contact_links:
+  - name: Question / help
+    url: https://github.com/zonaro/mopivo/issues/new?labels=question
+    about: Ask a question or get help using Mopivo.
+  - name: Mopivo website
+    url: https://zonaro.github.io/mopivo/
+    about: Features, install instructions and the FAQ.

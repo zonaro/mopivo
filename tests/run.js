@@ -16,6 +16,7 @@ import {
 import {
     PROVIDER_IDS,
     PROVIDER_META,
+    VIDEO_PROVIDER_IDS,
     getProvider,
     isProviderConfigured,
 } from '../lib/providers/registry.js';
@@ -82,7 +83,7 @@ function isValidDbusName(name) {
 /**
  * GSettings stub for provider configuration checks. All key lookups return
  * "empty"; `get_strv` returns an always-existing directory so folder-based
- * providers (local, wallrus) are deterministically "configured".
+ * providers (local) are deterministically "configured".
  */
 const emptySettings = {
     get_string: () => '',
@@ -146,8 +147,6 @@ const EXISTING_KEYS = [
     'static-wallpaper-blur-enabled',
     'static-wallpaper-blur-radius',
     'show-on-lock-screen',
-    'wallrus-folders',
-    'wallrus-recursive',
 ];
 
 // The 6 keys added for video renderer integration + app parity.
@@ -167,6 +166,19 @@ const GENERATOR_KEYS = [
     'generator-resolution',
     'generator-format',
     'generator-export-folder',
+];
+
+// The 2 keys added for the online video gallery (Pexels/Pixabay video search).
+const VIDEO_GALLERY_KEYS = [
+    'video-provider',
+    'video-search-query',
+];
+
+// The 3 keys added for static wallpaper placement modes.
+const WALLPAPER_KEYS = [
+    'wallpaper-mode',
+    'wallpaper-per-monitor',
+    'wallpaper-default-uri',
 ];
 
 function testSchema() {
@@ -194,8 +206,14 @@ function testSchema() {
     const foundKeys = [...xml.matchAll(/<key\s+name="([^"]+)"/g)]
         .map((m) => m[1]);
 
-    const expectedKeys = [...EXISTING_KEYS, ...NEW_KEYS, ...GENERATOR_KEYS];
-    g.eq(foundKeys.length, expectedKeys.length, 'schema key count is 62');
+    const expectedKeys = [
+        ...EXISTING_KEYS,
+        ...NEW_KEYS,
+        ...GENERATOR_KEYS,
+        ...VIDEO_GALLERY_KEYS,
+        ...WALLPAPER_KEYS,
+    ];
+    g.eq(foundKeys.length, expectedKeys.length, 'schema key count is 65');
 
     for (const key of expectedKeys) {
         g.ok(foundKeys.includes(key), `schema key present: ${key}`);
@@ -233,7 +251,7 @@ async function testRegistry() {
     const g = new Group('registry');
 
     g.ok(Array.isArray(PROVIDER_IDS), 'PROVIDER_IDS is an array');
-    g.eq(PROVIDER_IDS.length, 8, 'PROVIDER_IDS has 8 entries');
+    g.eq(PROVIDER_IDS.length, 7, 'PROVIDER_IDS has 7 entries');
     g.eq(
         new Set(PROVIDER_IDS).size,
         PROVIDER_IDS.length,
@@ -275,9 +293,30 @@ async function testRegistry() {
         'isProviderConfigured(wallhaven) is true without an API key');
 
     // Keyless providers: always available (folder checks use the stub's /tmp).
-    for (const id of ['local', 'safebooru', 'waifuim', 'wallrus']) {
+    for (const id of ['local', 'safebooru', 'waifuim']) {
         g.eq(await isProviderConfigured(id, emptySettings), true,
             `isProviderConfigured(${id}) is true without an API key`);
+    }
+
+    // Video-capable providers are derived from the meta flags.
+    g.ok(Array.isArray(VIDEO_PROVIDER_IDS), 'VIDEO_PROVIDER_IDS is an array');
+    g.eq(VIDEO_PROVIDER_IDS.length, 2, 'VIDEO_PROVIDER_IDS has 2 entries');
+    for (const id of ['pexels', 'pixabay']) {
+        g.ok(VIDEO_PROVIDER_IDS.includes(id), `VIDEO_PROVIDER_IDS includes ${id}`);
+    }
+    for (const id of PROVIDER_IDS) {
+        g.eq(
+            VIDEO_PROVIDER_IDS.includes(id),
+            PROVIDER_META[id].supportsVideo,
+            `VIDEO_PROVIDER_IDS membership matches supportsVideo for ${id}`
+        );
+    }
+    for (const id of VIDEO_PROVIDER_IDS) {
+        const provider = await getProvider(id);
+        g.eq(provider.constructor.supportsVideo, true,
+            `getProvider(${id}) class supportsVideo is true`);
+        g.eq(typeof provider.searchVideos, 'function',
+            `getProvider(${id}).searchVideos is a function`);
     }
 
     return g;

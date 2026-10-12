@@ -147,7 +147,7 @@
     <key name="download-folder" type="s">
       <default>''</default>
       <summary>Download Folder</summary>
-      <description>Folder to save downloaded wallpapers. Leave empty for system default.</description>
+      <description>Folder to save full-resolution downloaded images. Leave empty for ~/Pictures/Mopivo.</description>
     </key>
 
     <!-- Set as Background -->
@@ -159,7 +159,7 @@
 
     <!-- Page Size -->
     <key name="page-size" type="i">
-      <default>24</default>
+      <default>10</default>
       <summary>Page Size</summary>
       <description>Number of wallpapers per page (1-24).</description>
       <range min="1" max="24"/>
@@ -210,7 +210,21 @@
     <key name="video-folder" type="s">
       <default>''</default>
       <summary>Video Folder</summary>
-      <description>Folder scanned for random ("I'm Feeling Lucky") and auto-change video selection. Leave empty for ~/Videos/Hidamari.</description>
+      <description>Folder scanned for random ("I'm Feeling Lucky") and auto-change video selection, and where online videos are downloaded. Leave empty for ~/Videos/Mopivo.</description>
+    </key>
+
+    <!-- Video Provider (online video gallery) -->
+    <key name="video-provider" type="s">
+      <default>'pexels'</default>
+      <summary>Video Provider</summary>
+      <description>Provider used by the online video gallery: pexels or pixabay.</description>
+    </key>
+
+    <!-- Video Search Query -->
+    <key name="video-search-query" type="s">
+      <default>''</default>
+      <summary>Video Search Query</summary>
+      <description>Last search term used in the online video gallery.</description>
     </key>
 
     <!-- Streaming URL -->
@@ -381,25 +395,37 @@
       <range min="0" max="100"/>
     </key>
 
+    <!-- Wallpaper Placement Mode -->
+    <key name="wallpaper-mode" type="s">
+      <default>'same'</default>
+      <summary>Wallpaper Placement Mode</summary>
+      <description>How a wallpaper is applied across monitors: same (same image on every monitor), span (one image spanned across all monitors), or per-monitor (one image assigned per connector).</description>
+      <choices>
+        <choice value="same"/>
+        <choice value="span"/>
+        <choice value="per-monitor"/>
+      </choices>
+    </key>
+
+    <!-- Per-Monitor Wallpapers -->
+    <key name="wallpaper-per-monitor" type="as">
+      <default>[]</default>
+      <summary>Per-Monitor Wallpapers</summary>
+      <description>Wallpapers assigned to specific monitors, as "connector=uri" entries. Example: ["HDMI-1=file:///path/a.jpg","eDP-1=file:///path/b.jpg"].</description>
+    </key>
+
+    <!-- Default Wallpaper URI -->
+    <key name="wallpaper-default-uri" type="s">
+      <default>''</default>
+      <summary>Default Wallpaper URI</summary>
+      <description>Default wallpaper URI used when a monitor has no per-monitor assignment. Leave empty for none.</description>
+    </key>
+
     <!-- Show on Lock Screen -->
     <key name="show-on-lock-screen" type="b">
       <default>true</default>
       <summary>Show on Lock Screen</summary>
       <description>Keep the video wallpaper visible on the lock screen. When disabled, playback pauses while locked.</description>
-    </key>
-
-    <!-- Extra Wallrus Folders -->
-    <key name="wallrus-folders" type="as">
-      <default>[]</default>
-      <summary>Extra Wallrus Folders</summary>
-      <description>Additional folders for the Wallrus provider. Configured in the Providers settings page as a colon-separated list.</description>
-    </key>
-
-    <!-- Search Subfolders for Wallrus -->
-    <key name="wallrus-recursive" type="b">
-      <default>true</default>
-      <summary>Search Subfolders</summary>
-      <description>Recursively search subfolders in the Wallrus provider.</description>
     </key>
 
     <!-- Startup Delay -->

@@ -98,7 +98,7 @@ Para rodar do checkout: `gjs -m main.js`, ou `make smoke` para o smoke test.
 - `gjs` (suporte a ESM)
 - GTK 4 e libadwaita 1.x
 - GStreamer com `gtk4paintablesink` (vídeo-wallpaper)
-- `xprop` (camada desktop X11/XWayland)
+- camada desktop via GTK4 (`Gdk.WindowTypeHint.DESKTOP`)
 - `glib-compile-schemas` e `msgfmt` (só no install)
 - `python3` com `numpy` e `Pillow` (gerador de wallpapers — aba Generator)
 - Opcional: [yt-dlp](https://github.com/yt-dlp/yt-dlp) (streaming)
@@ -108,11 +108,11 @@ Exemplos por distro:
 
 ```bash
 # Fedora
-sudo dnf install gjs gtk4 libadwaita gstreamer1-plugin-gtk4 glib2-devel gettext xprop
+sudo dnf install gjs gtk4 libadwaita gstreamer1-plugin-gtk4 glib2-devel gettext
 # Ubuntu 24.04+
 sudo apt install gjs gir1.2-gtk-4.0 gir1.2-adw-1 libglib2.0-bin gettext x11-utils
 # Arch
-sudo pacman -S gjs gtk4 libadwaita gst-plugin-gtk4 glib2 gettext xorg-xprop
+sudo pacman -S gjs gtk4 libadwaita gst-plugin-gtk4 glib2 gettext xorg-
 ```
 
 O install usa `rsync` quando disponível, com fallback para `cp`.
@@ -257,7 +257,7 @@ Fit Mode (Fill/Contain/Cover/Scale down). Estado sincronizado via D-Bus.
 
 No X11 e no Wayland via XWayland, o launcher roda o renderer com
 `GDK_BACKEND=x11` (`-P <APP_DIR>`, `-F <file>`), marcando as janelas como
-`_NET_WM_WINDOW_TYPE_DESKTOP` via `xprop` no tamanho do monitor. Sem camada
+`_NET_WM_WINDOW_TYPE_DESKTOP` via GTK4 (`set_type_hint`) no tamanho do monitor. Sem camada
 desktop X11, cai para `fullscreen_on_monitor`.
 
 **Limite conhecido:** auto-pause no Wayland exige integração com o Shell que um
@@ -304,7 +304,7 @@ gdbus introspect --session \
   --object-path /org/redclaw/MopivoRenderer
 ```
 
-- Renderer não inicia: confira `gtk4paintablesink` + `xprop` e fonte de vídeo.
+- Renderer não inicia: confira `gtk4paintablesink` e fonte de vídeo.
 - Streaming falha: confira `yt-dlp` no `PATH`.
 - Webpage em branco: confira WebKitGTK 6.0.
 - Schema sumiu no checkout: `make compile` ou reinstale.

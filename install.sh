@@ -84,9 +84,9 @@ check_deps() {
         warn "missing: ${missing[*]}"
         cat >&2 <<'EOF'
 Install the missing tools first. Examples:
-  Fedora:      sudo dnf install gjs gtk4 libadwaita gstreamer1-plugin-gtk4 glib2-devel gettext xprop
-  Ubuntu 24+:  sudo apt install gjs gir1.2-gtk-4.0 gir1.2-adw-1 libglib2.0-bin gettext x11-utils
-  Arch:        sudo pacman -S gjs gtk4 libadwaita gst-plugin-gtk4 glib2 gettext xorg-xprop
+  Fedora:      sudo dnf install gjs gtk4 libadwaita gstreamer1-plugin-gtk4 glib2-devel gettext
+  Ubuntu 24+:  sudo apt install gjs gir1.2-gtk-4.0 gir1.2-adw-1 libglib2.0-bin gettext
+  Arch:        sudo pacman -S gjs gtk4 libadwaita gst-plugin-gtk4 glib2 gettext
 EOF
         die "unmet dependencies — aborting."
     fi

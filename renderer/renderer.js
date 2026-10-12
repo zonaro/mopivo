@@ -837,7 +837,7 @@ const Renderer = GObject.registerClass(
 
             const dir = changeWallpaperDir || videoFolder ||
                 GLib.build_filenamev([
-                    GLib.get_home_dir(), 'Videos', 'Hidamari',
+                    GLib.get_home_dir(), 'Videos', 'Mopivo',
                 ]);
 
             autoWallpaperPaths = scanVideoDir(dir);

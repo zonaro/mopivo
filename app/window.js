@@ -27,6 +27,7 @@ import Soup from 'gi://Soup?version=3.0';
 
 import {_} from '../lib/i18n.js';
 import {GalleryManager} from '../ui/gallery.js';
+import {VideoGallery} from '../ui/videoGallery.js';
 import {FilterBar} from '../ui/filters.js';
 import {VideoControls} from '../ui/videoControls.js';
 import {VideoController} from './videoController.js';
@@ -56,6 +57,7 @@ const WallpaperWindow = GObject.registerClass({
 
         this._syncingVideo = false;
         this._syncingProvider = false;
+        this._videoLoaded = false;
         this._settingsVideoModeId = 0;
 
         // The video controller owns the renderer subprocess; the controls pane
@@ -193,7 +195,41 @@ const WallpaperWindow = GObject.registerClass({
             controller: this._controller,
             settings: this._settings,
         });
-        return this._videoControls.widget;
+
+        this._videoGallery = new VideoGallery({
+            controller: this._controller,
+            settings: this._settings,
+            session: this._session,
+        });
+        this._videoGallery.widget.hexpand = true;
+        this._videoGallery.widget.vexpand = true;
+        this._videoControls.widget.hexpand = true;
+        this._videoControls.widget.vexpand = true;
+
+        this._videoStack = new Gtk.Stack({
+            transition_type: Gtk.StackTransitionType.CROSSFADE,
+            hexpand: true,
+            vexpand: true,
+        });
+        this._videoStack.add_titled(this._videoGallery.widget, 'browse', _('Browse'));
+        this._videoStack.add_titled(this._videoControls.widget, 'playback', _('Playback'));
+
+        const switcher = new Gtk.StackSwitcher({
+            stack: this._videoStack,
+            halign: Gtk.Align.CENTER,
+        });
+
+        const page = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 6,
+            margin_top: 12,
+            margin_bottom: 12,
+            margin_start: 12,
+            margin_end: 12,
+        });
+        page.append(switcher);
+        page.append(this._videoStack);
+        return page;
     }
 
     _buildGeneratorPage() {
@@ -265,6 +301,7 @@ const WallpaperWindow = GObject.registerClass({
             }
             try { this._controller.stop(); } catch (_e) { /* not started */ }
             try { this._session.abort(); } catch (_e) { /* already aborted */ }
+            this._videoGallery?.destroy?.();
             this._videoControls.destroy?.();
             this._generatorPage.destroy?.();
             return false;
@@ -353,11 +390,17 @@ const WallpaperWindow = GObject.registerClass({
         }
         this._stack.set_visible_child_name(on ? 'video' : 'images');
         this._manager.setVisible(!on);
-        if (on)
+        if (on) {
             this._controller.start().catch(e =>
                 console.error(`[wp] video start failed: ${e.message}`));
-        else
+            if (this._videoGallery && !this._videoLoaded) {
+                this._videoLoaded = true;
+                this._videoGallery.loadRecent().catch(e =>
+                    console.error(`[wp] video browse failed: ${e.message}`));
+            }
+        } else {
             this._controller.stop();
+        }
     }
 
     // ── Preferences ─────────────────────────────────────────────────────
@@ -365,7 +408,7 @@ const WallpaperWindow = GObject.registerClass({
     async _openPreferences() {
         try {
             const {buildPreferencesWindow} = await import('../prefs.js');
-            const win = buildPreferencesWindow(this._settings);
+            const win = buildPreferencesWindow(this._settings, this.get_application());
             win.set_transient_for(this);
             win.present();
         } catch (e) {

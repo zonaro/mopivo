@@ -19,6 +19,7 @@ import Gtk from 'gi://Gtk?version=4.0';
 import {downloadToFile} from '../lib/download.js';
 import {_} from '../lib/i18n.js';
 import {setDesktopWallpaper} from '../lib/wallpaper.js';
+import {resolveDownloadFolder} from '../lib/paths.js';
 
 const CACHE_BASE = GLib.get_home_dir() + '/.cache/mopivo';
 const GRID_COLS = 3;
@@ -36,6 +37,27 @@ const _setPictureFile = typeof Gtk.Picture.prototype.set_filename === 'function'
 function _ensureDir(p) {
     const d = Gio.File.new_for_path(p);
     if (!d.query_exists(null)) d.make_directory_with_parents(null);
+}
+
+const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp']);
+
+/**
+ * Derive a safe image file extension from a download URL, defaulting to jpg
+ * when the URL has no recognizable image extension.
+ * @param {string} url
+ * @returns {string}
+ */
+export function extensionFor(url) {
+    const path = String(url).split('#')[0].split('?')[0];
+    const slash = path.lastIndexOf('/');
+    const name = slash >= 0 ? path.slice(slash + 1) : path;
+    const dot = name.lastIndexOf('.');
+    if (dot >= 0) {
+        const ext = name.slice(dot + 1).toLowerCase();
+        if (IMAGE_EXTENSIONS.has(ext))
+            return ext;
+    }
+    return 'jpg';
 }
 
 function _cacheDir(pid) {
@@ -217,7 +239,7 @@ const GalleryManager = GObject.registerClass({
 
         this._firstBtn = new Gtk.Button({label: '\u23EE', tooltip_text: _('First page')});
         this._prevBtn = new Gtk.Button({label: '\u2039', tooltip_text: _('Previous page')});
-        this._pageLabel = new Gtk.Label({label: 'Page 1', margin_start: 8, margin_end: 8});
+        this._pageLabel = new Gtk.Label({label: _('Page 1'), margin_start: 8, margin_end: 8});
         this._nextBtn = new Gtk.Button({label: '\u203A', tooltip_text: _('Next page')});
         this._lastBtn = new Gtk.Button({label: '\u23ED', tooltip_text: _('Last page')});
 
@@ -366,19 +388,22 @@ const GalleryManager = GObject.registerClass({
 
     async _onSelect(item) {
         if (this._loading) return;
-        const full = GLib.build_filenamev([_cacheDir(this._providerId), `${item.id}.jpg`]);
         try {
-            if (!GLib.file_test(full, GLib.FileTest.EXISTS)) {
-                const u = item.fullUrl || item.path;
-                if (!u) { this._showStatus(_('No download URL available.')); return; }
+            const u = item.fullUrl || item.path;
+            if (!u) { this._showStatus(_('No download URL available.')); return; }
+            const dir = resolveDownloadFolder(this._settings);
+            const dest = GLib.build_filenamev([
+                dir, `${this._providerId}-${item.id}.${extensionFor(u)}`,
+            ]);
+            if (!GLib.file_test(dest, GLib.FileTest.EXISTS)) {
                 this._showStatus(_('Downloading full resolution\u2026'));
-                await downloadToFile(this._session, u, full);
+                await downloadToFile(this._session, u, dest);
             }
             if (this._settings?.get_boolean?.('set-background') !== false) {
-                setDesktopWallpaper(Gio.File.new_for_path(full).get_uri());
+                setDesktopWallpaper(Gio.File.new_for_path(dest).get_uri());
                 this._showStatus(_('Wallpaper set:') + ` ${item.id}`);
             } else {
-                this._showStatus(_('Downloaded:') + ` ${full}`);
+                this._showStatus(_('Downloaded:') + ` ${dest}`);
             }
         } catch (e) {
             const m = e.message || String(e);
@@ -399,7 +424,7 @@ const GalleryManager = GObject.registerClass({
         const next = Number.isFinite(page) && page >= 1 ? Math.round(page) : this._page;
         if (next === this._page) return next;
         this._page = next;
-        this._pageLabel.text = `Page ${next} / ${this._lastPage}`;
+        this._pageLabel.text = `${_('Page')} ${next} / ${this._lastPage}`;
         this.emit('page-changed', next);
         return next;
     }
@@ -407,7 +432,7 @@ const GalleryManager = GObject.registerClass({
     _updatePag() {
         const on = this._lastPage > 1;
         this._paginationBar.visible = on;
-        this._pageLabel.text = `Page ${this._page} / ${this._lastPage}`;
+        this._pageLabel.text = `${_('Page')} ${this._page} / ${this._lastPage}`;
         this._firstBtn.sensitive = on && this._page > 1;
         this._prevBtn.sensitive = on && this._page > 1;
         this._nextBtn.sensitive = on && this._page < this._lastPage;

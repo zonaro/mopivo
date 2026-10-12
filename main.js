@@ -73,8 +73,12 @@ const WallpaperApp = GObject.registerClass({
         this._prefsWindow = null;
 
         this.connect('activate', () => {
-            this._onActivate().catch(e =>
-                console.error(`[wp] activate failed: ${e.message}`));
+            // Lazy import() yields to the main loop before a window exists;
+            // hold() stops GApplication from quitting on that windowless moment.
+            this.hold();
+            this._onActivate()
+                .catch(e => console.error(`[wp] activate failed: ${e.message}`))
+                .finally(() => this.release());
         });
 
         // SIGTERM/SIGINT -> quit. gjs 1.88 moved GLib.unix_signal_add to the
@@ -123,7 +127,7 @@ const WallpaperApp = GObject.registerClass({
             return;
         }
         const {buildPreferencesWindow} = await import('./prefs.js');
-        this._prefsWindow = buildPreferencesWindow(settings);
+        this._prefsWindow = buildPreferencesWindow(settings, this);
         if (this._window)
             this._prefsWindow.set_transient_for(this._window);
         this._prefsWindow.connect('close-request', () => {

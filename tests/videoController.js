@@ -77,6 +77,7 @@ function testModuleApi() {
     g.eq(typeof VideoController, 'function', 'VideoController is a function');
     g.eq(typeof pickRandom, 'function', 'pickRandom is a function');
     g.eq(typeof sourcePathsFromSettings, 'function', 'sourcePathsFromSettings is a function');
+    g.eq(typeof VideoController.prototype.playFile, 'function', 'VideoController.playFile is a function');
 
     return g;
 }
@@ -216,7 +217,7 @@ async function testConstruction() {
     g.eq(controller._dbus, null, 'no RendererDBus is created at construction');
 
     for (const method of ['start', 'stop', 'play', 'pause', 'togglePlay',
-        'next', 'lucky', 'setSource']) {
+        'next', 'lucky', 'playFile', 'setSource']) {
         g.eq(typeof controller[method], 'function', `controller.${method} is a function`);
     }
 
@@ -242,6 +243,32 @@ async function testConstruction() {
 }
 
 // ---------------------------------------------------------------------------
+// Group 6 — playFile persists source and starts a stopped controller
+// ---------------------------------------------------------------------------
+
+async function testPlayFile() {
+    const g = new Group('playFile');
+
+    const stub = makeSettings({'video-mode-type': 'streaming'});
+    const controller = new VideoController({settings: stub});
+
+    // Stub start() so the test never spawns a renderer subprocess.
+    let startCalls = 0;
+    controller.start = async () => { startCalls++; controller._started = true; };
+
+    await controller.playFile('/vids/clip.mp4');
+    g.eq(stub._data['video-path'], '/vids/clip.mp4', 'playFile writes video-path');
+    g.eq(stub._data['video-mode-type'], 'local', 'playFile forces the local source');
+    g.eq(startCalls, 1, 'playFile starts a stopped controller');
+
+    await controller.playFile(null);
+    g.eq(startCalls, 1, 'playFile ignores a missing path');
+    g.eq(stub._data['video-path'], '/vids/clip.mp4', 'playFile(null) keeps the previous path');
+
+    return g;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -252,6 +279,7 @@ async function main() {
     groups.push(testSourceMapping());
     groups.push(testLauncherArgv());
     groups.push(await testConstruction());
+    groups.push(await testPlayFile());
 
     let pass = 0;
     let fail = 0;

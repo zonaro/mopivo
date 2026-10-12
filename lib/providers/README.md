@@ -51,6 +51,34 @@ All providers return the same structure from `search()`:
 }
 ```
 
+## Video Search (optional)
+
+Providers that expose `static supportsVideo = true` also implement:
+
+```js
+await provider.searchVideos({q, page, perPage}, session, settings);
+```
+
+It returns the same envelope shape as `search()` (`{items, total, page, lastPage}`),
+but each item is a `NormalizedVideoItem`:
+
+```js
+{
+  id: string,          // Unique id within the provider
+  previewUrl: string,  // Poster/thumbnail IMAGE url (jpg)
+  videoUrl: string,    // Direct downloadable video url (mp4)
+  resolution: string,  // Human-readable (e.g. "1920x1080")
+  duration: number,    // Clip length in seconds (0 if unknown)
+  source: string,      // Author/user name
+  sourceUrl: string,   // Clip url on the provider website
+}
+```
+
+Currently **Pexels** and **Pixabay** support video. Pexels has no empty-query
+video feed beyond its `/videos/popular` fallback; Pixabay requires a non-empty
+search term (it throws otherwise). `VIDEO_PROVIDER_IDS` (exported by
+`registry.js`) lists the video-capable providers.
+
 ## Wallhaven Field Mapping
 
 | Raw Wallhaven `data[]` field | Normalized field | Notes |

@@ -7,7 +7,7 @@
 
 import System from 'system';
 
-import {normalizeResult} from '../ui/gallery.js';
+import {normalizeResult, extensionFor} from '../ui/gallery.js';
 
 // ---------------------------------------------------------------------------
 // Assertion helpers (same style as tests/run.js)
@@ -211,6 +211,26 @@ function testNormalizedShape() {
 }
 
 // ---------------------------------------------------------------------------
+// Group 5 — download extension derivation
+// ---------------------------------------------------------------------------
+
+function testExtensionFor() {
+    const g = new Group('extensionFor');
+
+    g.eq(extensionFor('https://x/a.jpg'), 'jpg', 'jpg kept');
+    g.eq(extensionFor('https://x/a.jpeg'), 'jpeg', 'jpeg kept');
+    g.eq(extensionFor('https://x/a.png?w=100'), 'png', 'query string is ignored');
+    g.eq(extensionFor('https://x/a.webp#frag'), 'webp', 'fragment is ignored');
+    g.eq(extensionFor('https://x/PHOTO.JPG'), 'jpg', 'extension is lowercased');
+    g.eq(extensionFor('https://x/a.gif'), 'jpg', 'unsupported extension → jpg');
+    g.eq(extensionFor('https://x/noext'), 'jpg', 'no extension → jpg');
+    g.eq(extensionFor('not a url'), 'jpg', 'non-URL input → jpg');
+    g.eq(extensionFor(''), 'jpg', 'empty input → jpg');
+
+    return g;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -219,6 +239,7 @@ const groups = [
     testGenericShape(),
     testEmptyShapes(),
     testNormalizedShape(),
+    testExtensionFor(),
 ];
 
 let pass = 0;

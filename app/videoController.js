@@ -28,22 +28,18 @@
 
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
 
 import {RendererLauncher} from '../lib/video/launcher.js';
 import {RendererDBus} from '../lib/video/dbus.js';
 import {YtDlpResolver} from '../lib/video/ytDlp.js';
 import {listVideoFiles} from '../lib/video/videoThumbs.js';
 import {LOG_PREFIX} from '../lib/video/constants.js';
+import {getDefaultVideoDir} from '../lib/paths.js';
 
 // This module always lives at <APP_DIR>/app/videoController.js — both in the
 // repo checkout and under the installed ~/.local/share/mopivo/ —
 // so the renderer root is exactly two directories up from import.meta.url.
 const APP_DIR = Gio.File.new_for_uri(import.meta.url).get_parent().get_parent().get_path();
-
-const DEFAULT_VIDEO_FOLDER = GLib.build_filenamev([
-    GLib.get_home_dir(), 'Videos', 'Hidamari',
-]);
 
 const SOURCE_TYPES = ['local', 'streaming', 'webpage'];
 
@@ -109,7 +105,7 @@ export function sourcePathsFromSettings(settings) {
             type: 'local',
             filePath: _settingsString(settings, 'video-path') || null,
             url: null,
-            folder: _settingsString(settings, 'video-folder') || DEFAULT_VIDEO_FOLDER,
+            folder: _settingsString(settings, 'video-folder') || getDefaultVideoDir(),
         };
     }
 }
@@ -229,6 +225,24 @@ export const VideoController = GObject.registerClass({
         }
         this._setVideoPath(nextFile);
         this._restartRenderer(nextFile);
+    }
+
+    /**
+     * Play a specific local file immediately as the video wallpaper.
+     * Persists `video-path`, switches the source to 'local', then plays it.
+     *
+     * @param {string} filePath Absolute path or file:// URI.
+     */
+    async playFile(filePath) {
+        if (!this._settings || !filePath)
+            return;
+        this._setVideoPath(filePath);
+        if (typeof this._settings.set_string === 'function')
+            this._settings.set_string('video-mode-type', 'local');
+        if (this._started)
+            this._restartRenderer(filePath);
+        else
+            await this.start();
     }
 
     /**
@@ -366,7 +380,7 @@ export const VideoController = GObject.registerClass({
     // ── Settings helpers ──────────────────────────────────────────────
 
     _videoFolder() {
-        return this._readString('video-folder') || DEFAULT_VIDEO_FOLDER;
+        return this._readString('video-folder') || getDefaultVideoDir();
     }
 
     _setVideoPath(path) {

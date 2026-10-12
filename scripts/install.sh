@@ -16,7 +16,7 @@ rm -rf "$HOME/.local/share/gnome-shell/extensions/$OLD_UUID"
 echo "==> Installing runtime files to $APP_DIR ..."
 mkdir -p "$APP_DIR"
 
-RUNTIME_ITEMS=(main.js app ui lib renderer schemas locale data)
+RUNTIME_ITEMS=(main.js prefs.js app ui lib renderer schemas locale data)
 EXISTING_ITEMS=()
 for item in "${RUNTIME_ITEMS[@]}"; do
     if [ -e "$REPO_ROOT/$item" ]; then

@@ -27,10 +27,7 @@ import Soup from 'gi://Soup?version=3.0';
 
 import {_} from '../lib/i18n.js';
 import {GalleryManager} from '../ui/gallery.js';
-import {VideoGallery} from '../ui/videoGallery.js';
 import {FilterBar} from '../ui/filters.js';
-import {VideoControls} from '../ui/videoControls.js';
-import {VideoController} from './videoController.js';
 import {GeneratorPage} from './generatorPage.js';
 import {PROVIDER_IDS, PROVIDER_META, getProvider} from '../lib/providers/registry.js';
 
@@ -60,9 +57,6 @@ const WallpaperWindow = GObject.registerClass({
         this._videoLoaded = false;
         this._settingsVideoModeId = 0;
 
-        // The video controller owns the renderer subprocess; the controls pane
-        // drives it. Constructing either does not spawn anything.
-        this._controller = new VideoController({settings});
         // The manager creates its own FlowBox; we read it back via the public
         // `flowbox` getter and wrap it in a scrolled window.
         this._manager = new GalleryManager({settings, session: this._session});
@@ -72,7 +66,6 @@ const WallpaperWindow = GObject.registerClass({
         this._wireSignals();
 
         this.set_default_size(980, 720);
-        this._applyVideoMode(settings.get_boolean('video-mode'));
         this._bootstrap().catch(e =>
             this._showStatus(`${_('Error')}: ${e.message}`));
     }
@@ -92,20 +85,6 @@ const WallpaperWindow = GObject.registerClass({
         });
         header.pack_end(this._prefsBtn);
 
-        // Video-mode switch.
-        this._videoSwitch = new Gtk.Switch({
-            active: this._settings.get_boolean('video-mode'),
-            valign: Gtk.Align.CENTER,
-            tooltip_text: _('Video mode'),
-        });
-        const videoBox = new Gtk.Box({
-            orientation: Gtk.Orientation.HORIZONTAL,
-            spacing: 6,
-            valign: Gtk.Align.CENTER,
-        });
-        videoBox.append(new Gtk.Image({icon_name: 'video-display-symbolic'}));
-        videoBox.append(this._videoSwitch);
-        header.pack_end(videoBox);
 
         // Generator toggle: swaps the image/video stack for the generator page.
         this._generatorToggle = new Gtk.ToggleButton({
@@ -121,7 +100,6 @@ const WallpaperWindow = GObject.registerClass({
             vexpand: true,
         });
         this._stack.add_named(this._buildImagePage(), 'images');
-        this._stack.add_named(this._buildVideoPage(), 'video');
         this._stack.add_named(this._buildGeneratorPage(), 'generator');
 
         const toolbar = new Adw.ToolbarView();
@@ -211,48 +189,6 @@ const WallpaperWindow = GObject.registerClass({
         // The manager toggles these via setVisible(); we just pack them.
         page.append(this._manager.statusLabel);
         page.append(this._manager.paginationBar);
-        return page;
-    }
-
-    _buildVideoPage() {
-        this._videoControls = new VideoControls({
-            controller: this._controller,
-            settings: this._settings,
-        });
-
-        this._videoGallery = new VideoGallery({
-            controller: this._controller,
-            settings: this._settings,
-            session: this._session,
-        });
-        this._videoGallery.widget.hexpand = true;
-        this._videoGallery.widget.vexpand = true;
-        this._videoControls.widget.hexpand = true;
-        this._videoControls.widget.vexpand = true;
-
-        this._videoStack = new Gtk.Stack({
-            transition_type: Gtk.StackTransitionType.CROSSFADE,
-            hexpand: true,
-            vexpand: true,
-        });
-        this._videoStack.add_titled(this._videoGallery.widget, 'browse', _('Browse'));
-        this._videoStack.add_titled(this._videoControls.widget, 'playback', _('Playback'));
-
-        const switcher = new Gtk.StackSwitcher({
-            stack: this._videoStack,
-            halign: Gtk.Align.CENTER,
-        });
-
-        const page = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: 6,
-            margin_top: 12,
-            margin_bottom: 12,
-            margin_start: 12,
-            margin_end: 12,
-        });
-        page.append(switcher);
-        page.append(this._videoStack);
         return page;
     }
 

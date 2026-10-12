@@ -1,6 +1,6 @@
 # Mopivo
 
-> Seu GNOME vivo em 30 segundos — wallpapers de 8 fontes + vídeo-wallpapers.
+> Seu GNOME vivo em 30 segundos — wallpapers de 7 fontes + vídeo-wallpapers.
 
 🌐 **Site:** https://zonaro.github.io/mopivo/ · 💻 **Repo:** https://github.com/zonaro/mopivo · 📜 GPL-3.0-or-later
 
@@ -153,9 +153,11 @@ Grupos principais:
   `local-recursive`, `wallrus-folders`, `wallrus-recursive`.
 - **Filters** — `search-query`, `categories`, `purity`, `sorting`, `order`,
   `top-range`, `atleast`, `resolutions`, `ratios`, `colors`, `ai-art-filter`.
-- **Downloads** — `download-folder`, `set-background`, `page-size`.
+- **Downloads** — `download-folder` (vazio = `~/Pictures/Mopivo`),
+  `set-background`, `page-size` (padrão 10).
 - **Video source** — `video-mode`, `video-mode-type`, `video-path`,
-  `video-folder`, `video-streaming-url`, `video-webpage-url`,
+  `video-folder` (vazio = `~/Videos/Mopivo`), `video-provider`,
+  `video-search-query`, `video-streaming-url`, `video-webpage-url`,
   `video-webpage-local-html`.
 - **Video playback** — `video-volume`, `video-mute`,
   `video-fade-duration-sec`, `video-audio-primary-monitor-only`,
@@ -172,14 +174,39 @@ Grupos principais:
 - **Gerador** — `generator-preset`, `generator-palette`,
   `generator-resolution`, `generator-format`, `generator-export-folder`.
 
-62 chaves no total.
+### Placement
+
+Como o wallpaper é aplicado entre os monitores é controlado por
+`wallpaper-mode`:
+
+- **same** (padrão) — a mesma imagem repetida em todos os monitores.
+- **span** — uma única imagem esticada por todos os monitores
+  (`picture-options='spanned'`).
+- **per-monitor** — uma imagem por conector, composta num único PNG
+  `spanned`.
+
+No modo `per-monitor`, atribua imagens por conector em
+`wallpaper-per-monitor` (entradas `"conector=uri"`); monitores sem
+atribuição usam `wallpaper-default-uri`:
+
+```bash
+gsettings set br.com.redclaw.Mopivo wallpaper-mode 'per-monitor'
+gsettings set br.com.redclaw.Mopivo wallpaper-per-monitor '["HDMI-1=file:///home/u/a.jpg","eDP-1=file:///home/u/b.jpg"]'
+gsettings set br.com.redclaw.Mopivo wallpaper-default-uri 'file:///home/u/default.jpg'
+```
+
+Se a composição falhar, o modo cai para `scaled` (imagem única).
+
+65 chaves no total.
 
 ## Modo imagem
 
 Janela principal com busca, dropdown de provedor e galeria com paginação. Clicar
-numa miniatura baixa a imagem em resolução máxima, cacheia em
-`~/.cache/mopivo/<provider>/` e — com `set-background`
-ligado — aplica como papel de parede. Popover de filtros Wallhaven (categorias,
+numa miniatura baixa a imagem em resolução máxima para a pasta de download
+(`download-folder`, vazio = `~/Pictures/Mopivo`, nomeada
+`<provider>-<id>.<ext>`) e — com `set-background`
+ligado — aplica como papel de parede. As miniaturas continuam em cache em
+`~/.cache/mopivo/<provider>/`. Popover de filtros Wallhaven (categorias,
 pureza, ordenação, top range, resolução mínima, resoluções, proporções, cores e
 filtro AI-art).
 
@@ -192,7 +219,6 @@ filtro AI-art).
 | Pixabay | Obrigatória — [pixabay.com/api/docs](https://pixabay.com/api/docs/) | `safesearch` sempre on |
 | Waifu.im | Nenhuma | Arquivo anime curado, SFW; tags com hífen; até 30 resultados frescos |
 | Local Files | Nenhuma | Sua `~/Pictures` + pastas extras; busca por nome, newest first |
-| Wallrus | Nenhuma | Wallpapers gerados pelo app Wallrus (`~/Pictures/Wallrus` + extras) |
 
 Provedores com chave ficam inutilizáveis até configurá-la; a página Providers
 mostra qual está faltando. Cada provedor tem guia passo a passo em
@@ -201,7 +227,21 @@ Preferências → Help Center.
 ## Modo vídeo
 
 Ligue o switch video-mode no header (ou `video-mode`) para trocar a galeria pelo
-painel de vídeo. Playback delegado ao renderer via `lib/video/launcher.js`.
+modo vídeo, que tem duas abas:
+
+- **Browse** (`ui/videoGallery.js`) — galeria online de vídeos das fontes que
+  suportam vídeo (Pexels e Pixabay), com busca, paginação e posters. Clicar
+  baixa o `.mp4` para a pasta de vídeos (`video-folder`, vazio =
+  `~/Videos/Mopivo`, nomeado `<provider>-<id>.mp4`) e já começa a tocar.
+- **Playback** (`ui/videoControls.js`) — controles do vídeo-wallpaper local,
+  streaming ou webpage. Playback delegado ao renderer via
+  `lib/video/launcher.js`.
+
+Na aba **Browse**, o provedor de vídeo é escolhido pela chave `video-provider`
+(Pexels ou Pixabay) e o último termo buscado fica salvo em `video-search-query`;
+clicar num resultado baixa o vídeo na pasta de vídeos (padrão `~/Videos/Mopivo`)
+e reproduz imediatamente. No Pixabay a busca exige um termo — consultas vazias
+não retornam nada.
 
 | Fonte | Valor | Settings |
 |---|---|---|
@@ -209,7 +249,7 @@ painel de vídeo. Playback delegado ao renderer via `lib/video/launcher.js`.
 | Streaming URL | `streaming` | `video-streaming-url`, resolvido com yt-dlp |
 | Webpage | `webpage` | `video-webpage-url` ou `video-webpage-local-html` (WebKitGTK) |
 
-Sem `video-folder`, usa `~/Videos/Hidamari`.
+Sem `video-folder`, usa `~/Videos/Mopivo`.
 
 Painel (`ui/videoControls.js`): fonte (Local/Streaming/Webpage), Video Path com
 **Browse…**, URL de streaming, Play/Pause, **Next** e **Lucky**, mute + volume,
@@ -283,12 +323,14 @@ app/
   generatorPage.js    Generator tab: presets, palettes, live preview, export
 ui/
   gallery.js          Gtk.FlowBox thumbnail gallery + pagination
+  videoGallery.js     Online video gallery (Pexels/Pixabay) + pagination
   filters.js          Wallhaven filter popover
   videoControls.js    Video controls pane
   prefs_helpers.js    Adw row builders + Help Center content
 lib/
   download.js         Shared fetch-to-file (Soup for http(s), Gio copy for file://)
   i18n.js             Gettext helper
+  paths.js            Canonical Pictures/Videos download-folder resolution
   wallpaper.js        Sets the GNOME desktop background
   providers/          One module per source + registry (see lib/providers/README.md)
   video/              Video subsystem (constants, dbus, launcher, ytDlp,
@@ -301,7 +343,7 @@ renderer/
 schemas/              GSettings schema
 locale/               .pot template + pt_BR / es translations
 tests/                Headless unit tests (tests/run.js, gallery, filters,
-                      videoController, generator)
+                      videoController, videoGallery, generator)
 data/                 Desktop entry template, app icon (data/icons/) and
                       generator palettes (data/palettes/)
 scripts/              install.sh, uninstall.sh, export-icons.sh

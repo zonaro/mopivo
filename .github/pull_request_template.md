@@ -1,34 +1,38 @@
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+## Description
 
-## Summary
+Brief description of what this PR does.
 
-<!-- What does this change do, and why? -->
+## Related Issue
 
-## Linked issue
-
-Closes #<issue-number>
-
-<!--
-Every implementation or fix requires a categorized GitHub issue.
-No issue → no implementation. See .agents/issues.md.
--->
+Closes #<issue_number>
 
 ## Type of change
 
-- [ ] `bug` — fix
-- [ ] `enhancement` — new feature or improvement
-- [ ] `documentation` — docs, landing page, translations
-- [ ] `chore` — build, tooling, installer, refactor
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation update
+- [ ] Code refactor
+- [ ] Test update
+- [ ] Other (please describe):
+
+## Testing
+
+- [ ] All existing tests pass (`make check`)
+- [ ] New tests added (if applicable)
+- [ ] Manually tested
+
+## Landing page section (for major features)
+
+- [ ] Added section to `docs/index.html` with i18n keys
+- [ ] Added translations to `docs/i18n.js` (en, pt-BR, es)
+- [ ] Counters/claims updated if needed
+- [ ] Rendered page verified
 
 ## Checklist
 
-- [ ] The linked issue exists and is labeled.
-- [ ] `make check` passes (`node --check` + headless tests + strict schema).
-- [ ] No hardcoded user-facing strings — all go through `_(…)`.
-- [ ] New/changed strings added to the locale catalogs (`.agents/i18n.md`).
-- [ ] If this is a **major implementation**: a landing-page section was added
-      under `/docs` in marketing/conversion language, in all three languages,
-      and the issue is labeled `major` (`.agents/landing.md`).
-- [ ] No errors suppressed (`as any`-style escapes, empty `catch {}`, disabled
-      checks).
-- [ ] No failing test deleted to make the suite pass.
+- [ ] Code follows the project's style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex logic
+- [ ] Documentation updated (if needed)
+- [ ] No hardcoded user-facing strings (use `_()`)
+- [ ] No new warnings introduced

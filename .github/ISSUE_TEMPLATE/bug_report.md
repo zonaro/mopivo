@@ -1,48 +1,31 @@
 ---
 name: Bug report
-about: Something isn't working as expected
-title: ''
+about: Create a report to help us improve
+title: "[Bug]: "
 labels: bug
 assignees: ''
 ---
 
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+**Describe the bug**
+A clear and concise description of what the bug is.
 
-## What happened
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Click on '....'
+3. See error
 
-<!-- A clear description of the bug. -->
+**Expected behavior**
+A clear and concise description of what you expected to happen.
 
-## Steps to reproduce
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
 
-1.
-2.
-3.
+**Environment:**
+ - OS: [e.g. Fedora 40, Ubuntu 24.04]
+ - GNOME version: [e.g. 45, 46, 47, 48, 49, 50]
+ - Wayland/X11: [e.g. Wayland]
+ - Mopivo version: [e.g. commit hash or version]
 
-## Expected behavior
-
-<!-- What you expected to happen instead. -->
-
-## Environment
-
-- Mopivo version (`gjs -m main.js --version`, or the installed build):
-- GNOME version:
-- Session: Wayland / X11 (XWayland)
-- Distribution:
-
-## Area
-
-<!-- Tick whatever is involved. -->
-
-- [ ] Image gallery / providers
-- [ ] Video / renderer
-- [ ] Generator
-- [ ] Preferences / settings
-- [ ] Installer
-- [ ] Other
-
-## Logs
-
-<!--
-`journalctl -f -o cat /usr/bin/gjs` while reproducing.
-If video-related, include the renderer output too.
--->
+**Additional context**
+Add any other context about the problem here.

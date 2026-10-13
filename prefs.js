@@ -19,6 +19,7 @@ import {
     buildApiKeyGroup,
     buildHelpCenterPage,
 } from './ui/prefs_helpers.js';
+import {buildWebWallpaperGroup} from './ui/webWallpaperPrefs.js';
 
 const PROVIDER_OPTIONS = ['wallhaven', 'pexels', 'unsplash', 'safebooru', 'pixabay', 'waifuim', 'local'];
 
@@ -489,6 +490,9 @@ function buildVideoPage(window, settings) {
         localHtmlRow.set_placeholder_text?.('/home/user/page.html');
         settings.bind('video-webpage-local-html', localHtmlRow, 'text', Gio.SettingsBindFlags.DEFAULT);
         sourceGroup.add(localHtmlRow);
+
+        // ── Web Wallpapers (Wallpaper Engine / Lively) — #11 ────────
+        page.add(buildWebWallpaperGroup(settings));
 
         // ── Playback ────────────────────────────────────────────────
         const playbackGroup = new Adw.PreferencesGroup({

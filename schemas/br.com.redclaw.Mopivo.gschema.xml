@@ -255,6 +255,27 @@
       <description>Local HTML file rendered as wallpaper in webpage mode.</description>
     </key>
 
+    <!-- Wallpaper Engine / Lively Project Folder -->
+    <key name="video-webpage-project" type="s">
+      <default>''</default>
+      <summary>Web Wallpaper Project Folder</summary>
+      <description>Folder of a Wallpaper Engine / Lively web wallpaper (containing project.json) rendered in webpage mode with its properties and audio bridged.</description>
+    </key>
+
+    <!-- Web Wallpaper Property Overrides -->
+    <key name="video-webpage-properties" type="s">
+      <default>'{}'</default>
+      <summary>Web Wallpaper Property Overrides</summary>
+      <description>JSON object of user overrides for a Wallpaper Engine / Lively web wallpaper's properties.</description>
+    </key>
+
+    <!-- Web Wallpaper Audio Bridge -->
+    <key name="video-webpage-audio" type="b">
+      <default>true</default>
+      <summary>Web Wallpaper Audio Bridge</summary>
+      <description>Feed the system audio spectrum to a Wallpaper Engine / Lively web wallpaper that requests it.</description>
+    </key>
+
     <!-- Volume -->
     <key name="video-volume" type="i">
       <default>50</default>

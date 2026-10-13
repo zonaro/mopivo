@@ -184,6 +184,13 @@ const WALLPAPER_KEYS = [
     'wallpaper-default-uri',
 ];
 
+// The 3 keys added for Wallpaper Engine / Lively web wallpapers (#11).
+const WEB_WALLPAPER_KEYS = [
+    'video-webpage-project',
+    'video-webpage-properties',
+    'video-webpage-audio',
+];
+
 function testSchema() {
     const g = new Group('schema');
 
@@ -215,8 +222,9 @@ function testSchema() {
         ...GENERATOR_KEYS,
         ...VIDEO_GALLERY_KEYS,
         ...WALLPAPER_KEYS,
+        ...WEB_WALLPAPER_KEYS,
     ];
-    g.eq(foundKeys.length, expectedKeys.length, 'schema key count is 66');
+    g.eq(foundKeys.length, expectedKeys.length, 'schema key count is 69');
 
     for (const key of expectedKeys) {
         g.ok(foundKeys.includes(key), `schema key present: ${key}`);

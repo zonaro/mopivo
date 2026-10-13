@@ -36,7 +36,7 @@ check:
 	    node --check "$$f" || { echo "Syntax error in $$f"; exit 1; }; \
 	done
 	@echo "== headless unit tests =="
-	@for t in tests/run.js tests/gallery.js tests/filters.js tests/videoController.js tests/videoGallery.js tests/emptySearch.js tests/monitors.js tests/generator.js; do \
+	@for t in tests/run.js tests/gallery.js tests/filters.js tests/videoController.js tests/videoGallery.js tests/emptySearch.js tests/monitors.js tests/generator.js tests/footerBar.js tests/applyPlacement.js tests/wallpaperWeb.js; do \
 	    echo "-- $$t --"; \
 	    GSETTINGS_SCHEMA_DIR=$(CURDIR)/schemas GDK_BACKEND=headless gjs -m "$$t" || exit 1; \
 	done

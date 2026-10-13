@@ -30,6 +30,27 @@ const VIDEO_EXTENSIONS = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
+// WebKit — optional, webpage mode only. GTK3 builds ship the WebKit2 4.1
+// namespace (WebKitGTK 2.x); newer GTK4 builds use WebKit 6.0. Probe both so a
+// missing typelib never breaks local/streaming video playback.
+// ═══════════════════════════════════════════════════════════════════════════
+let WebKit = null;
+try {
+    imports.gi.versions.WebKit2 = '4.1';
+    WebKit = imports.gi.WebKit2;
+} catch (e) {
+    console.warn(`${LOG_PREFIX} WebKit2 4.1 unavailable: ${e.message}`);
+}
+if (!WebKit) {
+    try {
+        imports.gi.versions.WebKit = '6.0';
+        WebKit = imports.gi.WebKit;
+    } catch (e) {
+        console.warn(`${LOG_PREFIX} WebKit 6.0 unavailable: ${e.message}`);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Module-level state (populated after arg parsing + settings load)
 // ═══════════════════════════════════════════════════════════════════════════
 let extPath = '';
@@ -42,6 +63,9 @@ let videoPath = '';
 let videoFolder = '';
 let videoWebpageUrl = '';
 let videoWebpageLocalHtml = '';
+let videoWebpageProject = '';
+let videoWebpageProperties = '{}';
+let videoWebpageAudio = false;
 let videoVolume = 50;
 let videoMute = false;
 let videoFadeDurationSec = 0.5;
@@ -142,6 +166,74 @@ function scanVideoDir(dirPath) {
     return paths.sort();
 }
 
+/**
+ * Read a whole text file (UTF-8), tolerating a missing/unreadable file.
+ * @returns {string} file contents, or '' with a logged reason.
+ */
+function readFileText(path) {
+    try {
+        const [ok, bytes] = GLib.file_get_contents(path);
+        if (!ok || !bytes) {
+            console.warn(`${LOG_PREFIX} Cannot read ${path}`);
+            return '';
+        }
+        return new TextDecoder('utf-8').decode(bytes);
+    } catch (e) {
+        console.warn(`${LOG_PREFIX} Failed to read ${path}: ${e.message}`);
+        return '';
+    }
+}
+
+// lib/wallpaper-web.js is an ESM module; the renderer is a legacy script, so
+// load it through a dynamic import and cache the promise (null on failure).
+let webLibPromise = null;
+function loadWallpaperWeb() {
+    if (!webLibPromise) {
+        const path = GLib.build_filenamev([extPath, 'lib', 'wallpaper-web.js']);
+        webLibPromise = import(Gio.File.new_for_path(path).get_uri()).catch(e => {
+            console.error(`${LOG_PREFIX} lib/wallpaper-web.js failed to load: ${e.message}`);
+            return null;
+        });
+    }
+    return webLibPromise;
+}
+
+// GSettings keys added for webpage mode may be absent from an older schema;
+// read them defensively so a missing key never aborts the renderer.
+function settingsHasKey(settings, key) {
+    const schema = settings.settings_schema;
+    return !!(schema && schema.has_key(key));
+}
+function safeGetString(settings, key, fallback = '') {
+    return settingsHasKey(settings, key) ? settings.get_string(key) : fallback;
+}
+function safeGetBoolean(settings, key, fallback = false) {
+    return settingsHasKey(settings, key) ? settings.get_boolean(key) : fallback;
+}
+
+/**
+ * Apply the desktop-layer window chrome shared by video and webpage windows.
+ * DESKTOP must be set before the window is shown.
+ */
+function configureWallpaperWindow(win, gdkMonitor, index) {
+    const geometry = gdkMonitor.get_geometry();
+    win.set_title(`Wallpaper ${index}`);
+    if (nohide) {
+        win.set_decorated(true);
+        win.set_skip_taskbar_hint(false);
+        win.set_default_size(geometry.width, geometry.height);
+    } else {
+        win.set_type_hint(Gdk.WindowTypeHint.DESKTOP);
+        win.set_decorated(false);
+        win.set_skip_taskbar_hint(true);
+        win.set_skip_pager_hint(true);
+        win.set_keep_below(true);
+        win.stick();
+        win.set_size_request(geometry.width, geometry.height);
+        win.move(geometry.x, geometry.y);
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // RendererWindow — one GStreamer pipeline per monitor, embedded by XID
 // ═══════════════════════════════════════════════════════════════════════════
@@ -162,31 +254,13 @@ const RendererWindow = GObject.registerClass(
             this._sink = null;
             this._randomStartPending = false;
 
-            const geometry = gdkMonitor.get_geometry();
-
             this._area = new Gtk.DrawingArea();
             this._area.set_hexpand(true);
             this._area.set_vexpand(true);
             this.add(this._area);
             this._area.show();
 
-            this.set_title(`Wallpaper ${index}`);
-
-            if (nohide) {
-                this.set_decorated(true);
-                this.set_skip_taskbar_hint(false);
-                this.set_default_size(geometry.width, geometry.height);
-            } else {
-                // DESKTOP must be set before the window is shown.
-                this.set_type_hint(Gdk.WindowTypeHint.DESKTOP);
-                this.set_decorated(false);
-                this.set_skip_taskbar_hint(true);
-                this.set_skip_pager_hint(true);
-                this.set_keep_below(true);
-                this.stick();
-                this.set_size_request(geometry.width, geometry.height);
-                this.move(geometry.x, geometry.y);
-            }
+            configureWallpaperWindow(this, gdkMonitor, index);
 
             this._buildPipeline();
         }
@@ -333,6 +407,149 @@ const RendererWindow = GObject.registerClass(
 );
 
 // ═══════════════════════════════════════════════════════════════════════════
+// WebpageWindow — one WebKit view per monitor (WE/Lively web wallpapers).
+// Mirrors the RendererWindow control surface so D-Bus play/pause/volume keep
+// working unchanged.
+// ═══════════════════════════════════════════════════════════════════════════
+const WebpageWindow = GObject.registerClass(
+    {
+        GTypeName: 'WpWebpageWindow',
+    },
+    class WebpageWindow extends Gtk.ApplicationWindow {
+        constructor(app, gdkMonitor, index, isPrimary, config) {
+            super({application: app});
+
+            this._app = app;
+            this._index = index;
+            this._isPrimary = isPrimary;
+            this.isWebpage = true;
+            this._uri = '';
+            this._started = false;
+            this._paused = false;
+
+            this._webview = new WebKit.WebView();
+            this._applyWebSettings();
+            this.add(this._webview);
+            this._webview.show();
+
+            configureWallpaperWindow(this, gdkMonitor, index);
+
+            this._webview.connect('load-changed', (_view, event) => {
+                if (event === WebKit.LoadEvent.FINISHED) {
+                    if (this._isPrimary && !this._paused)
+                        this._app._onPrimaryStateChanged(Gst.State.PLAYING);
+                    console.log(
+                        `${LOG_PREFIX} webpage loaded [monitor ${this._index}]`
+                    );
+                } else if (event === WebKit.LoadEvent.FAILED) {
+                    console.warn(
+                        `${LOG_PREFIX} webpage load failed [monitor ${this._index}]`
+                    );
+                }
+            });
+
+            this.applyConfig(config);
+        }
+
+        _applyWebSettings() {
+            try {
+                const settings = this._webview.get_settings();
+                settings.set_property('enable-javascript', true);
+                settings.set_property('enable-webaudio', true);
+            } catch (e) {
+                console.warn(`${LOG_PREFIX} webpage settings failed: ${e.message}`);
+            }
+        }
+
+        /** Install the WE/Lively shim so it runs before the page's own scripts. */
+        _installBridge(bridgeScript) {
+            if (!bridgeScript)
+                return;
+            const ucm = this._webview.get_user_content_manager();
+            ucm.remove_all_scripts();
+            ucm.add_script(new WebKit.UserScript(
+                bridgeScript,
+                WebKit.UserContentInjectedFrames.TOP_FRAME,
+                WebKit.UserScriptInjectionTime.START,
+                null, null
+            ));
+        }
+
+        /** Update the page or its live properties without rebuilding the window. */
+        applyConfig(config) {
+            if (!config)
+                return;
+            this._installBridge(config.bridgeScript);
+            if (config.uri && config.uri !== this._uri) {
+                this._uri = config.uri;
+                if (this._started)
+                    this._webview.load_uri(this._uri);
+            } else {
+                this.refreshProperties(config.properties);
+            }
+        }
+
+        refreshProperties(flat) {
+            this.evaluate(
+                `window.mopivoApplyProperties(${JSON.stringify(flat || {})})`
+            );
+        }
+
+        evaluate(js) {
+            if (!js)
+                return;
+            try {
+                // WebKitGTK 2.40+ exposes evaluate_javascript; older builds use
+                // the deprecated run_javascript. Prefer the current one.
+                if (typeof this._webview.evaluate_javascript === 'function')
+                    this._webview.evaluate_javascript(js, -1, null, null, null, null);
+                else if (typeof this._webview.run_javascript === 'function')
+                    this._webview.run_javascript(js, null, null);
+                else
+                    console.warn(`${LOG_PREFIX} webpage JS evaluation unavailable`);
+            } catch (e) {
+                console.warn(`${LOG_PREFIX} webpage JS evaluation failed: ${e.message}`);
+            }
+        }
+
+        start() {
+            this._started = true;
+            if (this._uri)
+                this._webview.load_uri(this._uri);
+        }
+
+        play() {
+            this._paused = false;
+            if (this._isPrimary)
+                this._app._onPrimaryStateChanged(Gst.State.PLAYING);
+        }
+
+        pause() {
+            this._paused = true;
+            if (this._isPrimary)
+                this._app._onPrimaryStateChanged(Gst.State.PAUSED);
+        }
+
+        setVolume(linear) {
+            try {
+                if (typeof this._webview.set_is_muted === 'function')
+                    this._webview.set_is_muted(!(linear > 0));
+            } catch (e) {
+                console.warn(`${LOG_PREFIX} webpage mute failed: ${e.message}`);
+            }
+        }
+
+        getVolume() {
+            return 1;
+        }
+
+        setUri() {
+            // Webpage mode has no per-monitor video path; ignored on purpose.
+        }
+    }
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Renderer — Gtk.Application subclass
 // ═══════════════════════════════════════════════════════════════════════════
 const Renderer = GObject.registerClass(
@@ -351,6 +568,7 @@ const Renderer = GObject.registerClass(
             this._monitors = [];
             this._dbus = null;
             this._isPlaying = false;
+            this._audioPipeline = null;
 
             this.connect('activate', () => {
                 if (this._windows.length > 0)
@@ -486,8 +704,11 @@ const Renderer = GObject.registerClass(
 
             videoModeType = extSettings.get_string('video-mode-type');
             videoFolder = extSettings.get_string('video-folder');
-            videoWebpageUrl = extSettings.get_string('video-webpage-url');
-            videoWebpageLocalHtml = extSettings.get_string('video-webpage-local-html');
+            videoWebpageUrl = safeGetString(extSettings, 'video-webpage-url');
+            videoWebpageLocalHtml = safeGetString(extSettings, 'video-webpage-local-html');
+            videoWebpageProject = safeGetString(extSettings, 'video-webpage-project');
+            videoWebpageProperties = safeGetString(extSettings, 'video-webpage-properties', '{}');
+            videoWebpageAudio = safeGetBoolean(extSettings, 'video-webpage-audio');
             videoVolume = extSettings.get_int('video-volume');
             videoMute = extSettings.get_boolean('video-mute');
             videoFadeDurationSec = extSettings.get_double('video-fade-duration-sec');
@@ -548,16 +769,27 @@ const Renderer = GObject.registerClass(
 
                 case 'video-webpage-url':
                     videoWebpageUrl = settings.get_string(key);
-                    console.warn(
-                        `${LOG_PREFIX} Webpage output is not supported by this renderer`
-                    );
+                    this._reloadWebpage('video-webpage-url');
                     break;
 
                 case 'video-webpage-local-html':
                     videoWebpageLocalHtml = settings.get_string(key);
-                    console.warn(
-                        `${LOG_PREFIX} Webpage output is not supported by this renderer`
-                    );
+                    this._reloadWebpage('video-webpage-local-html');
+                    break;
+
+                case 'video-webpage-project':
+                    videoWebpageProject = safeGetString(settings, key);
+                    this._reloadWebpage('video-webpage-project');
+                    break;
+
+                case 'video-webpage-properties':
+                    videoWebpageProperties = safeGetString(settings, key, '{}');
+                    this._pushWebpageProperties();
+                    break;
+
+                case 'video-webpage-audio':
+                    videoWebpageAudio = safeGetBoolean(settings, key);
+                    this._restartAudioBridge();
                     break;
 
                 case 'video-mode-type':
@@ -692,9 +924,9 @@ const Renderer = GObject.registerClass(
             this._loadCss();
 
             if (videoModeType === 'webpage') {
-                console.warn(
-                    `${LOG_PREFIX} Webpage output is not supported by this renderer; showing blank wallpaper`
-                );
+                this._buildWebpageWindows().catch(e =>
+                    console.error(`${LOG_PREFIX} webpage mode setup failed: ${e.message}`));
+                return;
             }
 
             const monitorMap = parseMonitorPaths(videoMonitorPaths);
@@ -723,6 +955,284 @@ const Renderer = GObject.registerClass(
             if (model && monitorMap[model])
                 return monitorMap[model];
             return videoPath;
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // Webpage mode — WebKit views + WE/Lively property/audio bridge
+        // ─────────────────────────────────────────────────────────────
+
+        _webpageWindows() {
+            return this._windows.filter(w => w && w.isWebpage);
+        }
+
+        async _buildWebpageWindows() {
+            if (!WebKit) {
+                console.error(
+                    `${LOG_PREFIX} webpage mode requested but no WebKit namespace ` +
+                    '(WebKit2 4.1 / WebKit 6.0) is installed; showing blank wallpaper'
+                );
+                return;
+            }
+
+            const web = await loadWallpaperWeb();
+            if (!web) {
+                console.error(
+                    `${LOG_PREFIX} webpage mode unavailable: helper module missing`
+                );
+                return;
+            }
+
+            const config = this._resolveWebpageConfig(web);
+            if (!config) {
+                console.error(
+                    `${LOG_PREFIX} webpage mode: no project folder, local HTML or URL configured`
+                );
+                return;
+            }
+
+            let primaryIndex = this._monitors.findIndex(m => m.is_primary());
+            if (primaryIndex < 0)
+                primaryIndex = 0;
+
+            this._monitors.forEach((gdkMonitor, index) => {
+                try {
+                    this._windows.push(new WebpageWindow(
+                        this, gdkMonitor, index, index === primaryIndex, config
+                    ));
+                } catch (e) {
+                    console.error(
+                        `${LOG_PREFIX} Webpage window setup failed [monitor ${index}]: ${e.message}`
+                    );
+                }
+            });
+
+            this._windows.forEach(w => {
+                w.show_all();
+                w.present();
+            });
+            this._windows.forEach(w => w.start());
+
+            console.log(
+                `${LOG_PREFIX} Using WebKit for webpage output ` +
+                `(${this._windows.length} monitor(s))`
+            );
+            if (videoWebpageAudio)
+                this._startAudioBridge();
+        }
+
+        /**
+         * Resolve the effective webpage source and properties. Prefers a WE/
+         * Lively project folder, then a local HTML file, then a URL.
+         * @returns {{uri: string, bridgeScript: string, properties: object}|null}
+         */
+        _resolveWebpageConfig(web) {
+            const overrides = web.jsonToProperties(videoWebpageProperties, reason =>
+                console.warn(`${LOG_PREFIX} invalid video-webpage-properties: ${reason}`));
+
+            let uri = '';
+            let properties = {};
+            let lively = {};
+
+            // Accept either the project folder or a direct path to project.json.
+            let projectDir = videoWebpageProject;
+            if (projectDir && !web.isWebProjectFolder(projectDir) &&
+                projectDir.endsWith('.json')) {
+                const parent = Gio.File.new_for_path(projectDir).get_parent();
+                if (parent)
+                    projectDir = parent.get_path();
+            }
+
+            if (projectDir && web.isWebProjectFolder(projectDir)) {
+                const projectPath = GLib.build_filenamev([projectDir, 'project.json']);
+                const livelyPath =
+                    GLib.build_filenamev([projectDir, 'LivelyProperties.json']);
+                let project = {title: '', file: '', properties: {}};
+                if (GLib.file_test(projectPath, GLib.FileTest.EXISTS)) {
+                    project = web.parseProjectJson(readFileText(projectPath));
+                    if (project.error)
+                        console.warn(`${LOG_PREFIX} invalid project.json: ${project.error}`);
+                }
+                if (GLib.file_test(livelyPath, GLib.FileTest.EXISTS)) {
+                    lively = web.parseLivelyProperties(readFileText(livelyPath), reason =>
+                        console.warn(`${LOG_PREFIX} invalid LivelyProperties.json: ${reason}`));
+                }
+                const entryPath = web.resolveEntryFile(projectDir, project);
+                if (!entryPath) {
+                    console.error(`${LOG_PREFIX} no entry HTML found in ${projectDir}`);
+                    return null;
+                }
+                uri = Gio.File.new_for_path(entryPath).get_uri();
+                properties = web.mergeProperties(project.properties, lively, overrides);
+                console.log(
+                    `${LOG_PREFIX} web project "${project.title || projectDir}" -> ` +
+                    `${entryPath} (${Object.keys(properties).length} properties)`
+                );
+            } else if (videoWebpageLocalHtml) {
+                const file = Gio.File.new_for_path(videoWebpageLocalHtml);
+                if (!file.query_exists(null)) {
+                    console.error(
+                        `${LOG_PREFIX} local HTML not found: ${videoWebpageLocalHtml}`
+                    );
+                    return null;
+                }
+                uri = file.get_uri();
+                properties = overrides;
+            } else if (videoWebpageUrl) {
+                uri = videoWebpageUrl;
+                properties = overrides;
+            } else {
+                return null;
+            }
+
+            const bridgeScript = web.buildBridgeScript({
+                properties,
+                livelyProperties: lively,
+                audioEnabled: videoWebpageAudio,
+                env: 'both',
+            });
+            return {uri, bridgeScript, properties};
+        }
+
+        _reloadWebpage(reason) {
+            const windows = this._webpageWindows();
+            if (windows.length === 0)
+                return;
+            console.log(`${LOG_PREFIX} ${reason} changed — reloading webpage`);
+            loadWallpaperWeb().then(web => {
+                if (!web)
+                    return;
+                const config = this._resolveWebpageConfig(web);
+                if (config)
+                    windows.forEach(w => w.applyConfig(config));
+            });
+        }
+
+        _pushWebpageProperties() {
+            const windows = this._webpageWindows();
+            if (windows.length === 0)
+                return;
+            loadWallpaperWeb().then(web => {
+                if (!web)
+                    return;
+                const config = this._resolveWebpageConfig(web);
+                if (config)
+                    windows.forEach(w => w.refreshProperties(config.properties));
+            });
+        }
+
+        // ── Audio bridge: GStreamer spectrum → window.mopivoPushAudio ──
+
+        _restartAudioBridge() {
+            this._stopAudioBridge();
+            if (videoWebpageAudio && this._webpageWindows().length > 0)
+                this._startAudioBridge();
+        }
+
+        /**
+         * Best-effort system-audio capture: pulsesrc/autoaudiosrc → spectrum,
+         * whose 64 bands are pushed to every webpage view. Set
+         * MOPIVO_AUDIO_DEVICE to a sink *monitor* to react to output instead
+         * of the default capture device.
+         */
+        _startAudioBridge() {
+            if (this._audioPipeline)
+                return;
+            try {
+                const pipeline = Gst.Pipeline.new('wp-webpage-audio');
+                const source = Gst.ElementFactory.make('pulsesrc', null) ||
+                    Gst.ElementFactory.make('autoaudiosrc', null);
+                const convert = Gst.ElementFactory.make('audioconvert', null);
+                const resample = Gst.ElementFactory.make('audioresample', null);
+                const capsFilter = Gst.ElementFactory.make('capsfilter', null);
+                const spectrum = Gst.ElementFactory.make('spectrum', null);
+                const sink = Gst.ElementFactory.make('fakesink', null);
+                if (!source || !convert || !resample || !capsFilter ||
+                    !spectrum || !sink) {
+                    console.warn(
+                        `${LOG_PREFIX} webpage audio: required GStreamer elements ` +
+                        'missing; bridge disabled'
+                    );
+                    return;
+                }
+
+                const device = GLib.getenv('MOPIVO_AUDIO_DEVICE');
+                if (device && source.find_property('device'))
+                    source.set_property('device', device);
+
+                capsFilter.set_property(
+                    'caps', Gst.Caps.from_string('audio/x-raw,rate=44100,channels=2')
+                );
+                spectrum.set_property('bands', 64);
+                spectrum.set_property('threshold', -80);
+                spectrum.set_property('interval', 33000000); // ~30 fps in ns
+
+                [source, convert, resample, capsFilter, spectrum, sink]
+                    .forEach(el => pipeline.add(el));
+                if (!source.link(convert) || !convert.link(resample) ||
+                    !resample.link(capsFilter) || !capsFilter.link(spectrum) ||
+                    !spectrum.link(sink)) {
+                    console.warn(
+                        `${LOG_PREFIX} webpage audio: pipeline link failed; bridge disabled`
+                    );
+                    return;
+                }
+
+                const bus = pipeline.get_bus();
+                bus.add_signal_watch();
+                bus.connect('message::element', (_bus, msg) => {
+                    try {
+                        const structure = msg.get_structure();
+                        if (!structure || structure.get_name() !== 'spectrum')
+                            return;
+                        const magnitudes = structure.get_list('magnitude');
+                        if (!magnitudes || magnitudes.length === 0)
+                            return;
+                        const samples = [];
+                        for (let i = 0; i < magnitudes.length; i++) {
+                            // spectrum magnitudes are dBFS (-80..0); pages expect 0..1.
+                            samples.push(Math.max(0, Math.min(
+                                1, Math.pow(10, magnitudes[i] / 20)
+                            )));
+                        }
+                        this._pushWebpageAudio(samples);
+                    } catch (e) {
+                        console.warn(
+                            `${LOG_PREFIX} webpage audio spectrum failed: ${e.message}`
+                        );
+                    }
+                });
+                bus.connect('message::error', (_bus, msg) => {
+                    const [err] = msg.parse_error();
+                    console.warn(`${LOG_PREFIX} webpage audio error: ${err.message}`);
+                });
+
+                pipeline.set_state(Gst.State.PLAYING);
+                this._audioPipeline = pipeline;
+                console.log(
+                    `${LOG_PREFIX} webpage audio bridge started` +
+                    (device ? ` (device ${device})` : '')
+                );
+            } catch (e) {
+                console.warn(
+                    `${LOG_PREFIX} webpage audio bridge unavailable: ${e.message}`
+                );
+            }
+        }
+
+        _stopAudioBridge() {
+            if (!this._audioPipeline)
+                return;
+            try {
+                this._audioPipeline.set_state(Gst.State.NULL);
+            } catch (e) {
+                console.warn(`${LOG_PREFIX} webpage audio stop failed: ${e.message}`);
+            }
+            this._audioPipeline = null;
+        }
+
+        _pushWebpageAudio(samples) {
+            const js = `window.mopivoPushAudio(${JSON.stringify(samples)})`;
+            this._webpageWindows().forEach(w => w.evaluate(js));
         }
 
         _loadCss() {

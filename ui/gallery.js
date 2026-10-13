@@ -180,11 +180,16 @@ export function normalizeResult(raw, fallbackPage = 1) {
  * search fail gracefully without them.
  *
  * Emits `page-changed` (int page number) whenever the committed page moves.
+ * Emits `apply-requested` (the item object) when a thumbnail's Apply button is
+ * pressed; the window opens the placement dialog (ui/applyDialog.js).
  * `.pagination` returns the current {page, totalPage}.
  */
 const GalleryManager = GObject.registerClass({
     Signals: {
         'page-changed': {param_types: [GObject.TYPE_INT]},
+        // Emitted when the user presses the per-item "Apply" button; the item
+        // (a plain object) is the payload, mirroring `page-changed`.
+        'apply-requested': {param_types: [GObject.TYPE_JSOBJECT]},
     },
 }, class GalleryManager extends GObject.Object {
     _init(opts = {}) {
@@ -421,9 +426,21 @@ const GalleryManager = GObject.registerClass({
         box.append(picture);
         if (item.resolution)
             box.append(new Gtk.Label({label: item.resolution, halign: Gtk.Align.CENTER}));
-        const detailsBtn = new Gtk.Button({label: _('Details'), halign: Gtk.Align.CENTER, margin_top: 4});
+        const detailsBtn = new Gtk.Button({label: _('Details')});
         detailsBtn.connect('clicked', () => this._showDetails(item));
-        box.append(detailsBtn);
+
+        const applyBtn = new Gtk.Button({label: _('Apply')});
+        applyBtn.connect('clicked', () => this.emit('apply-requested', item));
+
+        const actions = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            spacing: 4,
+            halign: Gtk.Align.CENTER,
+            margin_top: 4,
+        });
+        actions.append(detailsBtn);
+        actions.append(applyBtn);
+        box.append(actions);
 
         const gesture = new Gtk.GestureClick();
         gesture.connect('released', (_g, _n, _x, _y) => this._onSelect(item));

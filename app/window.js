@@ -22,12 +22,16 @@
 
 import Adw from 'gi://Adw?version=1';
 import Gtk from 'gi://Gtk?version=4.0';
+import Gdk from 'gi://Gdk?version=4.0';
 import GObject from 'gi://GObject';
 import Soup from 'gi://Soup?version=3.0';
 
 import {_} from '../lib/i18n.js';
 import {GalleryManager} from '../ui/gallery.js';
 import {FilterBar} from '../ui/filters.js';
+import {FooterBar} from '../ui/footerBar.js';
+import {showApplyDialog} from '../ui/applyDialog.js';
+import {VideoController} from './videoController.js';
 import {GeneratorPage} from './generatorPage.js';
 import {PROVIDER_IDS, PROVIDER_META, getProvider} from '../lib/providers/registry.js';
 
@@ -61,9 +65,19 @@ const WallpaperWindow = GObject.registerClass({
         // `flowbox` getter and wrap it in a scrolled window.
         this._manager = new GalleryManager({settings, session: this._session});
         this._filterBar = new FilterBar(settings);
+        // Owns the renderer subprocess; FooterBar exposes its controls (#9).
+        this._controller = new VideoController({settings});
+        this._footerBar = new FooterBar({controller: this._controller, settings});
 
         this._buildLayout();
         this._wireSignals();
+
+        // Reflect the persisted video-mode state; start the renderer when it was
+        // left on so the footer controls have something to drive.
+        this._syncingVideo = true;
+        this._videoSwitch.set_active(settings.get_boolean('video-mode'));
+        this._syncingVideo = false;
+        this._applyVideoMode(settings.get_boolean('video-mode'));
 
         this.set_default_size(980, 720);
         this._bootstrap().catch(e =>
@@ -94,6 +108,14 @@ const WallpaperWindow = GObject.registerClass({
         });
         header.pack_end(this._generatorToggle);
 
+        // Video mode toggle: engages the renderer and reveals the footer bar (#9).
+        this._videoSwitch = new Gtk.ToggleButton({
+            icon_name: 'media-playback-start-symbolic',
+            tooltip_text: _('Video mode'),
+            valign: Gtk.Align.CENTER,
+        });
+        header.pack_end(this._videoSwitch);
+
         this._stack = new Gtk.Stack({
             transition_type: Gtk.StackTransitionType.CROSSFADE,
             hexpand: true,
@@ -104,6 +126,9 @@ const WallpaperWindow = GObject.registerClass({
 
         const toolbar = new Adw.ToolbarView();
         toolbar.add_top_bar(header);
+        // Footer bar with video/streaming controls, shown only when a video or
+        // streaming wallpaper is active (#9).
+        toolbar.add_bottom_bar(this._footerBar.widget);
         toolbar.set_content(this._stack);
         this.set_content(toolbar);
     }
@@ -253,15 +278,27 @@ const WallpaperWindow = GObject.registerClass({
             this._title.set_subtitle(`${_('Page')} ${page} / ${total}`);
         });
 
+        // Per-item Apply button opens the monitor placement dialog (#10).
+        this._manager.connect('apply-requested', (_mgr, item) =>
+            this._openApplyDialog(item));
+
+        // The footer only makes sense for playback sources; keep it in sync when
+        // the source type changes (#9).
+        this._settingsVideoTypeId = this._settings.connect(
+            'changed::video-mode-type', () => this._updateFooter());
+
         this.connect('close-request', () => {
             if (this._settingsVideoModeId) {
                 this._settings.disconnect(this._settingsVideoModeId);
                 this._settingsVideoModeId = 0;
             }
+            if (this._settingsVideoTypeId) {
+                this._settings.disconnect(this._settingsVideoTypeId);
+                this._settingsVideoTypeId = 0;
+            }
             try { this._controller.stop(); } catch (_e) { /* not started */ }
             try { this._session.abort(); } catch (_e) { /* already aborted */ }
-            this._videoGallery?.destroy?.();
-            this._videoControls.destroy?.();
+            this._footerBar?.destroy?.();
             this._generatorPage.destroy?.();
             return false;
         });
@@ -293,7 +330,7 @@ const WallpaperWindow = GObject.registerClass({
             console.error(`[wp] provider '${id}' unavailable: ${e.message}`);
             const label = PROVIDER_META[id]?.displayName || id;
             this._showStatus(`${_('Provider unavailable:')} ${label}`);
-            this._selectProvider(this._manager.providerId);
+            this._loadSelectedProviders();
             return;
         }
 
@@ -384,19 +421,65 @@ const WallpaperWindow = GObject.registerClass({
             this._manager.setVisible(false);
             return;
         }
-        this._stack.set_visible_child_name(on ? 'video' : 'images');
-        this._manager.setVisible(!on);
+        // The listing merges images and videos (#4), so it stays visible in both
+        // modes; video mode only engages the renderer and reveals the footer (#9).
+        this._stack.set_visible_child_name('images');
+        this._manager.setVisible(true);
         if (on) {
             this._controller.start().catch(e =>
                 console.error(`[wp] video start failed: ${e.message}`));
-            if (this._videoGallery && !this._videoLoaded) {
-                this._videoLoaded = true;
-                this._videoGallery.loadRecent().catch(e =>
-                    console.error(`[wp] video browse failed: ${e.message}`));
-            }
         } else {
             this._controller.stop();
         }
+        this._updateFooter();
+    }
+
+    /** Show the footer controls only while a video/streaming/web wallpaper runs. */
+    _updateFooter() {
+        if (!this._footerBar)
+            return;
+        const active = this._settings.get_boolean('video-mode') &&
+            this._isPlaybackSource(this._settings.get_string('video-mode-type'));
+        this._footerBar.setActive(active);
+    }
+
+    /** True when `type` is rendered by the video renderer subprocess. */
+    _isPlaybackSource(type) {
+        return type === 'local' || type === 'streaming' || type === 'webpage';
+    }
+
+    // ── Per-item apply dialog (#10) ─────────────────────────────────────
+
+    _openApplyDialog(item) {
+        showApplyDialog({
+            parent: this,
+            item,
+            monitors: this._enumerateMonitors(),
+            settings: this._settings,
+            onApplied: () => this._showStatus(_('Wallpaper applied.')),
+        });
+    }
+
+    /** GDK monitors as plain descriptors for the apply dialog. */
+    _enumerateMonitors() {
+        const display = Gdk.Display.get_default();
+        if (!display)
+            return [];
+        const model = display.get_monitors();
+        const out = [];
+        for (let i = 0; i < model.get_n_items(); i++) {
+            const mon = model.get_item(i);
+            const geo = mon.get_geometry();
+            out.push({
+                connector: mon.get_connector?.() ?? '',
+                name: mon.get_description?.() ?? '',
+                x: geo.x,
+                y: geo.y,
+                width: geo.width,
+                height: geo.height,
+            });
+        }
+        return out;
     }
 
     // ── Preferences ─────────────────────────────────────────────────────
